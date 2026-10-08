@@ -27,6 +27,8 @@ export interface HeroConfig {
   magnetSpeed: number;
   obstacleStunSec: number;
   enemyStunSec: number;
+  /** Автопрыжок (позднее улучшение): за сколько px до препятствия прыгать. */
+  autoJumpLookaheadPx: number;
 }
 
 export interface GlideConfig {
@@ -64,8 +66,48 @@ export interface ComboConfig {
 }
 
 export interface EconomyConfig {
-  coin: { baseValue: number; radius: number };
+  startCoins: number;
+  /** coinValue = baseValue × (1 + CpS × cpsFactor) × множители (SPEC §5.2). */
+  coin: { baseValue: number; radius: number; cpsFactor: number };
+  offline: { rate: number; capSec: number; minSec: number };
+  autosaveSec: number;
   combo: ComboConfig;
+}
+
+export interface ItemConfig {
+  id: string;
+  base: number;
+  cps: number;
+}
+
+/** Модификаторы забега от улучшений героя. */
+export interface RunModifiers {
+  attackRangeMult: number;
+  staminaBonusSec: number;
+  speedBonus: number;
+  magnetRadius: number;
+  extraJumps: number;
+  coinValueMult: number;
+  autoJump: number;
+}
+
+export type ModifierKey = keyof RunModifiers;
+
+export interface HeroUpgradeConfig {
+  id: string;
+  /** Цена каждого уровня (тиры покупаются по порядку). */
+  costs: readonly number[];
+  /** Прибавка за уровень. */
+  add?: Partial<RunModifiers>;
+  /** Множитель за уровень. */
+  mul?: Partial<RunModifiers>;
+}
+
+export interface UpgradesConfig {
+  growth: number;
+  milestones: { levels: readonly number[]; multiplier: number };
+  items: readonly ItemConfig[];
+  hero: readonly HeroUpgradeConfig[];
 }
 
 export const ENEMY_BEHAVIORS = ['walker', 'flyer', 'hopper'] as const;

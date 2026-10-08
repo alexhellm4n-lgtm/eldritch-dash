@@ -1,3 +1,5 @@
+import { ZERO, type Decimal } from '../core/BigNum';
+
 export type EntityKind = 'coin' | 'obstacle' | 'enemy';
 
 /**
@@ -18,7 +20,7 @@ export class Entity {
   baseY = 0;
   hp = 0;
   /** Награда, начисленная при сборе/убийстве (заполняется перед событием). */
-  value = 0;
+  reward: Decimal = ZERO;
   /** Препятствие задето / враг столкнулся с героем — больше не опасен. */
   spent = false;
   /** Препятствие чисто перепрыгнуто. */
@@ -32,7 +34,8 @@ export class Entity {
     this.id = id;
     this.kind = kind;
     this.type = type;
-    this.x = this.y = this.w = this.h = this.t = this.baseY = this.hp = this.value = 0;
+    this.x = this.y = this.w = this.h = this.t = this.baseY = this.hp = 0;
+    this.reward = ZERO;
     this.spent = this.cleared = this.magnet = false;
     this.hurtT = Infinity;
     return this;

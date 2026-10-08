@@ -1,7 +1,9 @@
 import type Phaser from 'phaser';
 import display from '../config/display.json';
 import type { BiomeConfig } from '../config';
-import { unitScale } from './textures';
+import { backgroundAssets } from './rasterAssets';
+import { palette } from './palette';
+import { isRaster, unitScale } from './textures';
 
 /** Глубины (z-order) сцены забега. */
 export const Depth = {
@@ -41,10 +43,15 @@ export class Parallax {
     const H = display.height;
     const depths = [Depth.sky, Depth.far, Depth.mid, Depth.near];
     for (let i = 0; i < biome.parallax.length; i++) {
-      this.layers.push(
-        this.tile(scene, `bg_${biomeId}_layer${i}`, 0, 0, W, H, depths[i] ?? Depth.near),
-      );
+      const key = `bg_${biomeId}_layer${i}`;
+      // Растровый слой лежит полосой на своей высоте; плейсхолдер занимает весь кадр.
+      const asset = isRaster(key) ? backgroundAssets[key] : undefined;
+      const y = asset?.y ?? 0;
+      const h = asset?.height ?? H;
+      this.layers.push(this.tile(scene, key, 0, y, W, h, depths[i] ?? Depth.near));
     }
+    // Ближний декор притемнён, чтобы не спорить по яркости с настоящими препятствиями и тварями.
+    this.layers[this.layers.length - 1]?.setTint(palette.nearDecorShade);
     this.ground = this.tile(
       scene,
       `ground_${biomeId}`,

@@ -7,3 +7,6 @@ coverage/
 
 # Техзадание — только локально
 SPEC.md
+
+# Сырые генерации (≈34 МБ) — только локально; в git идут готовые WebP из public/assets/bg
+assets-src/generated/raw/

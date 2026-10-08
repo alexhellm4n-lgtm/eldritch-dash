@@ -12,6 +12,8 @@ export class Combat {
   cooldownLeft = 0;
   /** Сработала ли вспышка на последнем шаге. */
   flashed = false;
+  /** Множитель радиуса вспышки (улучшение «радиус фонаря»). */
+  rangeMult = 1;
 
   constructor(
     private readonly attack: AttackConfig,
@@ -19,9 +21,13 @@ export class Combat {
     private readonly enemies: Readonly<Record<string, EnemyConfig>>,
   ) {}
 
+  get range(): number {
+    return this.attack.range * this.rangeMult;
+  }
+
   zoneX(hero: HeroMotor): number {
     const front = hero.x + this.hero.width / 2;
-    return front - this.attack.reachBehind + (this.attack.range + this.attack.reachBehind) / 2;
+    return front - this.attack.reachBehind + this.zoneW / 2;
   }
 
   zoneY(hero: HeroMotor): number {
@@ -29,7 +35,7 @@ export class Combat {
   }
 
   get zoneW(): number {
-    return this.attack.range + this.attack.reachBehind;
+    return this.range + this.attack.reachBehind;
   }
 
   inZone(hero: HeroMotor, e: Entity): boolean {

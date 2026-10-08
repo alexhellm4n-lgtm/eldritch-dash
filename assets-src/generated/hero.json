@@ -1,0 +1,16 @@
+{
+  "src": "raw/hero_sheet_a.png",
+  "outDir": "public/assets/hero",
+  "manifest": "src/render/heroParts.json",
+  "unitsPerPx": 0.115,
+  "textureScale": 2,
+  "parts": {
+    "hero_head": { "seed": [750, 520] },
+    "hero_body": { "seed": [1080, 700] },
+    "hero_leg": { "seed": [800, 1000] },
+    "hero_arm": { "seed": [1330, 550] },
+    "hero_hand": { "seed": [1415, 720] },
+    "hero_wing": { "seed": [1085, 1050], "scale": 1.5 },
+    "hero_lantern": { "seed": [1367, 1080] }
+  }
+}

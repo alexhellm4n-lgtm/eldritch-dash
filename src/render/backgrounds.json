@@ -1,0 +1,26 @@
+{
+  "bg_coast_layer0": {
+    "file": "assets/bg/bg_coast_layer0.webp",
+    "y": 0,
+    "width": 2218,
+    "height": 720
+  },
+  "bg_coast_layer1": {
+    "file": "assets/bg/bg_coast_layer1.webp",
+    "y": 137,
+    "width": 1852,
+    "height": 503
+  },
+  "bg_coast_layer2": {
+    "file": "assets/bg/bg_coast_layer2.webp",
+    "y": 290,
+    "width": 1602,
+    "height": 360
+  },
+  "bg_coast_layer3": {
+    "file": "assets/bg/bg_coast_layer3.webp",
+    "y": 348,
+    "width": 1008,
+    "height": 274
+  }
+}

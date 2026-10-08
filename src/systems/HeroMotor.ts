@@ -17,6 +17,8 @@ export class HeroMotor {
   held = false;
   maxJumps: number;
   targetSpeed: number;
+  /** Максимум выносливости парения (база + улучшения), с. */
+  staminaMax: number;
 
   /** Флаги событий последнего шага; сбрасываются в начале update(). */
   justJumped = 0;
@@ -32,7 +34,7 @@ export class HeroMotor {
     private readonly groundY: number,
   ) {
     this.y = groundY;
-    this.stamina = glide.staminaSec;
+    this.stamina = this.staminaMax = glide.staminaSec;
     this.maxJumps = cfg.maxJumps;
     this.targetSpeed = Math.min(cfg.baseSpeed, cfg.maxSpeed);
     this.speed = this.targetSpeed;
@@ -43,7 +45,14 @@ export class HeroMotor {
   }
 
   get staminaRatio(): number {
-    return this.stamina / this.glide.staminaSec;
+    return this.stamina / this.staminaMax;
+  }
+
+  /** Улучшения героя: бонус скорости (с капом), дополнительные прыжки, выносливость. */
+  applyUpgrades(speedBonus: number, extraJumps: number, staminaBonusSec: number): void {
+    this.targetSpeed = Math.min(this.cfg.baseSpeed + speedBonus, this.cfg.maxSpeed);
+    this.maxJumps = this.cfg.maxJumps + extraJumps;
+    this.staminaMax = this.glide.staminaSec + staminaBonusSec;
   }
 
   press(): void {
@@ -105,7 +114,7 @@ export class HeroMotor {
     }
 
     if (this.grounded) {
-      this.stamina = Math.min(this.glide.staminaSec, this.stamina + this.glide.regenPerSec * dt);
+      this.stamina = Math.min(this.staminaMax, this.stamina + this.glide.regenPerSec * dt);
     }
   }
 

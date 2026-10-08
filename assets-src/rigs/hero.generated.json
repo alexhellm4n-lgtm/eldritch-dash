@@ -1,0 +1,43 @@
+{
+  "parts": [
+    {
+      "name": "wingBack",
+      "key": "hero_wing",
+      "x": -11,
+      "y": -71,
+      "ox": 0.62,
+      "oy": 0.05,
+      "shade": true
+    },
+    { "name": "wingFront", "key": "hero_wing", "x": -7, "y": -69, "ox": 0.62, "oy": 0.05 },
+    {
+      "name": "legBack",
+      "key": "hero_leg",
+      "x": -3,
+      "y": -46,
+      "ox": 0.42,
+      "oy": 0.03,
+      "shade": true
+    },
+    { "name": "legFront", "key": "hero_leg", "x": 3, "y": -46, "ox": 0.42, "oy": 0.03 },
+    { "name": "body", "key": "hero_body", "x": 2, "y": -77, "ox": 0.6, "oy": 0.03 },
+    { "name": "head", "key": "hero_head", "x": 3, "y": -73, "ox": 0.6, "oy": 0.96 },
+    { "name": "lantern", "key": "hero_lantern", "x": 0, "y": 0, "ox": 0.5, "oy": 0.04 },
+    { "name": "arm", "key": "hero_arm", "x": 2, "y": -68, "ox": 0.3, "oy": 0.06 },
+    { "name": "hand", "key": "hero_hand", "x": 0, "y": 0, "ox": 0.4, "oy": 0.08 }
+  ],
+  "handOffset": [7.8, 24.4],
+  "gripOffset": [1.8, 10.8],
+  "lanternGlowY": 16,
+  "poses": {
+    "wingFold": [-0.25, -0.1],
+    "wingRise": 0.35,
+    "wingFall": 0.6,
+    "wingGlide": [1.05, 1.35],
+    "wingStun": [-0.35, -0.2],
+    "armRun": -0.3,
+    "armAir": -0.7,
+    "armAttack": -1.35,
+    "armStun": 0.3
+  }
+}

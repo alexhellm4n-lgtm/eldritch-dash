@@ -1,0 +1,12 @@
+{
+  "src": "raw/gull_sheet_b.png",
+  "outDir": "public/assets/enemies",
+  "manifest": "src/render/enemyParts.json",
+  "unitsPerPx": 0.135,
+  "textureScale": 2,
+  "parts": {
+    "gull_body": { "seed": [1130, 400] },
+    "gull_wing": { "seed": [1150, 850] },
+    "gull_tentacle": { "seed": [1110, 1200] }
+  }
+}

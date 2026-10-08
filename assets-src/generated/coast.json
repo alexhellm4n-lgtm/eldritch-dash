@@ -1,0 +1,44 @@
+{
+  "outDir": "public/assets/bg",
+  "manifest": "src/render/backgrounds.json",
+  "layers": [
+    {
+      "key": "bg_coast_layer0",
+      "src": "raw/sky_a.png",
+      "height": 720,
+      "bottom": 720,
+      "chroma": false,
+      "blend": 0.12
+    },
+    {
+      "key": "bg_coast_layer1",
+      "src": "raw/far_a.png",
+      "height": 588,
+      "bottom": 640,
+      "chroma": true,
+      "blend": 0.1,
+      "glow": {
+        "rect": [1816, 130, 2650, 330],
+        "source": [1830, 215],
+        "color": "#FFE2A3",
+        "strength": 0.5
+      }
+    },
+    {
+      "key": "bg_coast_layer2",
+      "src": "raw/mid_a.png",
+      "height": 520,
+      "bottom": 650,
+      "chroma": true,
+      "blend": 0.12
+    },
+    {
+      "key": "bg_coast_layer3",
+      "src": "raw/near_a.png",
+      "height": 300,
+      "bottom": 622,
+      "chroma": true,
+      "blend": 0.04
+    }
+  ]
+}

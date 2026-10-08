@@ -1,0 +1,20 @@
+{
+  "gull_body": {
+    "file": "assets/enemies/gull_body.webp",
+    "scale": 2,
+    "width": 87,
+    "height": 66
+  },
+  "gull_wing": {
+    "file": "assets/enemies/gull_wing.webp",
+    "scale": 2,
+    "width": 56,
+    "height": 45.5
+  },
+  "gull_tentacle": {
+    "file": "assets/enemies/gull_tentacle.webp",
+    "scale": 2,
+    "width": 34.5,
+    "height": 48.5
+  }
+}

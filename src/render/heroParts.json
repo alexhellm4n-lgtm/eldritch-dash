@@ -1,0 +1,44 @@
+{
+  "hero_head": {
+    "file": "assets/hero/hero_head.webp",
+    "scale": 2,
+    "width": 41.5,
+    "height": 40.5
+  },
+  "hero_body": {
+    "file": "assets/hero/hero_body.webp",
+    "scale": 2,
+    "width": 32.5,
+    "height": 54
+  },
+  "hero_leg": {
+    "file": "assets/hero/hero_leg.webp",
+    "scale": 2,
+    "width": 20,
+    "height": 47
+  },
+  "hero_arm": {
+    "file": "assets/hero/hero_arm.webp",
+    "scale": 2,
+    "width": 18.5,
+    "height": 29
+  },
+  "hero_hand": {
+    "file": "assets/hero/hero_hand.webp",
+    "scale": 2,
+    "width": 12,
+    "height": 15
+  },
+  "hero_wing": {
+    "file": "assets/hero/hero_wing.webp",
+    "scale": 2,
+    "width": 43,
+    "height": 50.5
+  },
+  "hero_lantern": {
+    "file": "assets/hero/hero_lantern.webp",
+    "scale": 2,
+    "width": 16,
+    "height": 29
+  }
+}

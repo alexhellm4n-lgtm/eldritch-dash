@@ -1,8 +1,16 @@
 {
+  "startCoins": 0,
   "coin": {
     "baseValue": 1,
-    "radius": 16
+    "radius": 16,
+    "cpsFactor": 0.15
   },
+  "offline": {
+    "rate": 0.5,
+    "capSec": 14400,
+    "minSec": 30
+  },
+  "autosaveSec": 30,
   "combo": {
     "streakPerObstacle": 1,
     "streakPerKill": 1,

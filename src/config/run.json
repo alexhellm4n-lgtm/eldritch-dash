@@ -22,7 +22,8 @@
     "magnetRadius": 0,
     "magnetSpeed": 900,
     "obstacleStunSec": 1.0,
-    "enemyStunSec": 0.6
+    "enemyStunSec": 0.6,
+    "autoJumpLookaheadPx": 80
   },
   "glide": {
     "staminaSec": 1.5,

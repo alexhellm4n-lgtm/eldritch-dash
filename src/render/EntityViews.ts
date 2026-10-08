@@ -2,8 +2,9 @@ import type Phaser from 'phaser';
 import { juiceConfig } from '../config';
 import type { Entity } from '../systems/Entity';
 import { TentacleChain } from './CutoutRig';
+import gullRig from '../../assets-src/rigs/gull.generated.json';
 import { palette } from './palette';
-import { unitImage, unitScale } from './textures';
+import { isRaster, unitImage, unitScale } from './textures';
 
 /** Общий интерфейс отрисовки объекта трассы; экземпляры живут в пулах по типу. */
 export interface EntityView {
@@ -134,6 +135,66 @@ class GullView extends CreatureView {
   }
 }
 
+interface PartWing {
+  img: Phaser.GameObjects.Image;
+  base: number;
+  amp: number;
+  phase: number;
+}
+
+/** Чайка из сгенерированных частей: два машущих крыла, качающееся щупальце, зрачок в пустом глазу. */
+class GeneratedGullView extends CreatureView {
+  private readonly wings: PartWing[] = [];
+  private readonly tentacle: Phaser.GameObjects.Image;
+  private readonly tentacleUnit: number;
+  private readonly pupil: Phaser.GameObjects.Image;
+
+  constructor(scene: Phaser.Scene) {
+    super(scene);
+    const rig = gullRig;
+    const back: Phaser.GameObjects.Image[] = [];
+    const front: Phaser.GameObjects.Image[] = [];
+    for (const w of rig.wings) {
+      const img = unitImage(scene, 'gull_wing', w.x, w.y).setOrigin(w.ox, w.oy).setFlipX(w.flip);
+      if (w.shade) img.setTint(palette.farShade);
+      (w.behind ? back : front).push(img);
+      this.wings.push({ img, base: w.base, amp: w.amp, phase: w.phase });
+    }
+    const t = rig.tentacle;
+    this.tentacle = unitImage(scene, 'gull_tentacle', t.x, t.y).setOrigin(t.ox, t.oy);
+    this.tentacleUnit = this.tentacle.scaleX;
+    const body = unitImage(scene, 'gull_body').setOrigin(rig.body.ox, rig.body.oy);
+    this.pupil = unitImage(scene, 'pupil', rig.eye.x, rig.eye.y);
+    this.pupil.setScale(this.pupil.scaleX * rig.eye.pupilScale);
+    this.root.add([...back, this.tentacle, body, ...front, this.pupil]);
+  }
+
+  protected anchorY(): number {
+    return 0;
+  }
+
+  protected animate(e: Entity, time: number): void {
+    for (const w of this.wings) {
+      w.img.setRotation(w.base + w.amp * Math.sin(e.t * gullRig.flapFreq + w.phase));
+    }
+    const t = gullRig.tentacle;
+    const sway = Math.sin(time * t.freq + e.id);
+    this.tentacle
+      .setRotation(t.amp * sway)
+      .setScale(this.tentacleUnit, this.tentacleUnit * (1 + 0.06 * Math.cos(time * t.freq + e.id)));
+  }
+
+  override update(e: Entity, time: number, heroX: number, heroY: number): void {
+    super.update(e, time, heroX, heroY);
+    // Контейнер отражён по X: «к герою» в локальных координатах — это −(heroX − x).
+    const dx = -(heroX - e.x);
+    const dy = heroY - e.y;
+    const len = Math.hypot(dx, dy) || 1;
+    const r = gullRig.eye.range;
+    this.pupil.setPosition(gullRig.eye.x + (dx / len) * r, gullRig.eye.y + (dy / len) * r);
+  }
+}
+
 class SquidView extends CreatureView {
   private readonly mantle: Phaser.GameObjects.Image;
   private readonly tentacles: TentacleChain[] = [];
@@ -249,7 +310,7 @@ export function createEntityView(scene: Phaser.Scene, e: Entity): EntityView {
     case 'fishman':
       return new FishmanView(scene);
     case 'gull':
-      return new GullView(scene);
+      return isRaster('gull_body') ? new GeneratedGullView(scene) : new GullView(scene);
     case 'squidling':
       return new SquidView(scene);
     case 'walkingNet':

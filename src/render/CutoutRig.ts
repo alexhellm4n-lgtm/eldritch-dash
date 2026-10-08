@@ -41,6 +41,10 @@ export class CutoutRig {
     }
   }
 
+  has(name: string): boolean {
+    return this.parts.has(name);
+  }
+
   part(name: string): Phaser.GameObjects.Image {
     const p = this.parts.get(name);
     if (!p) throw new Error(`CutoutRig: нет части ${name}`);

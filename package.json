@@ -10,7 +10,10 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "lint": "eslint . && prettier --check .",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "bg": "node scripts/build-bg.ts",
+    "hero": "node scripts/build-parts.ts assets-src/generated/hero.json",
+    "enemies": "node scripts/build-parts.ts assets-src/generated/gull.json"
   },
   "dependencies": {
     "break_infinity.js": "^2.2.0",
@@ -22,6 +25,7 @@
     "eslint-config-prettier": "^10.1.8",
     "globals": "^17.13.0",
     "prettier": "^3.9.9",
+    "sharp": "^0.35.5",
     "typescript": "~6.0.3",
     "typescript-eslint": "^8.71.1",
     "vite": "^8.3.4",

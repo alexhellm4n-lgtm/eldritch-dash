@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
+import { app } from '../app';
 import { biomesConfig, juiceConfig, runConfig } from '../config';
-import { formatReward } from '../core/format';
+import { formatNumber } from '../core/BigNum';
 import { t } from '../i18n';
 import { createEntityView, viewKey, type EntityView } from '../render/EntityViews';
 import { HeroView } from '../render/HeroView';
@@ -33,6 +34,8 @@ export class RunScene extends Phaser.Scene {
     this.views.clear();
     this.pools.clear();
     this.sim = new RunSim({ seed: Math.floor(Math.random() * 2 ** 31), biome: BIOME });
+    const session = app().session;
+    session.attachRun(this.sim);
     this.parallax = new Parallax(this, BIOME, biomesConfig[BIOME]!, runConfig.world.groundY);
     this.heroView = new HeroView(this);
     this.heroView.container.setDepth(Depth.hero);
@@ -41,7 +44,10 @@ export class RunScene extends Phaser.Scene {
 
     this.bindInput();
     this.bindEvents();
-    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => this.sim.bus.clear());
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
+      session.detachRun();
+      this.sim.bus.clear();
+    });
 
     this.scene.launch('UIScene', { sim: this.sim });
   }
@@ -78,7 +84,7 @@ export class RunScene extends Phaser.Scene {
 
     bus.on('coin', (e) => {
       this.particles.coinBurst(e.x, e.y);
-      this.juice.popup(e.x, e.y - 18, `+${formatReward(e.value)}`, palette.lanternAmber, 20);
+      this.juice.popup(e.x, e.y - 18, `+${formatNumber(e.reward)}`, palette.lanternAmber, 20);
     });
     bus.on('kill', (e) => {
       this.particles.splat(e.x, e.y);
@@ -86,7 +92,7 @@ export class RunScene extends Phaser.Scene {
       this.juice.popup(
         e.x,
         e.y - e.h / 2 - 10,
-        `+${formatReward(e.value)}`,
+        `+${formatNumber(e.reward)}`,
         palette.lanternAmber,
         30,
       );
@@ -149,6 +155,8 @@ export class RunScene extends Phaser.Scene {
     const frozen = this.juice.hitStopLeft > 0;
     const dt = frozen ? 0 : deltaMs / 1000;
     if (!frozen) this.sim.update(dt);
+    // Пассивный доход идёт и во время hit-stop.
+    app().session.tick(deltaMs / 1000);
 
     const sim = this.sim;
     const hero = sim.hero;

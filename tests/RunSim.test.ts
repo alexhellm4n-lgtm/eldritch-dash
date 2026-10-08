@@ -30,7 +30,7 @@ describe('RunSim', () => {
   it('2 минуты активной игры: монеты, убийства, перепрыгнутые препятствия', () => {
     const sim = new RunSim({ seed: 42 });
     run(sim, 120, autopilot);
-    expect(sim.coins).toBeGreaterThan(100);
+    expect(sim.earned.toNumber()).toBeGreaterThan(100);
     expect(sim.stats.kills).toBeGreaterThan(10);
     expect(sim.stats.cleared).toBeGreaterThan(5);
     expect(sim.stats.cleared).toBeGreaterThan(sim.stats.stuns);
@@ -56,7 +56,7 @@ describe('RunSim', () => {
     const b = new RunSim({ seed: 123 });
     run(a, 30, autopilot);
     run(b, 30, autopilot);
-    expect(a.coins).toBe(b.coins);
+    expect(a.earned.toString()).toBe(b.earned.toString());
     expect(a.stats).toEqual(b.stats);
   });
 

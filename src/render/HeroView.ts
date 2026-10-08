@@ -1,10 +1,37 @@
 import Phaser from 'phaser';
-import heroRig from '../../assets-src/rigs/hero.json';
+import generatedRig from '../../assets-src/rigs/hero.generated.json';
+import placeholderRig from '../../assets-src/rigs/hero.json';
 import { juiceConfig } from '../config';
 import type { HeroMotor } from '../systems/HeroMotor';
-import { CutoutRig } from './CutoutRig';
+import { CutoutRig, type RigDef } from './CutoutRig';
 import { palette } from './palette';
-import { unitImage, unitScale } from './textures';
+import { isRaster, unitImage, unitScale } from './textures';
+
+/** Позы и точки крепления зависят от рисунка частей, поэтому живут в JSON рига. */
+interface HeroRigDef extends RigDef {
+  /** Плечо → запястье при повороте руки 0, игровые единицы. */
+  handOffset: readonly number[];
+  /** Запястье → точка хвата (где висит фонарь). */
+  gripOffset: readonly number[];
+  /** Центр стекла фонаря ниже его точки подвеса. */
+  lanternGlowY: number;
+  poses: {
+    wingFold: readonly number[];
+    wingRise: number;
+    wingFall: number;
+    wingGlide: readonly number[];
+    wingStun: readonly number[];
+    armRun: number;
+    armAir: number;
+    armAttack: number;
+    armStun: number;
+  };
+}
+
+/** Сгенерированные части загрузились — их риг, иначе риг SVG-плейсхолдеров. */
+function chooseRig(): HeroRigDef {
+  return isRaster('hero_head') ? generatedRig : placeholderRig;
+}
 
 const STUN_STARS = 3;
 /** Шаг фазы бега на пиксель пути (длина шага ~ 2π / STRIDE px). */
@@ -24,10 +51,14 @@ export class HeroView {
   private flashT = Infinity;
   private time = 0;
   private readonly bobbing: Phaser.GameObjects.Image[];
+  private readonly hand: Phaser.GameObjects.Image | null;
+  private readonly def: HeroRigDef;
 
   constructor(scene: Phaser.Scene) {
-    this.rig = new CutoutRig(scene, heroRig);
+    this.def = chooseRig();
+    this.rig = new CutoutRig(scene, this.def);
     const c = this.rig.container;
+    this.hand = this.rig.has('hand') ? this.rig.part('hand') : null;
     this.bobbing = ['legFront', 'legBack', 'arm', 'head', 'wingFront', 'wingBack', 'body'].map(
       (n) => this.rig.part(n),
     );
@@ -50,9 +81,9 @@ export class HeroView {
     }
 
     const barW = 54;
-    this.barBg = scene.add.rectangle(0, -126, barW, 8, palette.outline).setOrigin(0.5);
+    this.barBg = scene.add.rectangle(0, -136, barW, 8, palette.outline).setOrigin(0.5);
     this.barFill = scene.add
-      .rectangle(-barW / 2 + 2, -126, barW - 4, 4, palette.bioCyan)
+      .rectangle(-barW / 2 + 2, -136, barW - 4, 4, palette.bioCyan)
       .setOrigin(0, 0.5);
     c.add([this.barBg, this.barFill]);
   }
@@ -76,6 +107,7 @@ export class HeroView {
 
   update(hero: HeroMotor, x: number, dtSec: number): void {
     this.time += dtSec;
+    const pose = this.def.poses;
     this.attackT += dtSec;
     this.flashT += dtSec;
     const rig = this.rig;
@@ -98,7 +130,7 @@ export class HeroView {
     const wingF = rig.part('wingFront');
     const wingB = rig.part('wingBack');
     let bob = 0;
-    let armRot = -0.55;
+    let armRot = pose.armRun;
 
     if (hero.grounded && !hero.stunned) {
       this.phase += hero.speed * dtSec * STRIDE;
@@ -108,19 +140,19 @@ export class HeroView {
       armRot += 0.25 * Math.sin(this.phase + Math.PI);
       bob = -Math.abs(Math.cos(this.phase)) * 4;
       head.setRotation(0.05 * Math.sin(this.phase * 2));
-      wingF.setRotation(0.32 + 0.08 * s);
-      wingB.setRotation(0.45 + 0.08 * Math.sin(this.phase + 0.6));
+      wingF.setRotation(pose.wingFold[0]! + 0.08 * s);
+      wingB.setRotation(pose.wingFold[1]! + 0.08 * Math.sin(this.phase + 0.6));
     } else if (!hero.grounded) {
       legF.setRotation(-0.7);
       legB.setRotation(0.35);
-      armRot = -1.0;
+      armRot = pose.armAir;
       if (hero.gliding) {
         const flap = Math.sin(this.time * 16);
-        wingF.setRotation(1.85 + 0.22 * flap);
-        wingB.setRotation(2.2 + 0.22 * Math.sin(this.time * 16 + 0.5));
+        wingF.setRotation(pose.wingGlide[0]! + 0.22 * flap);
+        wingB.setRotation(pose.wingGlide[1]! + 0.22 * Math.sin(this.time * 16 + 0.5));
         head.setRotation(0.12);
       } else {
-        const open = hero.vy < 0 ? 0.9 : 1.2;
+        const open = hero.vy < 0 ? pose.wingRise : pose.wingFall;
         wingF.setRotation(open);
         wingB.setRotation(open + 0.3);
       }
@@ -128,29 +160,33 @@ export class HeroView {
 
     if (hero.stunned) {
       head.setRotation(0.3 * Math.sin(this.time * 18));
-      armRot = 0.2;
-      wingF.setRotation(0.2);
-      wingB.setRotation(0.3);
+      armRot = pose.armStun;
+      wingF.setRotation(pose.wingStun[0]!);
+      wingB.setRotation(pose.wingStun[1]!);
     }
 
     // Удар вспышкой: рука с фонарём резко вперёд и обратно.
     const attackSec = juiceConfig.flashMs / 1000;
     if (this.attackT < attackSec) {
       const k = Math.sin((this.attackT / attackSec) * Math.PI);
-      armRot = armRot * (1 - k) - 1.5 * k;
+      armRot = armRot * (1 - k) + pose.armAttack * k;
     }
     arm.setRotation(armRot);
 
     for (const p of this.bobbing) p.y += bob;
 
-    // Фонарь висит на кисти.
-    const handLen = heroRig.handLength;
+    // Кисть — на конце руки, фонарь висит в кисти.
+    const [wx, wy] = rotate(this.def.handOffset, armRot);
+    const hx = arm.x + wx;
+    const hy = arm.y + wy;
+    this.hand?.setPosition(hx, hy).setRotation(armRot);
+    const [gx, gy] = rotate(this.def.gripOffset, armRot);
     const lantern = rig.part('lantern');
-    const hx = arm.x - Math.sin(armRot) * handLen;
-    const hy = arm.y + Math.cos(armRot) * handLen;
-    lantern.setPosition(hx, hy).setRotation(0.15 * Math.sin(this.time * 3 + this.phase * 0.5));
-    const lanternCx = hx;
-    const lanternCy = hy + 22;
+    lantern
+      .setPosition(hx + gx, hy + gy)
+      .setRotation(0.15 * Math.sin(this.time * 3 + this.phase * 0.5));
+    const lanternCx = lantern.x;
+    const lanternCy = lantern.y + this.def.lanternGlowY;
 
     const flicker = 0.42 + 0.06 * Math.sin(this.time * 9) + 0.03 * Math.sin(this.time * 23);
     const glowUnit = unitScale('glow');
@@ -170,7 +206,7 @@ export class HeroView {
       s.setVisible(hero.stunned);
       if (!hero.stunned) continue;
       const a = this.time * 5 + (i * Math.PI * 2) / this.stars.length;
-      s.setPosition(8 + Math.cos(a) * 24, -112 + Math.sin(a) * 7).setRotation(a);
+      s.setPosition(6 + Math.cos(a) * 24, -124 + Math.sin(a) * 7).setRotation(a);
     }
 
     // Шкала парения видна, только когда выносливость не полная.
@@ -182,4 +218,13 @@ export class HeroView {
 
     c.setPosition(x, hero.y);
   }
+}
+
+/** Поворот вектора (dx, dy) на угол по часовой стрелке (ось Y вниз, как в Phaser). */
+function rotate(v: readonly number[], angle: number): [number, number] {
+  const dx = v[0] ?? 0;
+  const dy = v[1] ?? 0;
+  const c = Math.cos(angle);
+  const s = Math.sin(angle);
+  return [dx * c - dy * s, dx * s + dy * c];
 }

@@ -1,0 +1,32 @@
+{
+  "body": { "ox": 0.5, "oy": 0.5 },
+  "wings": [
+    {
+      "x": -5,
+      "y": -13,
+      "ox": 0.95,
+      "oy": 0.73,
+      "flip": true,
+      "shade": true,
+      "behind": true,
+      "base": 0.25,
+      "amp": 0.5,
+      "phase": 0.7
+    },
+    {
+      "x": -11,
+      "y": -9,
+      "ox": 0.95,
+      "oy": 0.73,
+      "flip": true,
+      "shade": false,
+      "behind": false,
+      "base": 0,
+      "amp": 0.55,
+      "phase": 0
+    }
+  ],
+  "flapFreq": 11,
+  "tentacle": { "x": -3, "y": 24, "ox": 0.16, "oy": 0.05, "amp": 0.25, "freq": 4 },
+  "eye": { "x": 16, "y": -20, "pupilScale": 0.7, "range": 1.8 }
+}

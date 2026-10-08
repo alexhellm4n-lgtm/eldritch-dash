@@ -18,6 +18,13 @@ export const palette = {
   spentShade: 0xb0a8c0,
   /** Пробитая броня. */
   crackedShade: 0xb89a8a,
+  /** Притемнение ближнего декора фона (читаемость геймплея). */
+  nearDecorShade: 0x9890ac,
+  // UI
+  parchmentShade: 0xcdb884,
+  parchmentLight: 0xf5ead0,
+  ink: 0x2b2238,
+  inkSoft: 0x5a4b6b,
 } as const;
 
 /**

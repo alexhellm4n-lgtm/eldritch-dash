@@ -7,7 +7,9 @@ import {
   type EconomyConfig,
   type EnemyConfig,
   type RunConfig,
+  type RunModifiers,
 } from '../config';
+import { bn, ZERO, type Decimal } from '../core/BigNum';
 import { EventBus } from '../core/EventBus';
 import { Combat, type HitResult } from './Combat';
 import { Combo } from './Combo';
@@ -73,8 +75,13 @@ export class RunSim {
     coinsPicked: 0,
   };
 
-  /** Дублоны за забег. До M2 (BigNum, экономика) — обычное число. */
-  coins = 0;
+  /** Номинал одной монеты; выставляет GameSession по CpS и улучшениям. */
+  coinValue: Decimal;
+  /** Дублоны, заработанные в этом забеге (зачисление в кошелёк — через события coin/kill). */
+  earned: Decimal = ZERO;
+  /** Автопрыжок через препятствия (позднее улучшение). */
+  autoJump = false;
+  magnetRadius: number;
   /** Пройденная дистанция с учётом всех rebase, px. */
   distancePx = 0;
   time = 0;
@@ -98,6 +105,8 @@ export class RunSim {
     this.combo = new Combo(this.economy.combo);
     this.combat = new Combat(attack, hero, this.enemyCfg);
     this.safeUntilX = biome.safeStartPx;
+    this.coinValue = bn(this.economy.coin.baseValue);
+    this.magnetRadius = hero.magnetRadius;
     this.track = new Track(
       biome,
       this.enemyCfg,
@@ -111,6 +120,13 @@ export class RunSim {
 
   get meters(): number {
     return this.distancePx / this.cfg.world.pxPerMeter;
+  }
+
+  applyModifiers(m: RunModifiers): void {
+    this.hero.applyUpgrades(m.speedBonus, m.extraJumps, m.staminaBonusSec);
+    this.combat.rangeMult = m.attackRangeMult;
+    this.magnetRadius = this.cfg.hero.magnetRadius + m.magnetRadius;
+    this.autoJump = m.autoJump > 0;
   }
 
   press(): void {
@@ -127,6 +143,7 @@ export class RunSim {
     this.time += dt;
 
     const hero = this.hero;
+    if (this.autoJump && hero.grounded && !hero.held) this.autoJumpCheck();
     const prevX = hero.x;
     hero.update(dt);
     this.distancePx += hero.x - prevX;
@@ -186,10 +203,10 @@ export class RunSim {
       let remove = e.x + e.w / 2 < despawnX;
 
       if (e.kind === 'coin') {
-        if (hcfg.magnetRadius > 0 && !e.magnet) {
+        if (this.magnetRadius > 0 && !e.magnet) {
           const dx = e.x - hx;
           const dy = e.y - hy;
-          e.magnet = dx * dx + dy * dy < hcfg.magnetRadius * hcfg.magnetRadius;
+          e.magnet = dx * dx + dy * dy < this.magnetRadius * this.magnetRadius;
         }
         if (e.magnet) {
           const dx = hx - e.x;
@@ -200,8 +217,7 @@ export class RunSim {
           e.y += (dy / len) * step;
         }
         if (overlaps(hx, hy, hcfg.width, hcfg.height, e.x, e.y, e.w, e.h)) {
-          e.value = this.economy.coin.baseValue * this.combo.multiplier;
-          this.coins += e.value;
+          this.reward(e, 1);
           this.stats.coinsPicked++;
           this.bus.emit('coin', e);
           remove = true;
@@ -232,12 +248,29 @@ export class RunSim {
       this.bus.emit('hurt', e);
       return;
     }
-    const cfg = this.enemyCfg[e.type];
-    e.value = (cfg?.coins ?? 0) * this.economy.coin.baseValue * this.combo.multiplier;
-    this.coins += e.value;
+    this.reward(e, this.enemyCfg[e.type]?.coins ?? 0);
     this.stats.kills++;
     this.combo.add(this.economy.combo.streakPerKill);
     this.bus.emit('kill', e);
+  }
+
+  /** Награда = номинал монеты × единицы × множитель серии. */
+  private reward(e: Entity, units: number): void {
+    e.reward = this.coinValue.mul(units * this.combo.multiplier);
+    this.earned = this.earned.add(e.reward);
+  }
+
+  private autoJumpCheck(): void {
+    const front = this.hero.x + this.cfg.hero.width / 2;
+    for (const e of this.entities) {
+      if (e.kind !== 'obstacle' || e.spent) continue;
+      const dist = e.x - e.w / 2 - front;
+      if (dist > 0 && dist < this.cfg.hero.autoJumpLookaheadPx) {
+        this.hero.press();
+        this.hero.release();
+        return;
+      }
+    }
   }
 
   private breakCombo(): void {
