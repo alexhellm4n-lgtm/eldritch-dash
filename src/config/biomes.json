@@ -1,0 +1,34 @@
+{
+  "coast": {
+    "safeStartPx": 900,
+    "gapPx": [200, 460],
+    "minHazardGapPx": 420,
+    "patternWeights": {
+      "coinsGround": 3,
+      "coinsSky": 2,
+      "obstacle": 3,
+      "enemy": 4
+    },
+    "enemyWeights": {
+      "fishman": 4,
+      "gull": 2,
+      "squidling": 2,
+      "walkingNet": 1
+    },
+    "obstacleWeights": {
+      "barrel": 3,
+      "coral": 2,
+      "netPile": 2
+    },
+    "obstacles": {
+      "barrel": { "width": 64, "height": 76 },
+      "coral": { "width": 78, "height": 96 },
+      "netPile": { "width": 112, "height": 48 }
+    },
+    "coinsGround": { "count": [4, 9], "spacing": 52, "height": 38 },
+    "coinsSky": { "count": [5, 9], "spacing": 52, "baseHeight": 150, "arcHeight": 110 },
+    "obstacleArc": { "chance": 0.6, "count": 5, "spacing": 48, "clearance": 70, "arcHeight": 70 },
+    "parallax": [0.03, 0.12, 0.3, 0.6],
+    "fogDriftPxPerSec": 18
+  }
+}

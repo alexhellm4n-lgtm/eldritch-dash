@@ -1,0 +1,18 @@
+{
+  "coin": {
+    "baseValue": 1,
+    "radius": 16
+  },
+  "combo": {
+    "streakPerObstacle": 1,
+    "streakPerKill": 1,
+    "maxMultiplier": 2,
+    "steps": [
+      { "streak": 0, "multiplier": 1 },
+      { "streak": 5, "multiplier": 1.25 },
+      { "streak": 12, "multiplier": 1.5 },
+      { "streak": 25, "multiplier": 1.75 },
+      { "streak": 40, "multiplier": 2 }
+    ]
+  }
+}

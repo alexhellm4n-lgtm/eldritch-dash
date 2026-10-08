@@ -1,0 +1,15 @@
+{
+  "hitStopMs": 35,
+  "shake": {
+    "kill": { "ms": 70, "intensity": 0.003 },
+    "armorHit": { "ms": 90, "intensity": 0.005 },
+    "stun": { "ms": 220, "intensity": 0.009 }
+  },
+  "popup": { "risePx": 46, "ms": 650, "poolSize": 24 },
+  "squash": { "jumpMs": 90, "landMs": 130, "amount": 0.18 },
+  "stretch": { "perVelocity": 0.00012, "max": 0.14 },
+  "particles": { "coin": 6, "kill": 14, "dust": 6, "drops": 8 },
+  "coinSpinPerSec": 4,
+  "flashMs": 160,
+  "textureScale": 2
+}

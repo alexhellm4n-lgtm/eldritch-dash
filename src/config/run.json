@@ -1,0 +1,39 @@
+{
+  "maxStepSec": 0.05,
+  "world": {
+    "groundY": 610,
+    "pxPerMeter": 50,
+    "rebaseAtPx": 200000,
+    "spawnAheadPx": 1700,
+    "despawnBehindPx": 500
+  },
+  "hero": {
+    "screenX": 300,
+    "width": 56,
+    "height": 104,
+    "baseSpeed": 400,
+    "maxSpeed": 900,
+    "accel": 1000,
+    "gravity": 3200,
+    "jumpVelocity": 1250,
+    "airJumpVelocity": 1050,
+    "maxJumps": 1,
+    "jumpBufferSec": 0.12,
+    "magnetRadius": 0,
+    "magnetSpeed": 900,
+    "obstacleStunSec": 1.0,
+    "enemyStunSec": 0.6
+  },
+  "glide": {
+    "staminaSec": 1.5,
+    "regenPerSec": 1.2,
+    "gravity": 450,
+    "maxFallSpeed": 90
+  },
+  "attack": {
+    "range": 150,
+    "height": 150,
+    "reachBehind": 10,
+    "cooldownSec": 0.25
+  }
+}

@@ -1,5 +1,12 @@
 {
   "game.title": "Eldritch Dash",
   "game.subtitle": "A Dash Through the Abyss",
-  "boot.placeholder": "Scaffold ready. The run begins soon."
+  "loading": "Opening the forbidden book…",
+  "hud.distance": "{value} m",
+  "hud.combo": "Streak {streak} · ×{mult}",
+  "hint.jump": "Tap, click or Space — jump",
+  "hint.glide": "Hold in the air — glide on your wings",
+  "popup.cleared": "Clean!",
+  "popup.comboBroken": "Streak lost",
+  "popup.stun": "Oof!"
 }

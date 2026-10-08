@@ -1,0 +1,29 @@
+{
+  "parts": [
+    {
+      "name": "wingBack",
+      "key": "hero_wing",
+      "x": -10,
+      "y": -64,
+      "ox": 0.4,
+      "oy": 0.06,
+      "shade": true
+    },
+    { "name": "wingFront", "key": "hero_wing", "x": -4, "y": -62, "ox": 0.4, "oy": 0.06 },
+    {
+      "name": "legBack",
+      "key": "hero_leg",
+      "x": -6,
+      "y": -26,
+      "ox": 0.45,
+      "oy": 0.08,
+      "shade": true
+    },
+    { "name": "legFront", "key": "hero_leg", "x": 5, "y": -26, "ox": 0.45, "oy": 0.08 },
+    { "name": "body", "key": "hero_body", "x": 0, "y": -20, "ox": 0.5, "oy": 1 },
+    { "name": "head", "key": "hero_head", "x": 3, "y": -60, "ox": 0.45, "oy": 0.88 },
+    { "name": "lantern", "key": "hero_lantern", "x": 0, "y": 0, "ox": 0.5, "oy": 0.05 },
+    { "name": "arm", "key": "hero_arm", "x": 9, "y": -58, "ox": 0.5, "oy": 0.08 }
+  ],
+  "handLength": 25
+}

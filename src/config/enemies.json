@@ -1,0 +1,40 @@
+{
+  "fishman": {
+    "behavior": "walker",
+    "hp": 1,
+    "width": 70,
+    "height": 112,
+    "speed": 60,
+    "coins": 3
+  },
+  "gull": {
+    "behavior": "flyer",
+    "hp": 1,
+    "width": 84,
+    "height": 50,
+    "speed": 140,
+    "altitude": 270,
+    "bobAmp": 20,
+    "bobFreq": 0.9,
+    "coins": 5
+  },
+  "squidling": {
+    "behavior": "hopper",
+    "hp": 1,
+    "width": 64,
+    "height": 64,
+    "speed": 0,
+    "hopHeight": 200,
+    "hopPeriodSec": 1.2,
+    "coins": 4
+  },
+  "walkingNet": {
+    "behavior": "walker",
+    "hp": 2,
+    "width": 92,
+    "height": 100,
+    "speed": 40,
+    "knockback": 160,
+    "coins": 8
+  }
+}

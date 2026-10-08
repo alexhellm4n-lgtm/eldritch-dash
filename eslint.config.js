@@ -11,6 +11,8 @@ export default tseslint.config(
     languageOptions: { globals: { ...globals.browser } },
     rules: {
       '@typescript-eslint/consistent-type-imports': 'error',
+      // С noUncheckedIndexedAccess `arr[i]!` в горячих циклах — осознанная идиома.
+      '@typescript-eslint/no-non-null-assertion': 'off',
     },
   },
   {

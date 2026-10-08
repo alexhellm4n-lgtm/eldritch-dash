@@ -1,5 +1,12 @@
 {
   "game.title": "Eldritch Dash",
   "game.subtitle": "Бег сквозь Бездну",
-  "boot.placeholder": "Каркас готов. Скоро здесь начнётся забег."
+  "loading": "Открываем запретную книгу…",
+  "hud.distance": "{value} м",
+  "hud.combo": "Серия {streak} · ×{mult}",
+  "hint.jump": "Нажми, кликни или пробел — прыжок",
+  "hint.glide": "Удерживай в воздухе — парение на крыльях",
+  "popup.cleared": "Чисто!",
+  "popup.comboBroken": "Серия прервана",
+  "popup.stun": "Ой!"
 }
