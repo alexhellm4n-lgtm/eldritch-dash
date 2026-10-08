@@ -50,6 +50,17 @@ export function enemyArt(): PlaceholderArt[] {
       `,
     ),
 
+    // Нога ходячей сети: верёвочная.
+    art(
+      'net_leg',
+      22,
+      30,
+      `
+      <rect x="6" y="2" width="10" height="18" rx="4" fill="${c.rope}" ${stroke(3)}/>
+      <path d="M2 26 Q4 18 11 18 Q20 18 21 26 Q16 23 13 27 Q10 23 6 27 Q4 24 2 26 Z" fill="${c.ropeShade}" ${stroke(3)}/>
+      `,
+    ),
+
     // Чайка с щупальцем
     art(
       'gull_body',

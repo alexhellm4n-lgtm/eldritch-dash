@@ -1,0 +1,33 @@
+{
+  "src": "raw/ui_b.png",
+  "outDir": "public/assets/ui",
+  "manifest": "src/render/uiParts.json",
+  "unitsPerPx": 0.3,
+  "textureScale": 2,
+  "parts": {
+    "ui_panel": {
+      "seed": [430, 550],
+      "fitHeight": 300
+    },
+    "ui_button": {
+      "seed": [1150, 541],
+      "fitHeight": 60
+    },
+    "ui_badge": {
+      "seed": [276, 1250],
+      "fitHeight": 56
+    },
+    "ui_pouch": {
+      "seed": [733, 1250],
+      "fitHeight": 40
+    },
+    "ui_close": {
+      "seed": [1188, 1082],
+      "fitHeight": 28
+    },
+    "ui_plate": {
+      "seed": [1190, 1350],
+      "fitHeight": 70
+    }
+  }
+}

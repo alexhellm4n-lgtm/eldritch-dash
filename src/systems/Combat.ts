@@ -12,6 +12,8 @@ export class Combat {
   cooldownLeft = 0;
   /** Сработала ли вспышка на последнем шаге. */
   flashed = false;
+  /** Первая тварь, задетая вспышкой на последнем шаге (для визуального выстрела). */
+  firstHit: Entity | null = null;
   /** Множитель радиуса вспышки (улучшение «радиус фонаря»). */
   rangeMult = 1;
 
@@ -59,6 +61,7 @@ export class Combat {
     onHit: (e: Entity, result: HitResult) => void,
   ): boolean {
     this.flashed = false;
+    this.firstHit = null;
     this.cooldownLeft = Math.max(0, this.cooldownLeft - dt);
     if (this.cooldownLeft > 0) return false;
 
@@ -66,6 +69,7 @@ export class Combat {
       const e = enemies[i]!;
       if (e.kind !== 'enemy' || e.spent || e.hp <= 0 || !this.inZone(hero, e)) continue;
       this.flashed = true;
+      this.firstHit ??= e;
       e.hp--;
       e.hurtT = 0;
       if (e.hp <= 0) {

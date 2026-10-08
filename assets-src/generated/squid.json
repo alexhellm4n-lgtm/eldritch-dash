@@ -1,0 +1,15 @@
+{
+  "src": "raw/squid_sheet_a.png",
+  "outDir": "public/assets/enemies",
+  "manifest": "src/render/enemyParts.json",
+  "textureScale": 2,
+  "unitsPerPx": 0.13,
+  "parts": {
+    "squid_mantle": {
+      "seed": [1000, 450]
+    },
+    "squid_tentacle": {
+      "seed": [1108, 950]
+    }
+  }
+}

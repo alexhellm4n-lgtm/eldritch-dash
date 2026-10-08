@@ -95,5 +95,29 @@ export function propArt(): PlaceholderArt[] {
       `<path d="M10 1 L12.6 7 L19 7.6 L14 11.8 L15.6 18.4 L10 14.8 L4.4 18.4 L6 11.8 L1 7.6 L7.4 7 Z" fill="${c.amberLight}" ${stroke(2)}/>`,
     ),
     art('pixel', 4, 4, `<rect width="4" height="4" fill="#fff"/>`),
+    // Выстрел фонаря (плейсхолдеры для растровых fx_*): вспышка, луч, всплеск.
+    art(
+      'fx_muzzle',
+      72,
+      72,
+      `<path d="M36 0 L42 30 L72 36 L42 42 L36 72 L30 42 L0 36 L30 30 Z" fill="${c.amberLight}"/>
+       <circle cx="36" cy="36" r="9" fill="${c.white}"/>`,
+    ),
+    art(
+      'fx_bolt',
+      78,
+      36,
+      `<defs><linearGradient id="b" x1="0" x2="1"><stop offset="0" stop-color="${c.amber}" stop-opacity="0"/>
+       <stop offset="1" stop-color="${c.amberLight}"/></linearGradient></defs>
+       <path d="M0 18 Q50 6 72 10 Q80 18 72 26 Q50 30 0 18 Z" fill="url(#b)"/>
+       <ellipse cx="68" cy="18" rx="7" ry="5" fill="${c.white}"/>`,
+    ),
+    art(
+      'fx_impact',
+      84,
+      84,
+      `<circle cx="42" cy="42" r="30" fill="none" stroke="${c.amberLight}" stroke-width="6"/>
+       <circle cx="42" cy="42" r="10" fill="${c.white}"/>`,
+    ),
   ];
 }

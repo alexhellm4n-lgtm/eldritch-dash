@@ -21,6 +21,12 @@ interface LayerSpec {
   /** Ширина зоны сведения краёв, доля ширины. */
   blend: number;
   /**
+   * Для полос вроде земли: высота слоя после обрезки пустого верха (в игровых единицах)
+   * и где в кадре окажется его верхний край. Заменяют height/bottom.
+   */
+  fitTrimmed?: number;
+  top?: number;
+  /**
    * Цвет, в который перекрашиваются полупрозрачные пиксели (с сохранением яркости).
    * Нужен, когда генератор рисует свечение розоватым переходом в фон, а не честной прозрачностью.
    */
@@ -199,7 +205,7 @@ async function buildLayer(spec: Spec, layer: LayerSpec, baseDir: string) {
 
   // Пустой верх не храним: экономим память GPU, сдвиг учитываем в манифесте.
   const top = layer.chroma ? Math.max(0, firstOpaqueRow(pixels, srcW, srcH) - 4) : 0;
-  const scale = layer.height / srcH;
+  const scale = layer.fitTrimmed ? layer.fitTrimmed / (srcH - top) : layer.height / srcH;
   const outH = Math.round((srcH - top) * scale);
   const outW = Math.round(srcW * scale);
 
@@ -216,7 +222,7 @@ async function buildLayer(spec: Spec, layer: LayerSpec, baseDir: string) {
     .webp({ quality: 88, alphaQuality: 90, effort: 6 })
     .toFile(file);
 
-  const y = layer.bottom - outH;
+  const y = layer.top ?? layer.bottom - outH;
   console.log(`${layer.key}: ${seamless.w}×${outH} at y=${y} → ${file}`);
   return { file: relative('public', file).replace(/\\/g, '/'), y, width: seamless.w, height: outH };
 }

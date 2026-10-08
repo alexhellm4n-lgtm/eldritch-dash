@@ -6,6 +6,7 @@ import { t } from '../i18n';
 import { createEntityView, viewKey, type EntityView } from '../render/EntityViews';
 import { HeroView } from '../render/HeroView';
 import { Juice } from '../render/Juice';
+import { LanternFx } from '../render/LanternFx';
 import { Depth, Parallax } from '../render/Parallax';
 import { Particles } from '../render/Particles';
 import { palette } from '../render/palette';
@@ -23,6 +24,7 @@ export class RunScene extends Phaser.Scene {
   private parallax!: Parallax;
   private particles!: Particles;
   private juice!: Juice;
+  private lanternFx!: LanternFx;
   private readonly views = new Map<Entity, EntityView>();
   private readonly pools = new Map<string, EntityView[]>();
 
@@ -41,6 +43,7 @@ export class RunScene extends Phaser.Scene {
     this.heroView.container.setDepth(Depth.hero);
     this.particles = new Particles(this);
     this.juice = new Juice(this);
+    this.lanternFx = new LanternFx(this);
 
     this.bindInput();
     this.bindEvents();
@@ -103,7 +106,11 @@ export class RunScene extends Phaser.Scene {
       this.particles.splat(e.x, e.y);
       this.juice.shake(juiceConfig.shake.armorHit);
     });
-    bus.on('flash', () => this.heroView.onFlash());
+    bus.on('flash', (target) => {
+      this.heroView.onFlash();
+      const from = this.heroView.lanternWorld();
+      this.lanternFx.fire(from.x, from.y, target.x, target.y);
+    });
     bus.on('jump', () => {
       this.heroView.onJump();
       this.particles.dustPuff(sim().hero.x, sim().hero.y);
@@ -126,6 +133,7 @@ export class RunScene extends Phaser.Scene {
     });
     bus.on('rebase', (dx) => {
       this.particles.shift(dx);
+      this.lanternFx.shift(dx);
       this.juice.shift(dx);
     });
   }
@@ -163,6 +171,8 @@ export class RunScene extends Phaser.Scene {
     this.cameras.main.scrollX = hero.x - runConfig.hero.screenX;
     this.parallax.update(sim.distancePx, dt);
     this.heroView.update(hero, hero.x, dt);
+    const lantern = this.heroView.lanternWorld();
+    this.lanternFx.update(dt, lantern.x, lantern.y);
 
     const heroCy = hero.y - runConfig.hero.height / 2;
     for (const e of sim.entities) this.views.get(e)?.update(e, sim.time, hero.x, heroCy);

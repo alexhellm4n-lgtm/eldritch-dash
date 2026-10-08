@@ -53,6 +53,9 @@ export class HeroView {
   private readonly bobbing: Phaser.GameObjects.Image[];
   private readonly hand: Phaser.GameObjects.Image | null;
   private readonly def: HeroRigDef;
+  private lanternLocalX = 0;
+  private lanternLocalY = 0;
+  private readonly lanternPos = { x: 0, y: 0 };
 
   constructor(scene: Phaser.Scene) {
     this.def = chooseRig();
@@ -90,6 +93,14 @@ export class HeroView {
 
   get container(): Phaser.GameObjects.Container {
     return this.rig.container;
+  }
+
+  /** Центр стекла фонаря в мировых координатах (для выстрела). */
+  lanternWorld(): Readonly<{ x: number; y: number }> {
+    const c = this.rig.container;
+    this.lanternPos.x = c.x + this.lanternLocalX * c.scaleX;
+    this.lanternPos.y = c.y + this.lanternLocalY * c.scaleY;
+    return this.lanternPos;
   }
 
   onJump(): void {
@@ -187,6 +198,8 @@ export class HeroView {
       .setRotation(0.15 * Math.sin(this.time * 3 + this.phase * 0.5));
     const lanternCx = lantern.x;
     const lanternCy = lantern.y + this.def.lanternGlowY;
+    this.lanternLocalX = lanternCx;
+    this.lanternLocalY = lanternCy;
 
     const flicker = 0.42 + 0.06 * Math.sin(this.time * 9) + 0.03 * Math.sin(this.time * 23);
     const glowUnit = unitScale('glow');
@@ -197,7 +210,7 @@ export class HeroView {
     const flashK = Math.max(0, 1 - this.flashT / attackSec);
     this.flash
       .setPosition(lanternCx + 30, lanternCy)
-      .setAlpha(flashK * 0.9)
+      .setAlpha(flashK * 0.5)
       .setScale((1 + 2.2 * (1 - flashK)) * glowUnit);
 
     // Звёздочки над головой при оглушении.

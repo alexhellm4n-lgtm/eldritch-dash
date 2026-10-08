@@ -25,7 +25,8 @@ export interface RunEvents {
   coin: Entity;
   kill: Entity;
   hurt: Entity;
-  flash: undefined;
+  /** Вспышка фонаря; полезная нагрузка — первая задетая тварь. */
+  flash: Entity;
   /** Номер прыжка в серии: 1 — с земли, 2+ — в воздухе. */
   jump: number;
   land: undefined;
@@ -160,7 +161,9 @@ export class RunSim {
 
     for (let i = 0; i < this.entities.length; i++) this.move(this.entities[i]!, dt);
 
-    if (this.combat.update(dt, hero, this.entities, this.onHit)) this.bus.emit('flash', undefined);
+    if (this.combat.update(dt, hero, this.entities, this.onHit) && this.combat.firstHit) {
+      this.bus.emit('flash', this.combat.firstHit);
+    }
 
     this.collide(dt);
 

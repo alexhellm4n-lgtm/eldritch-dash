@@ -1,0 +1,38 @@
+{
+  "ui_panel": {
+    "file": "assets/ui/ui_panel.webp",
+    "scale": 2,
+    "width": 241,
+    "height": 300
+  },
+  "ui_button": {
+    "file": "assets/ui/ui_button.webp",
+    "scale": 2,
+    "width": 154.5,
+    "height": 60
+  },
+  "ui_badge": {
+    "file": "assets/ui/ui_badge.webp",
+    "scale": 2,
+    "width": 47,
+    "height": 56
+  },
+  "ui_pouch": {
+    "file": "assets/ui/ui_pouch.webp",
+    "scale": 2,
+    "width": 34.5,
+    "height": 40
+  },
+  "ui_close": {
+    "file": "assets/ui/ui_close.webp",
+    "scale": 2,
+    "width": 29,
+    "height": 28
+  },
+  "ui_plate": {
+    "file": "assets/ui/ui_plate.webp",
+    "scale": 2,
+    "width": 183.5,
+    "height": 70
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "src": "raw/fx_light_a.png",
+  "outDir": "public/assets/fx",
+  "manifest": "src/render/fxParts.json",
+  "unitsPerPx": 0.1,
+  "textureScale": 2,
+  "keyMode": "luma",
+  "parts": {
+    "fx_muzzle": {
+      "box": [92, 79, 708, 719],
+      "fitHeight": 72
+    },
+    "fx_impact": {
+      "box": [97, 835, 707, 1449],
+      "fitHeight": 84
+    },
+    "glow": {
+      "box": [858, 858, 1425, 1438],
+      "fitHeight": 128
+    }
+  }
+}

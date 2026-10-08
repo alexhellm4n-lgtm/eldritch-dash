@@ -4,7 +4,7 @@ import display from '../config/display.json';
 import { formatNumber } from '../core/BigNum';
 import { t, tId } from '../i18n';
 import { palette, toCss } from '../render/palette';
-import { Button, drawPanel } from '../render/ui/Button';
+import { addPanel, Button } from '../render/ui/Button';
 import type { BuyAmount } from '../systems/Economy';
 import type { GameSession } from '../systems/GameSession';
 
@@ -12,11 +12,14 @@ const PANEL_W = 640;
 const PANEL_H = display.height - 24;
 const OPEN_X = display.width - PANEL_W - 12;
 const CLOSED_X = display.width + 24;
-const PAD = 24;
+/** Внутренний отступ: рамка из щупалец шире прежней обводки. */
+const PAD = 40;
+const HEADER_Y = 54;
+const TABS_Y = 106;
 const ROW_W = PANEL_W - PAD * 2;
-const ROW_H = 64;
+const ROW_H = 60;
 const ROW_GAP = 4;
-const ROWS_Y = 130;
+const ROWS_Y = 138;
 const BUY_W = 176;
 const SLIDE_MS = 220;
 const AMOUNTS: readonly BuyAmount[] = [1, 10, 100, 'max'];
@@ -73,15 +76,14 @@ export class ShopOverlay extends Phaser.Scene {
     this.isOpen = false;
 
     this.panel = this.add.container(CLOSED_X, 12).setVisible(false);
-    const bg = this.add.graphics();
-    drawPanel(bg, 0, 0, PANEL_W, PANEL_H);
+    const bg = addPanel(this, 0, 0, PANEL_W, PANEL_H);
     // Фон панели перехватывает клики, чтобы они не превращались в прыжки.
     const blocker = this.add.zone(0, 0, PANEL_W, PANEL_H).setOrigin(0).setInteractive();
     this.panel.add([bg, blocker]);
 
     this.panel.add(
       this.add
-        .text(PAD, 34, t('shop.title'), {
+        .text(PAD, HEADER_Y, t('shop.title'), {
           fontFamily: 'Georgia, serif',
           fontSize: '30px',
           fontStyle: 'bold',
@@ -89,9 +91,11 @@ export class ShopOverlay extends Phaser.Scene {
         })
         .setOrigin(0, 0.5),
     );
-    const close = new Button(this, PANEL_W - 40, 34, 48, 48, '✕', {
+    const close = new Button(this, PANEL_W - PAD - 18, HEADER_Y, 48, 48, '✕', {
       fill: palette.parchmentShade,
       fontSize: 24,
+      icon: 'ui_close',
+      badge: true,
     }).onClick(() => this.close());
     this.panel.add(close);
 
@@ -100,9 +104,9 @@ export class ShopOverlay extends Phaser.Scene {
       ['hero', t('shop.tab.hero')],
     ];
     tabs.forEach(([id, label], i) => {
-      const b = new Button(this, PAD + 80 + i * 168, 92, 160, 46, label, { fontSize: 19 }).onClick(
-        () => this.setTab(id),
-      );
+      const b = new Button(this, PAD + 75 + i * 158, TABS_Y, 150, 46, label, {
+        fontSize: 17,
+      }).onClick(() => this.setTab(id));
       this.tabButtons.set(id, b);
       this.panel.add(b);
     });
@@ -111,13 +115,13 @@ export class ShopOverlay extends Phaser.Scene {
       const label = a === 'max' ? t('shop.max') : `×${a}`;
       const b = new Button(
         this,
-        PANEL_W - PAD - 30 - (AMOUNTS.length - 1 - i) * 66,
-        92,
+        PANEL_W - PAD - 30 - (AMOUNTS.length - 1 - i) * 62,
+        TABS_Y,
         60,
         46,
         label,
         {
-          fontSize: 18,
+          fontSize: 15,
         },
       ).onClick(() => this.setAmount(a));
       this.amountButtons.set(a, b);

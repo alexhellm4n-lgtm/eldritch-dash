@@ -6,7 +6,7 @@ import { formatNumber } from '../core/BigNum';
 import { formatDuration, t } from '../i18n';
 import { palette, toCss } from '../render/palette';
 import { unitImage, unitScale } from '../render/textures';
-import { Button, drawPanel } from '../render/ui/Button';
+import { addPanel, addPlate, Button } from '../render/ui/Button';
 import type { GameSession } from '../systems/GameSession';
 import type { OfflineReport } from '../systems/Offline';
 import type { RunSim } from '../systems/RunSim';
@@ -51,6 +51,8 @@ export class UIScene extends Phaser.Scene {
 
   create(): void {
     const title = { fontFamily: 'Georgia, serif', stroke: toCss(palette.outline) };
+    // Плашка под кошельком и доходом в секунду.
+    addPlate(this, MARGIN - 14, MARGIN - 16, 300, 112);
     this.coinIcon = unitImage(this, 'coin', MARGIN + 20, MARGIN + 22).setScale(
       unitScale('coin') * 1.3,
     );
@@ -108,7 +110,7 @@ export class UIScene extends Phaser.Scene {
       160,
       60,
       t('hud.shop'),
-      { fontSize: 24 },
+      { fontSize: 24, icon: 'ui_pouch' },
     ).onClick(() => this.shop().toggle());
 
     this.scene.launch('ShopOverlay');
@@ -200,8 +202,8 @@ export class UIScene extends Phaser.Scene {
       return;
     }
 
-    const W = 600;
-    const H = 330;
+    const W = 640;
+    const H = 370;
     const cx = display.width / 2;
     const cy = display.height / 2;
     const ink = toCss(palette.ink);
@@ -210,8 +212,7 @@ export class UIScene extends Phaser.Scene {
       .rectangle(0, 0, display.width, display.height, palette.nightSky, 0.6)
       .setOrigin(0)
       .setInteractive();
-    const g = this.add.graphics();
-    drawPanel(g, cx - W / 2, cy - H / 2, W, H);
+    const g = addPanel(this, cx - W / 2, cy - H / 2, W, H);
     const heading = this.add
       .text(cx, cy - 118, t('offline.title'), {
         fontFamily: 'Georgia, serif',

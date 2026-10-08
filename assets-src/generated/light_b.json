@@ -1,0 +1,14 @@
+{
+  "src": "raw/fx_light_b.png",
+  "outDir": "public/assets/fx",
+  "manifest": "src/render/fxParts.json",
+  "unitsPerPx": 0.1,
+  "textureScale": 2,
+  "keyMode": "luma",
+  "parts": {
+    "fx_bolt": {
+      "box": [768, 273, 1481, 597],
+      "fitHeight": 36
+    }
+  }
+}

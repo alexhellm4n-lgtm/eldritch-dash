@@ -1,6 +1,9 @@
 import backgrounds from './backgrounds.json';
 import enemyParts from './enemyParts.json';
 import heroParts from './heroParts.json';
+import fxParts from './fxParts.json';
+import propParts from './propParts.json';
+import uiParts from './uiParts.json';
 
 /** Растровый ассет, собранный скриптами из `scripts/` (пути относительно `public/`). */
 export interface RasterAsset {
@@ -40,8 +43,19 @@ export function rasterGroups(): string[][] {
     byCreature.set(creature, [...(byCreature.get(creature) ?? []), key]);
   }
   groups.push(...byCreature.values());
+  // Предметы независимы: каждый откатывается сам по себе.
+  groups.push(...Object.keys(propPartAssets).map((k) => [k]));
+  groups.push(...Object.keys(fxPartAssets).map((k) => [k]));
+  groups.push(...Object.keys(uiPartAssets).map((k) => [k]));
   return groups.filter((g) => g.length > 0);
 }
+
+/** Ключ текстуры → предмет трассы: препятствия, монета (scripts/build-parts.ts). */
+export const propPartAssets: Readonly<Record<string, RasterAsset>> = propParts;
+
+/** Частицы и световые эффекты; элементы интерфейса (scripts/build-parts.ts). */
+export const fxPartAssets: Readonly<Record<string, RasterAsset>> = fxParts;
+export const uiPartAssets: Readonly<Record<string, RasterAsset>> = uiParts;
 
 /** Все растровые замены плейсхолдеров. */
 export function rasterOverrides(): Record<string, RasterAsset> {
@@ -49,5 +63,8 @@ export function rasterOverrides(): Record<string, RasterAsset> {
   for (const [key, a] of Object.entries(backgroundAssets)) out[key] = { file: a.file, scale: 1 };
   for (const [key, a] of Object.entries(heroPartAssets)) out[key] = a;
   for (const [key, a] of Object.entries(enemyPartAssets)) out[key] = a;
+  for (const [key, a] of Object.entries(propPartAssets)) out[key] = a;
+  for (const [key, a] of Object.entries(fxPartAssets)) out[key] = a;
+  for (const [key, a] of Object.entries(uiPartAssets)) out[key] = a;
   return out;
 }

@@ -1,11 +1,17 @@
 import Phaser from 'phaser';
 import { palette, toCss } from '../palette';
+import { isRaster, unitScale } from '../textures';
+import skin from './skin.json';
 
 export interface ButtonStyle {
   fill: number;
   textColor: number;
   fontSize: number;
   radius: number;
+  /** Иконка (ключ текстуры) — показывается, если растровая текстура загрузилась. */
+  icon?: string;
+  /** Круглый значок вместо таблички (для квадратных кнопок-иконок). */
+  badge?: boolean;
 }
 
 const DEFAULT_STYLE: ButtonStyle = {
@@ -17,14 +23,21 @@ const DEFAULT_STYLE: ButtonStyle = {
 
 /** Минимальная сторона кликабельной зоны на мобильных (SPEC §10). */
 export const MIN_TOUCH = 44;
+/** Насколько «проседает» нажатая кнопка. */
+const SINK = 3;
+const DISABLED_TINT = 0x8a8a8a;
 
 /**
- * Кнопка в стиле игры: скруглённый прямоугольник с толстой обводкой и «тенью»,
- * нажатие — лёгкое проседание. Клик срабатывает на отпускании, если палец не ушёл с кнопки.
+ * Кнопка в стиле игры. Если загружен сгенерированный UI — латунная табличка (nine-slice) или
+ * круглый значок с иконкой; иначе — векторный скруглённый прямоугольник. Нажатие — лёгкое
+ * проседание; клик срабатывает на отпускании, если палец не ушёл с кнопки.
  */
 export class Button extends Phaser.GameObjects.Container {
   readonly label: Phaser.GameObjects.Text;
-  private readonly bg: Phaser.GameObjects.Graphics;
+  private readonly bg:
+    Phaser.GameObjects.Graphics | Phaser.GameObjects.NineSlice | Phaser.GameObjects.Image;
+  private readonly icon: Phaser.GameObjects.Image | null = null;
+  private readonly skinned: boolean;
   private readonly style: ButtonStyle;
   private enabled = true;
   private pressed = false;
@@ -43,9 +56,47 @@ export class Button extends Phaser.GameObjects.Container {
     super(scene, x, y);
     this.style = { ...DEFAULT_STYLE, ...style };
     this.fill = this.style.fill;
-    this.bg = scene.add.graphics();
+    const bgKey = this.style.badge ? skin.badge.key : skin.button.key;
+    this.skinned = isRaster(bgKey);
+
+    if (this.skinned && this.style.badge) {
+      const img = scene.add.image(0, 0, bgKey);
+      img.setScale((bh * skin.badge.fit) / img.height);
+      this.bg = img;
+    } else if (this.skinned) {
+      const u = unitScale(bgKey);
+      // Узкой кнопке не хватает места на канатные концы: строим табличку крупнее и уменьшаем.
+      const caps = skin.button.left + skin.button.right;
+      const k = Math.max(1, ((caps + 16) * u) / bw);
+      this.bg = scene.add
+        .nineslice(
+          0,
+          0,
+          bgKey,
+          undefined,
+          (bw * k) / u,
+          (bh * k) / u,
+          skin.button.left,
+          skin.button.right,
+          skin.button.top,
+          skin.button.bottom,
+        )
+        .setScale(u / k);
+    } else {
+      this.bg = scene.add.graphics();
+    }
+
+    const iconKey = this.style.icon;
+    const showIcon = iconKey !== undefined && isRaster(iconKey);
+    if (showIcon) {
+      const img = scene.add.image(0, 0, iconKey);
+      // Иконка вписывается в высоту кнопки с запасом.
+      img.setScale((bh * 0.62) / Math.max(img.width, img.height));
+      this.icon = img;
+    }
+    const labelText = showIcon && this.style.badge ? '' : text;
     this.label = scene.add
-      .text(0, -2, text, {
+      .text(0, -2, labelText, {
         fontFamily: 'sans-serif',
         fontSize: `${this.style.fontSize}px`,
         fontStyle: 'bold',
@@ -53,7 +104,12 @@ export class Button extends Phaser.GameObjects.Container {
         align: 'center',
       })
       .setOrigin(0.5);
-    this.add([this.bg, this.label]);
+    if (this.icon && labelText) {
+      // Иконка слева, подпись правее центра.
+      this.icon.setX(-bw / 2 + bh * 0.55);
+      this.label.setX(bh * 0.28);
+    }
+    this.add(this.icon ? [this.bg, this.icon, this.label] : [this.bg, this.label]);
     this.draw();
 
     const hitW = Math.max(bw, MIN_TOUCH);
@@ -108,10 +164,24 @@ export class Button extends Phaser.GameObjects.Container {
   }
 
   private draw(): void {
+    const sink = this.pressed ? SINK : 0;
+    this.label.setY(-2 + sink).setAlpha(this.enabled ? 1 : 0.6);
+    this.icon?.setY(sink).setAlpha(this.enabled ? 1 : 0.6);
+
+    if (!(this.bg instanceof Phaser.GameObjects.Graphics)) {
+      // Табличка латунная: основной цвет — без тонировки, «неактивная» — приглушённая.
+      const tint = !this.enabled
+        ? DISABLED_TINT
+        : this.fill === palette.lanternAmber
+          ? 0xffffff
+          : palette.plaqueInactive;
+      this.bg.setY(sink).setTint(tint);
+      return;
+    }
+
     const w = this.bw;
     const h = this.bh;
     const r = this.style.radius;
-    const sink = this.pressed ? 3 : 0;
     const g = this.bg;
     g.clear();
     g.fillStyle(palette.outline, 1);
@@ -120,11 +190,10 @@ export class Button extends Phaser.GameObjects.Container {
     g.fillRoundedRect(-w / 2, -h / 2 + sink, w, h, r);
     g.lineStyle(3, palette.outline, 1);
     g.strokeRoundedRect(-w / 2, -h / 2 + sink, w, h, r);
-    this.label.setY(-2 + sink).setAlpha(this.enabled ? 1 : 0.6);
   }
 }
 
-/** Пергаментная панель с толстой обводкой. */
+/** Пергаментная панель с толстой обводкой (векторный вариант). */
 export function drawPanel(
   g: Phaser.GameObjects.Graphics,
   x: number,
@@ -140,4 +209,62 @@ export function drawPanel(
   g.fillRoundedRect(x, y, w, h, radius);
   g.lineStyle(4, palette.outline, 1);
   g.strokeRoundedRect(x, y, w, h, radius);
+}
+
+/**
+ * Панель-окно: пергамент в рамке из щупалец и морских узлов (nine-slice из сгенерированного UI),
+ * иначе векторная панель. x, y — левый верхний угол.
+ */
+export function addPanel(
+  scene: Phaser.Scene,
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+): Phaser.GameObjects.NineSlice | Phaser.GameObjects.Graphics {
+  const key = skin.panel.key;
+  if (isRaster(key)) {
+    const u = unitScale(key);
+    const i = skin.panel.inset;
+    return scene.add
+      .nineslice(x, y, key, undefined, w / u, h / u, i, i, i, i)
+      .setOrigin(0)
+      .setScale(u);
+  }
+  const g = scene.add.graphics();
+  drawPanel(g, x, y, w, h);
+  return g;
+}
+
+/** Тёмная плашка под счётчики HUD. x, y — левый верхний угол. */
+export function addPlate(
+  scene: Phaser.Scene,
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+): Phaser.GameObjects.NineSlice | Phaser.GameObjects.Graphics {
+  const key = skin.plate.key;
+  if (isRaster(key)) {
+    const u = unitScale(key);
+    return scene.add
+      .nineslice(
+        x,
+        y,
+        key,
+        undefined,
+        w / u,
+        h / u,
+        skin.plate.left,
+        skin.plate.right,
+        skin.plate.top,
+        skin.plate.bottom,
+      )
+      .setOrigin(0)
+      .setScale(u);
+  }
+  const g = scene.add.graphics();
+  g.fillStyle(palette.outline, 0.45);
+  g.fillRoundedRect(x, y, w, h, 14);
+  return g;
 }

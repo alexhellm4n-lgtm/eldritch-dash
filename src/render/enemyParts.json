@@ -16,5 +16,47 @@
     "scale": 2,
     "width": 34.5,
     "height": 48.5
+  },
+  "fish_head": {
+    "file": "assets/enemies/fish_head.webp",
+    "scale": 2,
+    "width": 49.5,
+    "height": 54.5
+  },
+  "fish_body": {
+    "file": "assets/enemies/fish_body.webp",
+    "scale": 2,
+    "width": 62,
+    "height": 42
+  },
+  "fish_leg": {
+    "file": "assets/enemies/fish_leg.webp",
+    "scale": 2,
+    "width": 33.5,
+    "height": 51.5
+  },
+  "squid_mantle": {
+    "file": "assets/enemies/squid_mantle.webp",
+    "scale": 2,
+    "width": 72.5,
+    "height": 59
+  },
+  "squid_tentacle": {
+    "file": "assets/enemies/squid_tentacle.webp",
+    "scale": 2,
+    "width": 28,
+    "height": 48.5
+  },
+  "net_body": {
+    "file": "assets/enemies/net_body.webp",
+    "scale": 2,
+    "width": 101,
+    "height": 95
+  },
+  "net_leg": {
+    "file": "assets/enemies/net_leg.webp",
+    "scale": 2,
+    "width": 47.5,
+    "height": 44.5
   }
 }

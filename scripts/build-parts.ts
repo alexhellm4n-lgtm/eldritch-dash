@@ -1,6 +1,6 @@
 /**
  * Сборка частей персонажа/твари из сгенерированного листа (dev-only):
- *   node scripts/build-parts.ts assets-src/generated/hero.json
+ *   node scripts/build-parts.ts assets-src/generated/hero.json [ещё листы…]
  *
  * Лист — части на пурпурном фоне. Для каждой части задаётся точка внутри неё: заливка по маске
  * берёт только эту часть (рамки соседних частей могут пересекаться), края сохраняют полупрозрачность.
@@ -11,10 +11,14 @@ import { dirname, join, relative } from 'node:path';
 import sharp from 'sharp';
 
 interface PartSpec {
-  /** Точка внутри части, px исходника. */
-  seed: [number, number];
+  /** Точка внутри части, px исходника: часть берётся заливкой по маске. */
+  seed?: [number, number];
+  /** Или прямоугольник [x0, y0, x1, y1] — для мягких свечений без чётких краёв. */
+  box?: [number, number, number, number];
   /** Дополнительный масштаб части (например, крупнее крылья). */
   scale?: number;
+  /** Подогнать высоту части под заданную, в игровых единицах (вместо unitsPerPx). */
+  fitHeight?: number;
 }
 
 interface Spec {
@@ -24,6 +28,11 @@ interface Spec {
   /** Игровых единиц на пиксель исходника. */
   unitsPerPx: number;
   textureScale: number;
+  /**
+   * chroma — пурпурный фон вырезается (по умолчанию);
+   * luma — лист на чёрном фоне (свет): прозрачность = яркость, для аддитивного смешивания.
+   */
+  keyMode?: 'chroma' | 'luma';
   parts: Record<string, PartSpec>;
 }
 
@@ -98,14 +107,41 @@ function regionMask(alpha: Float32Array, w: number, h: number, seed: [number, nu
   return grown;
 }
 
-async function main(): Promise<void> {
-  const specPath = process.argv[2];
-  if (!specPath) throw new Error('Укажите JSON листа: node scripts/build-parts.ts <spec.json>');
+/** Свет на чёрном фоне: alpha = максимум канала, цвет «распремножается» — так же выглядит в ADD. */
+function lumaAlpha(data: Buffer, w: number, h: number): Float32Array {
+  const alpha = new Float32Array(w * h);
+  for (let i = 0; i < w * h; i++) {
+    const r = data[i * 4]!;
+    const g = data[i * 4 + 1]!;
+    const b = data[i * 4 + 2]!;
+    const m = Math.max(r, g, b);
+    // Шум JPEG-подобной генерации у чёрного — в ноль.
+    const a = m < 6 ? 0 : m / 255;
+    alpha[i] = a;
+    if (a > 0) {
+      data[i * 4] = clamp(r / a);
+      data[i * 4 + 1] = clamp(g / a);
+      data[i * 4 + 2] = clamp(b / a);
+    }
+  }
+  return alpha;
+}
+
+function boxMask(w: number, h: number, box: [number, number, number, number]): Uint8Array {
+  const mask = new Uint8Array(w * h);
+  const [x0, y0, x1, y1] = box;
+  for (let y = Math.max(0, y0); y <= Math.min(h - 1, y1); y++) {
+    for (let x = Math.max(0, x0); x <= Math.min(w - 1, x1); x++) mask[y * w + x] = 1;
+  }
+  return mask;
+}
+
+async function buildSheet(specPath: string): Promise<void> {
   const spec = JSON.parse(readFileSync(specPath, 'utf8')) as Spec;
   const src = join(dirname(specPath), spec.src);
   const { data, info } = await sharp(src).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
   const { width: w, height: h } = info;
-  const alpha = keyAlpha(data, w, h);
+  const alpha = spec.keyMode === 'luma' ? lumaAlpha(data, w, h) : keyAlpha(data, w, h);
   mkdirSync(spec.outDir, { recursive: true });
 
   // Манифест общий для нескольких листов: дополняем, а не перезаписываем.
@@ -116,7 +152,7 @@ async function main(): Promise<void> {
     // Манифеста ещё нет.
   }
   for (const [key, part] of Object.entries(spec.parts)) {
-    const mask = regionMask(alpha, w, h, part.seed);
+    const mask = part.box ? boxMask(w, h, part.box) : regionMask(alpha, w, h, part.seed ?? [0, 0]);
     let x0 = w;
     let y0 = h;
     let x1 = -1;
@@ -148,7 +184,8 @@ async function main(): Promise<void> {
         out[d + 3] = clamp(alpha[s]! * 255);
       }
     }
-    const k = spec.unitsPerPx * (part.scale ?? 1) * spec.textureScale;
+    const unitsPerPx = part.fitHeight ? part.fitHeight / ch : spec.unitsPerPx;
+    const k = unitsPerPx * (part.scale ?? 1) * spec.textureScale;
     const ow = Math.round(cw * k);
     const oh = Math.round(ch * k);
     const file = join(spec.outDir, `${key}.webp`);
@@ -168,6 +205,13 @@ async function main(): Promise<void> {
   }
   writeFileSync(spec.manifest, `${JSON.stringify(manifest, null, 2)}\n`);
   console.log(`манифест: ${spec.manifest}`);
+}
+
+async function main(): Promise<void> {
+  const specs = process.argv.slice(2);
+  if (specs.length === 0)
+    throw new Error('Укажите JSON листов: node scripts/build-parts.ts <spec.json>…');
+  for (const spec of specs) await buildSheet(spec);
 }
 
 void main();

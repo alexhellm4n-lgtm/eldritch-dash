@@ -1,0 +1,26 @@
+{
+  "barrel": {
+    "file": "assets/props/barrel.webp",
+    "scale": 2,
+    "width": 68.5,
+    "height": 80
+  },
+  "coral": {
+    "file": "assets/props/coral.webp",
+    "scale": 2,
+    "width": 89,
+    "height": 100
+  },
+  "netPile": {
+    "file": "assets/props/netPile.webp",
+    "scale": 2,
+    "width": 97.5,
+    "height": 56
+  },
+  "coin": {
+    "file": "assets/props/coin.webp",
+    "scale": 2,
+    "width": 34.5,
+    "height": 34
+  }
+}

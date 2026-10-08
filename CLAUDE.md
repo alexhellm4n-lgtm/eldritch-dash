@@ -6,17 +6,18 @@ Idle-раннер на Phaser 4 + TypeScript + Vite. Полные требова
 
 ## Команды
 
-| Команда           | Что делает                                                           |
-| ----------------- | -------------------------------------------------------------------- |
-| `npm run dev`     | dev-сервер Vite (http://localhost:5173)                              |
-| `npm run build`   | `tsc --noEmit` + сборка в `dist/` (относительные пути, `base: './'`) |
-| `npm run preview` | локальный просмотр `dist/`                                           |
-| `npm run test`    | Vitest, тесты в `tests/**/*.test.ts`                                 |
-| `npm run lint`    | ESLint + `prettier --check`                                          |
-| `npm run format`  | Prettier с автоисправлением                                          |
-| `npm run bg`      | сборка сгенерированных фонов → `public/assets/bg/*.webp` + манифест  |
-| `npm run hero`    | сборка частей героя из листа персонажа → `public/assets/hero/*.webp` |
-| `npm run enemies` | сборка частей тварей (сейчас чайка) → `public/assets/enemies/*.webp` |
+| Команда           | Что делает                                                              |
+| ----------------- | ----------------------------------------------------------------------- |
+| `npm run dev`     | dev-сервер Vite (http://localhost:5173)                                 |
+| `npm run build`   | `tsc --noEmit` + сборка в `dist/` (относительные пути, `base: './'`)    |
+| `npm run preview` | локальный просмотр `dist/`                                              |
+| `npm run test`    | Vitest, тесты в `tests/**/*.test.ts`                                    |
+| `npm run lint`    | ESLint + `prettier --check`                                             |
+| `npm run format`  | Prettier с автоисправлением                                             |
+| `npm run bg`      | сборка фонов и земли → `public/assets/bg/*.webp` + манифест             |
+| `npm run hero`    | сборка частей героя из листа персонажа → `public/assets/hero/*.webp`    |
+| `npm run enemies` | сборка частей тварей (сейчас чайка) → `public/assets/enemies/*.webp`    |
+| `npm run fx`      | частицы, свет (выстрел фонаря, свечение) и UI → `public/assets/{fx,ui}` |
 
 После каждого этапа `build`, `test`, `lint` должны быть зелёными.
 
@@ -59,9 +60,20 @@ Idle-раннер на Phaser 4 + TypeScript + Vite. Полные требова
     `npm run hero` (параметры — `assets-src/generated/hero.json`: точка внутри каждой части и масштаб) →
     WebP частей + `render/heroParts.json`. Риг сгенерированных частей — `assets-src/rigs/hero.generated.json`
     (точки вращения, крепление кисти и фонаря, позы крыльев/руки); риг SVG-плейсхолдеров — `hero.json`.
-    Твари — так же: `assets-src/generated/gull.json` → `render/enemyParts.json`, риг
-    `assets-src/rigs/gull.generated.json` (крылья, щупальце, точка зрачка в пустом глазу);
-    `EntityViews` берёт сгенерированный вид, если части есть, иначе векторный.
+    Твари — так же: листы `assets-src/generated/{gull,fishman,squid,net}.json` → `render/enemyParts.json`.
+    Земля (настил причала) — `assets-src/generated/ground.json` через `build-bg` (`fitTrimmed` + `top`:
+    верх настила на уровне земли). Препятствия и монета — `props.json` через `build-parts` (`fitHeight`
+    под хитбокс из `biomes.json`) → `render/propParts.json`; каждый предмет откатывается отдельно.
+    Частицы — `fx.json` (пурпурный фон); свет — `light_{a,b}.json` с `keyMode: "luma"` (лист на чёрном,
+    альфа = яркость, рисуется аддитивно; мягкие свечения вырезаются `box`). UI — `ui.json`:
+    панель/табличка/плашка рисуются через `nineslice` (срезы в `render/ui/skin.json`), значок и иконки — картинками;
+    без растра `Button`/`addPanel`/`addPlate` рисуют векторный вариант.
+    Выстрел фонаря — `render/LanternFx.ts`: вспышка у фонаря, луч до первой задетой твари
+    (событие `flash` несёт её), всплеск попадания; длительности — `juice.json → shot`.
+    Глаза на листах — пустые белые круги, зрачок рисуется поверх и следит за героем.
+    Чайка — `GeneratedGullView` (риг `gull.generated.json`); остальные — универсальный `RigCreatureView`,
+    целиком описанный JSON-ригом (`{fishman,squid,net}.generated.json`: части, глаза с привязкой к части,
+    анимация `walk` или `tentacles`, `armor`). Если части не загрузились — векторный вид из кода.
     `rasterAssets.ts` сводит все растровые замены; PreloadScene грузит их вместо плейсхолдеров с теми же ключами.
   - `textures.ts` — реестр масштаба растеризации, `unitImage()` даёт картинку в игровых единицах.
   - `CutoutRig` (части + точки вращения из `assets-src/rigs/*.json`), `TentacleChain`.

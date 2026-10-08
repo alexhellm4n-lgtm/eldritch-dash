@@ -1,0 +1,56 @@
+{
+  "puff": {
+    "file": "assets/fx/puff.webp",
+    "scale": 2,
+    "width": 36.5,
+    "height": 30
+  },
+  "dust": {
+    "file": "assets/fx/dust.webp",
+    "scale": 2,
+    "width": 19.5,
+    "height": 18
+  },
+  "drop": {
+    "file": "assets/fx/drop.webp",
+    "scale": 2,
+    "width": 11,
+    "height": 16
+  },
+  "stunStar": {
+    "file": "assets/fx/stunStar.webp",
+    "scale": 2,
+    "width": 23,
+    "height": 22
+  },
+  "spark": {
+    "file": "assets/fx/spark.webp",
+    "scale": 2,
+    "width": 20,
+    "height": 20
+  },
+  "fx_muzzle": {
+    "file": "assets/fx/fx_muzzle.webp",
+    "scale": 2,
+    "width": 69.5,
+    "height": 72
+  },
+  "fx_impact": {
+    "file": "assets/fx/fx_impact.webp",
+    "scale": 2,
+    "width": 83.5,
+    "height": 84
+  },
+  "glow": {
+    "file": "assets/fx/glow.webp",
+    "scale": 2,
+    "width": 125,
+    "height": 128
+  },
+  "fx_bolt": {
+    "file": "assets/fx/fx_bolt.webp",
+    "scale": 2,
+    "width": 78,
+    "height": 36
+  }
+}

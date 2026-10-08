@@ -1,0 +1,15 @@
+{
+  "src": "raw/net_sheet_a.png",
+  "outDir": "public/assets/enemies",
+  "manifest": "src/render/enemyParts.json",
+  "textureScale": 2,
+  "unitsPerPx": 0.17,
+  "parts": {
+    "net_body": {
+      "seed": [1050, 700]
+    },
+    "net_leg": {
+      "seed": [1200, 1050]
+    }
+  }
+}

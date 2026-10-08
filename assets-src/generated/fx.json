@@ -1,0 +1,29 @@
+{
+  "src": "raw/fx_particles_a.png",
+  "outDir": "public/assets/fx",
+  "manifest": "src/render/fxParts.json",
+  "unitsPerPx": 0.1,
+  "textureScale": 2,
+  "parts": {
+    "puff": {
+      "seed": [490, 420],
+      "fitHeight": 30
+    },
+    "dust": {
+      "seed": [480, 830],
+      "fitHeight": 18
+    },
+    "drop": {
+      "seed": [1045, 400],
+      "fitHeight": 16
+    },
+    "stunStar": {
+      "seed": [1047, 700],
+      "fitHeight": 22
+    },
+    "spark": {
+      "seed": [767, 1233],
+      "fitHeight": 20
+    }
+  }
+}

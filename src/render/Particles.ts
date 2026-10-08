@@ -2,7 +2,7 @@ import Phaser from 'phaser';
 import { juiceConfig } from '../config';
 import { Depth } from './Parallax';
 import { palette } from './palette';
-import { unitScale } from './textures';
+import { isRaster, unitScale } from './textures';
 
 type Emitter = Phaser.GameObjects.Particles.ParticleEmitter;
 
@@ -32,7 +32,10 @@ export class Particles {
       lifespan: 520,
       scale: { start: u('puff') * 1.1, end: u('puff') * 0.2 },
       alpha: { start: 1, end: 0 },
-      tint: [palette.sicklyViolet, palette.bioCyan, palette.coral],
+      // Сгенерированный дым уже фиолетовый — лишь слегка разнообразим; плейсхолдер белый — красим.
+      tint: isRaster('puff')
+        ? [0xffffff, palette.puffTintCool, palette.puffTintWarm]
+        : [palette.sicklyViolet, palette.bioCyan, palette.coral],
     });
     this.drops = scene.add.particles(0, 0, 'drop', {
       emitting: false,

@@ -1,0 +1,66 @@
+{
+  "anchor": "center",
+  "parts": [
+    {
+      "name": "t0",
+      "key": "squid_tentacle",
+      "x": -20,
+      "y": 14,
+      "ox": 0.65,
+      "oy": 0.04,
+      "shade": true,
+      "scale": 0.85
+    },
+    {
+      "name": "t2",
+      "key": "squid_tentacle",
+      "x": 6,
+      "y": 14,
+      "ox": 0.65,
+      "oy": 0.04,
+      "shade": true,
+      "scale": 0.85
+    },
+    {
+      "name": "t1",
+      "key": "squid_tentacle",
+      "x": -7,
+      "y": 16,
+      "ox": 0.65,
+      "oy": 0.04,
+      "scale": 0.9
+    },
+    {
+      "name": "t3",
+      "key": "squid_tentacle",
+      "x": 19,
+      "y": 16,
+      "ox": 0.65,
+      "oy": 0.04,
+      "scale": 0.9
+    },
+    {
+      "name": "mantle",
+      "key": "squid_mantle",
+      "x": 0,
+      "y": -6,
+      "ox": 0.5,
+      "oy": 0.55
+    }
+  ],
+  "eyes": [
+    {
+      "parent": "mantle",
+      "x": 10.7,
+      "y": -3.7,
+      "pupilScale": 1.3,
+      "range": 3.5
+    }
+  ],
+  "tentacles": {
+    "names": ["t0", "t1", "t2", "t3"],
+    "amp": 0.22,
+    "freq": 6,
+    "stretchPart": "mantle"
+  }
+}

@@ -52,13 +52,17 @@ export class Parallax {
     }
     // Ближний декор притемнён, чтобы не спорить по яркости с настоящими препятствиями и тварями.
     this.layers[this.layers.length - 1]?.setTint(palette.nearDecorShade);
+    // Растровая земля лежит на своей высоте (верх настила = уровень земли), плейсхолдер — от groundY.
+    const groundKey = `ground_${biomeId}`;
+    const groundAsset = isRaster(groundKey) ? backgroundAssets[groundKey] : undefined;
+    const groundTop = groundAsset?.y ?? groundY - 4;
     this.ground = this.tile(
       scene,
-      `ground_${biomeId}`,
+      groundKey,
       0,
-      groundY - 4,
+      groundTop,
       W,
-      H - groundY + 4,
+      groundAsset?.height ?? H - groundTop,
       Depth.ground,
     );
     this.fogBack = this.tile(

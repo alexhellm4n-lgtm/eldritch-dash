@@ -2,7 +2,10 @@ import type Phaser from 'phaser';
 import { juiceConfig } from '../config';
 import type { Entity } from '../systems/Entity';
 import { TentacleChain } from './CutoutRig';
+import fishmanRig from '../../assets-src/rigs/fishman.generated.json';
 import gullRig from '../../assets-src/rigs/gull.generated.json';
+import netRig from '../../assets-src/rigs/net.generated.json';
+import squidRig from '../../assets-src/rigs/squid.generated.json';
 import { palette } from './palette';
 import { isRaster, unitImage, unitScale } from './textures';
 
@@ -195,6 +198,138 @@ class GeneratedGullView extends CreatureView {
   }
 }
 
+/** Описание твари из сгенерированных частей (assets-src/rigs/*.generated.json). */
+interface CreatureRig {
+  /** feet — контейнер стоит на ступнях (нижний край AABB), center — в центре AABB. */
+  anchor: string;
+  parts: readonly {
+    name: string;
+    key: string;
+    x: number;
+    y: number;
+    ox: number;
+    oy: number;
+    shade?: boolean;
+    scale?: number;
+  }[];
+  /** Зрачки поверх пустых глаз: смещение от точки вращения родительской части. */
+  eyes: readonly { parent: string; x: number; y: number; pupilScale: number; range: number }[];
+  walk?: {
+    legs: readonly string[];
+    amp: number;
+    freq: number;
+    legBase: number;
+    bob: number;
+    bobParts: readonly string[];
+    wobble?: string;
+    sway?: string;
+  };
+  tentacles?: { names: readonly string[]; amp: number; freq: number; stretchPart: string };
+  /** Часть, которая темнеет, когда броня пробита. */
+  armor?: string;
+}
+
+interface RigEye {
+  parent: Phaser.GameObjects.Image;
+  pupil: Phaser.GameObjects.Image;
+  x: number;
+  y: number;
+  range: number;
+}
+
+/** Тварь из сгенерированных частей: ходьба или щупальца, зрачки следят за героем. */
+class RigCreatureView extends CreatureView {
+  private readonly parts = new Map<string, Phaser.GameObjects.Image>();
+  private readonly base = new Map<string, { x: number; y: number; s: number }>();
+  private readonly eyesOfRig: RigEye[] = [];
+
+  constructor(
+    scene: Phaser.Scene,
+    private readonly rig: CreatureRig,
+  ) {
+    super(scene);
+    for (const p of rig.parts) {
+      const img = unitImage(scene, p.key, p.x, p.y).setOrigin(p.ox, p.oy);
+      img.setScale(img.scaleX * (p.scale ?? 1));
+      if (p.shade) img.setTint(palette.farShade);
+      this.root.add(img);
+      this.parts.set(p.name, img);
+      this.base.set(p.name, { x: p.x, y: p.y, s: img.scaleX });
+    }
+    for (const e of rig.eyes) {
+      const pupil = unitImage(scene, 'pupil');
+      pupil.setScale(pupil.scaleX * e.pupilScale);
+      this.root.add(pupil);
+      this.eyesOfRig.push({ parent: this.part(e.parent), pupil, x: e.x, y: e.y, range: e.range });
+    }
+  }
+
+  private part(name: string): Phaser.GameObjects.Image {
+    const p = this.parts.get(name);
+    if (!p) throw new Error(`Нет части ${name}`);
+    return p;
+  }
+
+  protected anchorY(e: Entity): number {
+    return this.rig.anchor === 'feet' ? e.h / 2 : 0;
+  }
+
+  protected animate(e: Entity, time: number): void {
+    for (const [name, b] of this.base) this.part(name).setPosition(b.x, b.y).setRotation(0);
+    const walk = this.rig.walk;
+    if (walk) {
+      const s = Math.sin(e.t * walk.freq);
+      walk.legs.forEach((n, i) =>
+        this.part(n).setRotation(walk.legBase + (i === 0 ? -1 : 1) * walk.amp * s),
+      );
+      const bob = -Math.abs(Math.cos(e.t * walk.freq)) * walk.bob;
+      for (const n of walk.bobParts) this.part(n).y += bob;
+      if (walk.wobble) this.part(walk.wobble).setRotation(0.08 * Math.sin(time * 2 + e.id));
+      if (walk.sway) this.part(walk.sway).setRotation(0.05 * s);
+    }
+    const tent = this.rig.tentacles;
+    if (tent) {
+      // Вытягивается в прыжке и сплющивается у земли.
+      const lift = (e.baseY - e.y) / Math.max(e.h, 1);
+      const stretch = Math.min(lift * 0.12, 0.15);
+      const sp = this.part(tent.stretchPart);
+      const sb = this.base.get(tent.stretchPart)!.s;
+      sp.setScale(sb * (1 - stretch), sb * (1 + stretch));
+      tent.names.forEach((n, i) =>
+        this.part(n).setRotation(
+          (i - 1.5) * 0.12 + (tent.amp + stretch) * Math.sin(time * tent.freq + i * 1.3 + e.id),
+        ),
+      );
+    }
+    if (this.rig.armor) {
+      this.part(this.rig.armor).setTint(e.hp < 2 ? palette.crackedShade : 0xffffff);
+    }
+  }
+
+  override update(e: Entity, time: number, heroX: number, heroY: number): void {
+    super.update(e, time, heroX, heroY);
+    // Контейнер отражён по X: направление на героя в локальных координатах.
+    const dx = -(heroX - e.x);
+    const dy = heroY - e.y;
+    const len = Math.hypot(dx, dy) || 1;
+    for (const eye of this.eyesOfRig) {
+      const p = eye.parent;
+      const c = Math.cos(p.rotation);
+      const sn = Math.sin(p.rotation);
+      const ex = p.x + eye.x * c - eye.y * sn;
+      const ey = p.y + eye.x * sn + eye.y * c;
+      eye.pupil.setPosition(ex + (dx / len) * eye.range, ey + (dy / len) * eye.range);
+    }
+  }
+}
+
+/** Тварь → риг сгенерированных частей и ключ, по которому видно, что они загрузились. */
+const CREATURE_RIGS: Readonly<Record<string, { rig: CreatureRig; key: string }>> = {
+  fishman: { rig: fishmanRig, key: 'fish_head' },
+  squidling: { rig: squidRig, key: 'squid_mantle' },
+  walkingNet: { rig: netRig, key: 'net_body' },
+};
+
 class SquidView extends CreatureView {
   private readonly mantle: Phaser.GameObjects.Image;
   private readonly tentacles: TentacleChain[] = [];
@@ -236,8 +371,10 @@ class NetView extends CreatureView {
 
   constructor(scene: Phaser.Scene) {
     super(scene);
-    this.legB = unitImage(scene, 'fish_leg', -16, -18).setOrigin(0.45, 0.08).setTint(palette.rope);
-    this.legF = unitImage(scene, 'fish_leg', 16, -18).setOrigin(0.45, 0.08).setTint(palette.rope);
+    this.legB = unitImage(scene, 'net_leg', -16, -18)
+      .setOrigin(0.45, 0.08)
+      .setTint(palette.farShade);
+    this.legF = unitImage(scene, 'net_leg', 16, -18).setOrigin(0.45, 0.08);
     this.body = unitImage(scene, 'net_body', 0, -6).setOrigin(0.5, 1);
     this.root.add([this.legB, this.legF, this.body]);
     this.eyes.push(new TrackingEye(scene, this.root, 4, -60, 1));
@@ -306,6 +443,8 @@ class ObstacleView implements EntityView {
 export function createEntityView(scene: Phaser.Scene, e: Entity): EntityView {
   if (e.kind === 'coin') return new CoinView(scene);
   if (e.kind === 'obstacle') return new ObstacleView(scene, e.type);
+  const generated = CREATURE_RIGS[e.type];
+  if (generated && isRaster(generated.key)) return new RigCreatureView(scene, generated.rig);
   switch (e.type) {
     case 'fishman':
       return new FishmanView(scene);

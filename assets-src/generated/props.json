@@ -1,0 +1,25 @@
+{
+  "src": "raw/props_b.png",
+  "outDir": "public/assets/props",
+  "manifest": "src/render/propParts.json",
+  "unitsPerPx": 0.15,
+  "textureScale": 2,
+  "parts": {
+    "barrel": {
+      "seed": [420, 560],
+      "fitHeight": 80
+    },
+    "coral": {
+      "seed": [1120, 720],
+      "fitHeight": 100
+    },
+    "netPile": {
+      "seed": [470, 1250],
+      "fitHeight": 56
+    },
+    "coin": {
+      "seed": [1050, 1142],
+      "fitHeight": 34
+    }
+  }
+}

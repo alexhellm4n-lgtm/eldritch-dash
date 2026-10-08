@@ -1,0 +1,16 @@
+{
+  "outDir": "public/assets/bg",
+  "manifest": "src/render/backgrounds.json",
+  "layers": [
+    {
+      "key": "ground_coast",
+      "src": "raw/ground_b.png",
+      "height": 130,
+      "bottom": 736,
+      "fitTrimmed": 130,
+      "top": 606,
+      "chroma": true,
+      "blend": 0.08
+    }
+  ]
+}

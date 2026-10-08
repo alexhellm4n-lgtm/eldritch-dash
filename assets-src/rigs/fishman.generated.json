@@ -1,0 +1,56 @@
+{
+  "anchor": "feet",
+  "parts": [
+    {
+      "name": "legBack",
+      "key": "fish_leg",
+      "x": -10,
+      "y": -48,
+      "ox": 0.33,
+      "oy": 0.03,
+      "shade": true
+    },
+    {
+      "name": "legFront",
+      "key": "fish_leg",
+      "x": 4,
+      "y": -48,
+      "ox": 0.33,
+      "oy": 0.03
+    },
+    {
+      "name": "body",
+      "key": "fish_body",
+      "x": 2,
+      "y": -70,
+      "ox": 0.5,
+      "oy": 0.06
+    },
+    {
+      "name": "head",
+      "key": "fish_head",
+      "x": 4,
+      "y": -66,
+      "ox": 0.5,
+      "oy": 0.95
+    }
+  ],
+  "eyes": [
+    {
+      "parent": "head",
+      "x": -2.85,
+      "y": -28.5,
+      "pupilScale": 0.5,
+      "range": 1.2
+    }
+  ],
+  "walk": {
+    "legs": ["legFront", "legBack"],
+    "amp": 0.5,
+    "freq": 9,
+    "legBase": 0,
+    "bob": 3,
+    "bobParts": ["body", "head"],
+    "wobble": "head"
+  }
+}

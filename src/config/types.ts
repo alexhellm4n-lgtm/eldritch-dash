@@ -174,6 +174,8 @@ export interface JuiceConfig {
   particles: { coin: number; kill: number; dust: number; drops: number };
   coinSpinPerSec: number;
   flashMs: number;
+  /** Длительности выстрела фонаря: вспышка, луч, всплеск попадания. */
+  shot: { muzzleSec: number; boltSec: number; impactSec: number };
   /** Во сколько раз плейсхолдер-текстуры крупнее игровых единиц (PNG@2x). */
   textureScale: number;
 }

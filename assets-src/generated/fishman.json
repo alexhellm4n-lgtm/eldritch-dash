@@ -1,0 +1,18 @@
+{
+  "src": "raw/fish_sheet_a.png",
+  "outDir": "public/assets/enemies",
+  "manifest": "src/render/enemyParts.json",
+  "textureScale": 2,
+  "unitsPerPx": 0.17,
+  "parts": {
+    "fish_head": {
+      "seed": [700, 560]
+    },
+    "fish_body": {
+      "seed": [1065, 760]
+    },
+    "fish_leg": {
+      "seed": [1320, 800]
+    }
+  }
+}

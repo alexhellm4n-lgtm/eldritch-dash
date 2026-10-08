@@ -20,6 +20,11 @@ export const palette = {
   crackedShade: 0xb89a8a,
   /** Притемнение ближнего декора фона (читаемость геймплея). */
   nearDecorShade: 0x9890ac,
+  /** Лёгкие оттенки для сгенерированного дыма. */
+  puffTintCool: 0xc8f4ff,
+  puffTintWarm: 0xffd2dc,
+  /** Неактивная табличка-кнопка (умножается на латунь). */
+  plaqueInactive: 0xb8a890,
   // UI
   parchmentShade: 0xcdb884,
   parchmentLight: 0xf5ead0,

@@ -11,9 +11,10 @@
     "test:watch": "vitest",
     "lint": "eslint . && prettier --check .",
     "format": "prettier --write .",
-    "bg": "node scripts/build-bg.ts",
+    "bg": "node scripts/build-bg.ts assets-src/generated/coast.json && node scripts/build-bg.ts assets-src/generated/ground.json",
     "hero": "node scripts/build-parts.ts assets-src/generated/hero.json",
-    "enemies": "node scripts/build-parts.ts assets-src/generated/gull.json"
+    "fx": "node scripts/build-parts.ts assets-src/generated/fx.json assets-src/generated/light_a.json assets-src/generated/light_b.json assets-src/generated/ui.json",
+    "enemies": "node scripts/build-parts.ts assets-src/generated/gull.json assets-src/generated/fishman.json assets-src/generated/squid.json assets-src/generated/net.json assets-src/generated/props.json"
   },
   "dependencies": {
     "break_infinity.js": "^2.2.0",
