@@ -1,22 +1,42 @@
 import {
+  catConfig,
+  dreamConfig,
   economyConfig,
+  grimoireConfig,
+  sanityConfig,
+  starsConfig,
   upgradesConfig,
+  type CatConfig,
+  type DreamConfig,
   type EconomyConfig,
+  type GrimoireConfig,
+  type OmenConfig,
   type RunModifiers,
+  type SanityConfig,
+  type StarsConfig,
   type UpgradesConfig,
 } from '../config';
 import { bn, type Decimal } from '../core/BigNum';
 import { EventBus } from '../core/EventBus';
 import type { GameState, TutorialState } from '../core/GameState';
 import { Economy, type BuyAmount } from './Economy';
+import { Grimoire } from './Grimoire';
 import { computeOffline, type OfflineReport } from './Offline';
+import { canDive, darkStarsFor, omenChoices, starMultiplier } from './Prestige';
 import type { RunSim } from './RunSim';
-import { Upgrades } from './Upgrades';
+import { coinMultFor } from './Sanity';
+import { Stars, type PhaseInfo } from './Stars';
+import { applyEffect, baseModifiers, Upgrades } from './Upgrades';
 
 export interface SessionEvents {
-  purchase: { kind: 'item' | 'hero'; id: string };
+  purchase: { kind: 'item' | 'hero' | 'grimoire' | 'cat'; id: string };
   offline: OfflineReport;
   tutorial: keyof TutorialState;
+  /** Сменилась небесная фаза. */
+  phase: PhaseInfo;
+  catUnlocked: undefined;
+  /** Совершено Погружение: новая глубина. */
+  dive: number;
 }
 
 export interface ItemQuote {
@@ -25,30 +45,60 @@ export interface ItemQuote {
   affordable: boolean;
 }
 
+export interface DreamReward {
+  coins: Decimal;
+  sardines: number;
+}
+
+export interface SessionConfigs {
+  upgrades?: UpgradesConfig;
+  economy?: EconomyConfig;
+  grimoire?: GrimoireConfig;
+  stars?: StarsConfig;
+  cat?: CatConfig;
+  sanity?: SanityConfig;
+  dream?: DreamConfig;
+}
+
 /**
- * Игровая сессия: владеет GameState, считает CpS/номинал монеты, проводит покупки,
- * начисляет пассивный и офлайн-доход и связывает экономику с забегом. Без Phaser/DOM.
+ * Игровая сессия: владеет GameState, считает бонусы, CpS и номинал монеты, проводит покупки
+ * (снаряжение, улучшения, гримуар, кот), начисляет пассивный и офлайн-доход, ведёт фазы звёзд,
+ * Сновидения и Погружения и связывает всё это с забегом. Без Phaser/DOM.
  */
 export class GameSession {
   readonly bus = new EventBus<SessionEvents>();
   readonly economy: Economy;
   readonly upgrades: Upgrades;
+  readonly catUpgrades: Upgrades;
+  readonly grimoire: Grimoire;
+  readonly stars: Stars;
+  readonly economyCfg: EconomyConfig;
   pendingOffline: OfflineReport | null = null;
+  phase: PhaseInfo | null = null;
+  /** Отладка: зафиксированная фаза звёзд (null — по времени). */
+  forcedPhase: string | null = null;
 
   private cpsCache: Decimal = bn(0);
   private coinValueCache: Decimal = bn(1);
-  private mods: RunModifiers;
+  private mods: RunModifiers = baseModifiers();
   private run: RunSim | null = null;
   private readonly unsubRun: (() => void)[] = [];
+  private readonly sanityCfg: SanityConfig;
+  private readonly dreamCfg: DreamConfig;
 
   constructor(
     readonly state: GameState,
-    upgrades: UpgradesConfig = upgradesConfig,
-    readonly economyCfg: EconomyConfig = economyConfig,
+    cfg: SessionConfigs = {},
   ) {
-    this.economy = new Economy(upgrades, economyCfg);
+    const upgrades = cfg.upgrades ?? upgradesConfig;
+    this.economyCfg = cfg.economy ?? economyConfig;
+    this.economy = new Economy(upgrades, this.economyCfg);
     this.upgrades = new Upgrades(upgrades);
-    this.mods = this.upgrades.modifiers(state.heroUpgrades);
+    this.catUpgrades = new Upgrades({ ...upgrades, hero: (cfg.cat ?? catConfig).upgrades });
+    this.grimoire = new Grimoire(cfg.grimoire ?? grimoireConfig);
+    this.stars = new Stars(cfg.stars ?? starsConfig);
+    this.sanityCfg = cfg.sanity ?? sanityConfig;
+    this.dreamCfg = cfg.dream ?? dreamConfig;
     this.recalc();
   }
 
@@ -62,6 +112,11 @@ export class GameSession {
 
   get modifiers(): Readonly<RunModifiers> {
     return this.mods;
+  }
+
+  /** Множитель от тёмных звёзд (общий множитель дохода, SPEC §5.2). */
+  get starMult(): number {
+    return starMultiplier(this.state.darkStars, this.economyCfg.prestige);
   }
 
   earn(amount: Decimal): void {
@@ -127,19 +182,89 @@ export class GameSession {
     return true;
   }
 
+  // --- Гримуар ---
+
+  ownedNodes(): ReadonlySet<string> {
+    return new Set(this.state.grimoire);
+  }
+
+  buyNode(id: string): boolean {
+    const s = this.state;
+    if (!this.grimoire.canBuy(id, this.ownedNodes(), s.darkStars, s.essence)) return false;
+    s.essence -= this.grimoire.node(id).cost;
+    s.grimoire.push(id);
+    this.recalc();
+    this.bus.emit('purchase', { kind: 'grimoire', id });
+    return true;
+  }
+
+  // --- Кот-фамильяр ---
+
+  catTier(id: string): number {
+    return this.state.cat.levels[id] ?? 0;
+  }
+
+  catNextCost(id: string): number | null {
+    return this.catUpgrades.nextCost(id, this.catTier(id));
+  }
+
+  buyCat(id: string): boolean {
+    const cost = this.catNextCost(id);
+    if (cost === null || !this.state.cat.unlocked || this.state.sardines < cost) return false;
+    this.state.sardines -= cost;
+    this.state.cat.levels[id] = this.catTier(id) + 1;
+    this.recalc();
+    this.bus.emit('purchase', { kind: 'cat', id });
+    return true;
+  }
+
+  // --- Небесные фазы ---
+
+  /** Обновляет текущую фазу по времени; при смене слота рассылает событие. */
+  updatePhase(nowMs: number): PhaseInfo {
+    const info = this.forcedPhase
+      ? this.forcedPhaseInfo(this.forcedPhase, nowMs)
+      : this.stars.at(nowMs);
+    const changed = !this.phase || this.phase.slot !== info.slot || this.phase.id !== info.id;
+    this.phase = info;
+    if (changed) {
+      this.run?.setPhase(info.cfg);
+      this.bus.emit('phase', info);
+    }
+    return info;
+  }
+
+  private forcedPhaseInfo(id: string, nowMs: number): PhaseInfo {
+    const real = this.stars.at(nowMs);
+    return { ...real, id, cfg: this.stars.cfg.phases[id] ?? real.cfg };
+  }
+
   // --- Забег ---
 
-  /** Подключает забег: номинал монеты, модификаторы, зачисление наград в кошелёк. */
+  /** Подключает забег: номинал монеты, бонусы, фаза, зачисление наград в кошелёк. */
   attachRun(sim: RunSim): void {
     this.detachRun();
     this.run = sim;
     this.applyToRun();
+    if (this.phase) sim.setPhase(this.phase.cfg);
+    const stats = this.state.stats;
     this.unsubRun.push(
       sim.bus.on('coin', (e) => this.earn(e.reward)),
+      sim.bus.on('catFetch', (e) => this.earn(e.reward)),
       sim.bus.on('kill', (e) => {
         this.earn(e.reward);
-        this.state.stats.kills++;
+        this.state.essence += e.essence;
+        stats.kills++;
       }),
+      sim.bus.on('chest', (c) => {
+        this.earn(c.coins);
+        this.state.sardines += c.sardines;
+      }),
+      sim.bus.on('insight', (amount) => {
+        this.earn(amount);
+        stats.insights++;
+      }),
+      sim.bus.on('awakenStart', () => stats.awakenings++),
     );
   }
 
@@ -149,15 +274,86 @@ export class GameSession {
     this.run = null;
   }
 
+  // --- Сновидение ---
+
+  /** Награда за сон (SPEC §4.6): f(монеты, кольца) × текущий доход в секунду, плюс сардинки. */
+  dreamReward(points: number, rings: number): DreamReward {
+    const r = this.dreamCfg.reward;
+    // Если дохода ещё нет, опираемся на номинал монеты, чтобы первый сон не был пустым.
+    const perPoint = this.cpsCache.mul(r.cpsSecPerPoint).add(this.coinValueCache);
+    const coins = perPoint.mul(points * this.mods.dreamRewardMult);
+    const sardines = Math.round(
+      Math.max(r.minSardines, rings * r.sardinesPerRing) * this.mods.sardineMult,
+    );
+    return { coins, sardines };
+  }
+
+  claimDream(reward: DreamReward): void {
+    this.earn(reward.coins);
+    this.state.sardines += reward.sardines;
+    this.state.stats.dreams++;
+    if (!this.state.cat.unlocked) {
+      this.state.cat.unlocked = true;
+      if (this.run) this.run.catEnabled = true;
+      this.bus.emit('catUnlocked', undefined);
+    }
+  }
+
+  // --- Погружение ---
+
+  get darkStarsAvailable(): number {
+    return darkStarsFor(this.state.coinsThisDive, this.economyCfg.prestige);
+  }
+
+  get canDive(): boolean {
+    return canDive(this.state.coinsThisDive, this.economyCfg.prestige);
+  }
+
+  omenChoices(): OmenConfig[] {
+    return omenChoices(this.state.depth, this.economyCfg.prestige);
+  }
+
+  /**
+   * Погружение (SPEC §6): сбрасывает дублоны, снаряжение, улучшения героя, Эссенцию и часть
+   * гримуара; сохраняет тёмные звёзды, кота, сардинки, статистику. Новая глубина со знамением.
+   */
+  dive(omenId: string): boolean {
+    if (!this.canDive) return false;
+    const s = this.state;
+    s.darkStars += this.darkStarsAvailable;
+    s.coins = bn(this.economyCfg.startCoins);
+    s.coinsThisDive = bn(0);
+    s.items = {};
+    s.heroUpgrades = {};
+    s.essence = 0;
+    s.grimoire = this.grimoire.keptAfterDive(s.grimoire);
+    s.depth += 1;
+    s.omen = this.economyCfg.prestige.omens.some((o) => o.id === omenId) ? omenId : null;
+    s.stats.dives++;
+    this.recalc();
+    this.bus.emit('dive', s.depth);
+    return true;
+  }
+
   // --- Офлайн ---
 
   /** Проверяет отсутствие с момента lastSeen; отчёт кладётся в pendingOffline и рассылается. */
   checkOffline(nowMs: number): OfflineReport | null {
+    const cfg = this.economyCfg.offline;
+    const from = this.state.lastSeen;
+    // Фазы «тикают» и офлайн: берём средний множитель за время отсутствия.
+    const phaseMult = this.stars.averageCoinMult(from, Math.max(from, nowMs));
+    // Пассивный режим держит рассудок около idleSanity (SPEC §4.3).
+    const sanityMult = cfg.useIdleSanity
+      ? coinMultFor(this.sanityCfg.idleSanity, this.sanityCfg)
+      : 1;
+    const effectiveCps = this.cpsCache.mul(phaseMult * sanityMult * this.mods.offlineRateMult);
     const report = computeOffline(
-      this.cpsCache,
-      this.state.lastSeen,
+      effectiveCps,
+      from,
       nowMs,
-      this.economyCfg.offline,
+      cfg,
+      cfg.capSec + this.mods.offlineCapBonusSec,
     );
     this.state.lastSeen = Math.max(this.state.lastSeen, nowMs);
     if (!report) return null;
@@ -190,10 +386,23 @@ export class GameSession {
     this.bus.emit('tutorial', step);
   }
 
+  /** Пересчитать бонусы после прямой правки состояния (админ-панель, миграции). */
+  refreshBonuses(): void {
+    this.recalc();
+  }
+
+  /** Сводит все источники бонусов: улучшения, гримуар, знамение, кот. */
   private recalc(): void {
-    this.mods = this.upgrades.modifiers(this.state.heroUpgrades);
-    this.cpsCache = this.economy.cps(this.state);
-    this.coinValueCache = this.economy.coinValue(this.cpsCache, this.mods.coinValueMult);
+    const s = this.state;
+    const m = this.upgrades.modifiers(s.heroUpgrades);
+    this.grimoire.modifiers(s.grimoire, m);
+    const omen = this.economyCfg.prestige.omens.find((o) => o.id === s.omen);
+    if (omen) applyEffect(m, omen);
+    if (s.cat.unlocked) this.catUpgrades.modifiers(s.cat.levels, m);
+    this.mods = m;
+    const stars = this.starMult;
+    this.cpsCache = this.economy.cps(s, m.cpsMult * stars);
+    this.coinValueCache = this.economy.coinValue(this.cpsCache, m.coinValueMult * stars);
     this.applyToRun();
   }
 
@@ -201,5 +410,6 @@ export class GameSession {
     if (!this.run) return;
     this.run.applyModifiers(this.mods);
     this.run.coinValue = this.coinValueCache;
+    this.run.catEnabled = this.state.cat.unlocked;
   }
 }

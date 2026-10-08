@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { app } from '../app';
+import { debugEnabled } from '../debug/flags';
 import display from '../config/display.json';
 import { upgradesConfig } from '../config';
 import { formatNumber } from '../core/BigNum';
@@ -7,16 +8,21 @@ import { formatDuration, t } from '../i18n';
 import { palette, toCss } from '../render/palette';
 import { unitImage, unitScale } from '../render/textures';
 import { addPanel, addPlate, Button } from '../render/ui/Button';
+import { MetaHud } from '../render/ui/MetaHud';
 import type { GameSession } from '../systems/GameSession';
 import type { OfflineReport } from '../systems/Offline';
 import type { RunSim } from '../systems/RunSim';
+import type { GrimoireScene } from './GrimoireScene';
 import type { ShopOverlay } from './ShopOverlay';
 
 /** Сколько парения нужно, чтобы считать подсказку освоенной, с. */
 const GLIDE_LEARNED_SEC = 0.4;
 const MARGIN = 24;
 
-type Hint = 'jump' | 'purchase' | 'glide' | null;
+type Hint = 'jump' | 'purchase' | 'glide' | 'sanity' | 'awaken' | null;
+
+/** Сколько показывать разовые подсказки о рассудке и Пробуждении, мс. */
+const ONE_SHOT_HINT_MS = 7000;
 
 /** HUD поверх забега. Только читает состояние и шлёт команды сессии. */
 export class UIScene extends Phaser.Scene {
@@ -36,6 +42,11 @@ export class UIScene extends Phaser.Scene {
   private shownStreak = -1;
   private hint: Hint = null;
   private coinPulse = 0;
+  private metaHud!: MetaHud;
+  /** Разовые подсказки M3: уже показанные в этой сессии и время конца текущей. */
+  private shownOnce = new Set<Hint>();
+  private oneShot: Hint = null;
+  private oneShotUntil = 0;
 
   constructor() {
     super('UIScene');
@@ -113,8 +124,21 @@ export class UIScene extends Phaser.Scene {
       { fontSize: 24, icon: 'ui_pouch' },
     ).onClick(() => this.shop().toggle());
 
+    this.metaHud = new MetaHud(
+      this,
+      this.session,
+      () => this.sim,
+      () => this.grimoire().toggle(),
+    );
+
     this.scene.launch('ShopOverlay');
     this.scene.bringToTop('ShopOverlay');
+    this.scene.launch('GrimoireScene');
+    this.scene.bringToTop('GrimoireScene');
+    if (debugEnabled()) {
+      this.scene.launch('DebugScene');
+      this.scene.bringToTop('DebugScene');
+    }
 
     const unsubs = [
       this.sim.bus.on('coin', () => (this.coinPulse = 1)),
@@ -129,6 +153,10 @@ export class UIScene extends Phaser.Scene {
 
   private shop(): ShopOverlay {
     return this.scene.get('ShopOverlay') as ShopOverlay;
+  }
+
+  private grimoire(): GrimoireScene {
+    return this.scene.get('GrimoireScene') as GrimoireScene;
   }
 
   override update(_time: number, deltaMs: number): void {
@@ -156,6 +184,14 @@ export class UIScene extends Phaser.Scene {
       );
     }
 
+    this.metaHud.update(this.time.now);
+    // При низком рассудке тексты HUD слегка «плывут» (SPEC §4.3).
+    const k = state.settings.reduceDistortion ? 0 : sim.sanity.distortion;
+    const wobble = k * 0.035 * Math.sin(this.time.now / 260);
+    this.coinsText.setRotation(wobble);
+    this.distanceText.setRotation(-wobble);
+    this.comboText.setRotation(wobble * 0.7);
+
     this.updateHint(deltaMs);
   }
 
@@ -170,16 +206,18 @@ export class UIScene extends Phaser.Scene {
     if (!tut.glide && stats.glideSec >= GLIDE_LEARNED_SEC) this.session.completeTutorial('glide');
 
     const firstItem = upgradesConfig.items[0]!;
-    let hint: Hint = null;
+    let hint: Hint;
     if (!tut.jump) hint = 'jump';
     else if (!tut.purchase && this.session.state.coins.gte(firstItem.base)) hint = 'purchase';
     else if (!tut.glide) hint = 'glide';
+    else hint = this.oneShotHint();
 
     if (hint !== this.hint) {
       this.hint = hint;
       if (hint) this.hintText.setText(t(`hint.${hint}`));
     }
-    const visible = hint !== null && !this.offlineModal && !this.shop().opened;
+    const visible =
+      hint !== null && !this.offlineModal && !this.shop().opened && !this.grimoire().opened;
     const target = visible ? 0.8 + 0.2 * Math.sin(this.time.now / 300) : 0;
     const a = this.hintText.alpha;
     this.hintText.setAlpha(a + (target - a) * Math.min(1, deltaMs / 150));
@@ -187,6 +225,25 @@ export class UIScene extends Phaser.Scene {
     // Кнопка лавки «дышит», пока ждёт первую покупку.
     const pulse = hint === 'purchase' ? 1 + 0.06 * Math.sin(this.time.now / 140) : 1;
     this.shopButton.setScale(pulse);
+  }
+
+  /** Разовые подсказки M3: про рассудок (когда он впервые просел) и про готовое Пробуждение. */
+  private oneShotHint(): Hint {
+    const now = this.time.now;
+    if (this.oneShot && now < this.oneShotUntil) return this.oneShot;
+    this.oneShot = null;
+    const stats = this.session.state.stats;
+    let next: Hint = null;
+    if (this.sim.sanity.value < 75 && stats.insights === 0 && !this.shownOnce.has('sanity'))
+      next = 'sanity';
+    else if (this.sim.awakenMeter >= 1 && stats.awakenings === 0 && !this.shownOnce.has('awaken'))
+      next = 'awaken';
+    if (next) {
+      this.shownOnce.add(next);
+      this.oneShot = next;
+      this.oneShotUntil = now + ONE_SHOT_HINT_MS;
+    }
+    return next;
   }
 
   private showOffline(report: OfflineReport): void {

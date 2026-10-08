@@ -10,6 +10,18 @@ export type Migration = (data: Record<string, unknown>) => Record<string, unknow
 export const migrations: Readonly<Record<number, Migration>> = {
   // 0 — сохранения без поля v (не выпускались, но формат допускаем).
   0: (d) => ({ ...d, v: 1 }),
+  // 1 → 2: мета-системы M3. Новые поля получают нейтральные значения; глубина — первая.
+  1: (d) => ({
+    ...d,
+    v: 2,
+    essence: 0,
+    sardines: 0,
+    darkStars: 0,
+    depth: 1,
+    omen: null,
+    grimoire: [],
+    cat: { unlocked: false, levels: {} },
+  }),
 };
 
 export class SaveVersionError extends Error {}

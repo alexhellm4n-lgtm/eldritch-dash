@@ -14,7 +14,23 @@ function sample() {
   s.heroUpgrades = { doubleJump: 1 };
   s.tutorial = { jump: true, glide: true, purchase: false };
   s.settings.notation = 'scientific';
-  s.stats = { playtimeSec: 321.5, bestDistanceM: 1234, kills: 77 };
+  s.stats = {
+    playtimeSec: 321.5,
+    bestDistanceM: 1234,
+    kills: 77,
+    dreams: 2,
+    awakenings: 5,
+    insights: 1,
+    dives: 1,
+  };
+  s.essence = 12.5;
+  s.sardines = 9;
+  s.darkStars = 3;
+  s.depth = 2;
+  s.omen = 'greed';
+  s.grimoire = ['h_flash1', 'd_coin1'];
+  s.cat = { unlocked: true, levels: { catSpeed: 2 } };
+  s.settings.reduceDistortion = true;
   s.lastSeen = 5_000;
   return s;
 }
@@ -33,6 +49,13 @@ describe('сохранения', () => {
     expect(back.stats).toEqual(s.stats);
     expect(back.lastSeen).toBe(5_000);
     expect(back.createdAt).toBe(1_000);
+    expect(back.essence).toBe(12.5);
+    expect(back.sardines).toBe(9);
+    expect(back.darkStars).toBe(3);
+    expect(back.depth).toBe(2);
+    expect(back.omen).toBe('greed');
+    expect(back.grimoire).toEqual(['h_flash1', 'd_coin1']);
+    expect(back.cat).toEqual({ unlocked: true, levels: { catSpeed: 2 } });
   });
 
   it('строка экспорта — base64 без пробелов, переживает пробелы по краям', () => {
@@ -60,6 +83,17 @@ describe('сохранения', () => {
     expect(s.items).toEqual({ smuggler: 4 });
     expect(s.stats.playtimeSec).toBe(0);
     expect(s.lastSeen).toBe(123);
+  });
+
+  it('сохранение v1 (до M3) мигрирует: новые поля по умолчанию, прогресс цел', () => {
+    const v1 = { v: 1, coins: '777', items: { fisher: 3 }, heroUpgrades: { doubleJump: 1 } };
+    const s = decodeSave(btoa(JSON.stringify(v1)), 0)!;
+    expect(s.coins.toNumber()).toBe(777);
+    expect(s.items.fisher).toBe(3);
+    expect(s.depth).toBe(1);
+    expect(s.darkStars).toBe(0);
+    expect(s.grimoire).toEqual([]);
+    expect(s.cat.unlocked).toBe(false);
   });
 
   it('сохранение без версии (v0) мигрирует до текущей', () => {

@@ -1,0 +1,29 @@
+{
+  "periodSec": 180,
+  "phases": {
+    "quiet": {
+      "weight": 5
+    },
+    "fog": {
+      "weight": 3,
+      "glideStaminaMult": 2,
+      "skyCoinsWeightMult": 2.5
+    },
+    "bloodMoon": {
+      "weight": 2,
+      "enemyWeightMult": 2,
+      "essenceMult": 2
+    },
+    "storm": {
+      "weight": 2,
+      "speedMult": 0.85,
+      "coinValueMult": 1.5
+    },
+    "aligned": {
+      "weight": 0.6,
+      "starCoinChance": 0.05,
+      "starCoinUnits": 50,
+      "sanityDrainMult": 2.5
+    }
+  }
+}

@@ -9,6 +9,9 @@ import { WebAdapter } from './platform/WebAdapter';
 import { palette } from './render/palette';
 import { SaveManager } from './save/SaveManager';
 import { BootScene } from './scenes/BootScene';
+import { DebugScene } from './scenes/DebugScene';
+import { DreamScene } from './scenes/DreamScene';
+import { GrimoireScene } from './scenes/GrimoireScene';
 import { PreloadScene } from './scenes/PreloadScene';
 import { RunScene } from './scenes/RunScene';
 import { ShopOverlay } from './scenes/ShopOverlay';
@@ -41,7 +44,16 @@ async function bootstrap(): Promise<void> {
     height: display.height,
     backgroundColor: palette.nightSky,
     scale: { mode: Phaser.Scale.FIT, autoCenter: Phaser.Scale.CENTER_BOTH },
-    scene: [BootScene, PreloadScene, RunScene, UIScene, ShopOverlay],
+    scene: [
+      BootScene,
+      PreloadScene,
+      RunScene,
+      UIScene,
+      ShopOverlay,
+      GrimoireScene,
+      DreamScene,
+      DebugScene,
+    ],
   });
   // Для отладки из консоли браузера; в production-сборку не попадает.
   if (import.meta.env.DEV) Object.assign(window, { game, session, saves });

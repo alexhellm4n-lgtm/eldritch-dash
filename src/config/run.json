@@ -36,5 +36,12 @@
     "height": 150,
     "reachBehind": 10,
     "cooldownSec": 0.25
+  },
+  "awakening": {
+    "killsToFill": 24,
+    "durationSec": 10,
+    "coinMult": 3,
+    "sanityCost": 15,
+    "screenAheadPx": 980
   }
 }

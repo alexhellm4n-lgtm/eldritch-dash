@@ -25,6 +25,12 @@ export const palette = {
   puffTintWarm: 0xffd2dc,
   /** Неактивная табличка-кнопка (умножается на латунь). */
   plaqueInactive: 0xb8a890,
+  /** Светло-фиолетовый текст HUD (Эссенция, глубина). */
+  violetLightUi: 0xc8a8f0,
+  /** Тёмно-фиолетовая подложка шкал. */
+  violetShadeUi: 0x3a2456,
+  /** Цвет виньетки искажений. */
+  violetDeep: 0x2a1240,
   // UI
   parchmentShade: 0xcdb884,
   parchmentLight: 0xf5ead0,

@@ -1,23 +1,114 @@
 {
   "growth": 1.15,
-  "milestones": { "levels": [25, 50, 100, 200], "multiplier": 2 },
+  "milestones": {
+    "levels": [25, 50, 100, 200],
+    "multiplier": 2
+  },
   "items": [
-    { "id": "fisher", "base": 15, "cps": 0.5 },
-    { "id": "bookbinder", "base": 120, "cps": 4 },
-    { "id": "smuggler", "base": 1300, "cps": 30 },
-    { "id": "antiquary", "base": 14000, "cps": 220 },
-    { "id": "expedition", "base": 160000, "cps": 1600 },
-    { "id": "observatory", "base": 2000000, "cps": 12000 },
-    { "id": "deep_trade", "base": 3e7, "cps": 1e5 },
-    { "id": "star_altar", "base": 5e8, "cps": 9e5 }
+    {
+      "id": "fisher",
+      "base": 15,
+      "cps": 0.5
+    },
+    {
+      "id": "bookbinder",
+      "base": 120,
+      "cps": 4
+    },
+    {
+      "id": "smuggler",
+      "base": 1300,
+      "cps": 30
+    },
+    {
+      "id": "antiquary",
+      "base": 14000,
+      "cps": 220
+    },
+    {
+      "id": "expedition",
+      "base": 160000,
+      "cps": 1600
+    },
+    {
+      "id": "observatory",
+      "base": 2000000,
+      "cps": 12000
+    },
+    {
+      "id": "deep_trade",
+      "base": 30000000.0,
+      "cps": 100000.0
+    },
+    {
+      "id": "star_altar",
+      "base": 500000000.0,
+      "cps": 900000.0
+    }
   ],
   "hero": [
-    { "id": "flashRadius", "costs": [60, 2500, 60000], "add": { "attackRangeMult": 0.25 } },
-    { "id": "glideStamina", "costs": [150, 4000, 90000], "add": { "staminaBonusSec": 0.5 } },
-    { "id": "speed", "costs": [250, 9000, 200000], "add": { "speedBonus": 40 } },
-    { "id": "magnet", "costs": [400, 12000, 250000], "add": { "magnetRadius": 110 } },
-    { "id": "doubleJump", "costs": [800], "add": { "extraJumps": 1 } },
-    { "id": "coinValue", "costs": [1500, 40000, 900000, 2e7], "mul": { "coinValueMult": 2 } },
-    { "id": "autoJump", "costs": [5e6], "add": { "autoJump": 1 } }
+    {
+      "id": "flashRadius",
+      "costs": [60, 2500, 60000],
+      "add": {
+        "attackRangeMult": 0.25
+      }
+    },
+    {
+      "id": "glideStamina",
+      "costs": [150, 4000, 90000],
+      "add": {
+        "staminaBonusSec": 0.5
+      }
+    },
+    {
+      "id": "speed",
+      "costs": [250, 9000, 200000],
+      "add": {
+        "speedBonus": 40
+      }
+    },
+    {
+      "id": "magnet",
+      "costs": [400, 12000, 250000],
+      "add": {
+        "magnetRadius": 110
+      }
+    },
+    {
+      "id": "doubleJump",
+      "costs": [800],
+      "add": {
+        "extraJumps": 1
+      }
+    },
+    {
+      "id": "coinValue",
+      "costs": [1500, 40000, 900000, 20000000.0],
+      "mul": {
+        "coinValueMult": 2
+      }
+    },
+    {
+      "id": "autoJump",
+      "costs": [5000000.0],
+      "add": {
+        "autoJump": 1
+      }
+    },
+    {
+      "id": "clearMind",
+      "costs": [3000, 80000],
+      "mul": {
+        "sanityDrainMult": 0.7
+      }
+    },
+    {
+      "id": "pageLuck",
+      "costs": [1200],
+      "mul": {
+        "pageChanceMult": 1.5
+      }
+    }
   ]
 }

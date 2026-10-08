@@ -1,0 +1,21 @@
+{
+  "src": "raw/cat_sheet_b.png",
+  "outDir": "public/assets/cat",
+  "manifest": "src/render/catParts.json",
+  "unitsPerPx": 0.12,
+  "textureScale": 2,
+  "parts": {
+    "cat_head": {
+      "seed": [1145, 315]
+    },
+    "cat_body": {
+      "seed": [1140, 685]
+    },
+    "cat_wing": {
+      "seed": [1101, 1022]
+    },
+    "cat_tail": {
+      "seed": [1206, 1291]
+    }
+  }
+}

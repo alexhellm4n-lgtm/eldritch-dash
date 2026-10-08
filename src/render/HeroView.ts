@@ -2,7 +2,7 @@ import Phaser from 'phaser';
 import generatedRig from '../../assets-src/rigs/hero.generated.json';
 import placeholderRig from '../../assets-src/rigs/hero.json';
 import { juiceConfig } from '../config';
-import type { HeroMotor } from '../systems/HeroMotor';
+import type { HeroPose } from '../systems/HeroMotor';
 import { CutoutRig, type RigDef } from './CutoutRig';
 import { palette } from './palette';
 import { isRaster, unitImage, unitScale } from './textures';
@@ -116,7 +116,7 @@ export class HeroView {
     this.flashT = 0;
   }
 
-  update(hero: HeroMotor, x: number, dtSec: number): void {
+  update(hero: HeroPose, x: number, dtSec: number): void {
     this.time += dtSec;
     const pose = this.def.poses;
     this.attackT += dtSec;

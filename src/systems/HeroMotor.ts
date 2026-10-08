@@ -1,10 +1,21 @@
 import type { GlideConfig, HeroConfig } from '../config/types';
 
+/** То, что нужно отрисовке героя: и забег, и сон дают такую позу. */
+export interface HeroPose {
+  readonly y: number;
+  readonly vy: number;
+  readonly speed: number;
+  readonly grounded: boolean;
+  readonly gliding: boolean;
+  readonly stunned: boolean;
+  readonly staminaRatio: number;
+}
+
 /**
  * Движение героя: автобег, прыжок (с буфером ввода), прыжок в воздухе, парение, оглушение.
  * x — центр по горизонтали, y — уровень ступней.
  */
-export class HeroMotor {
+export class HeroMotor implements HeroPose {
   x = 0;
   y: number;
   speed = 0;

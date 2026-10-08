@@ -1,0 +1,457 @@
+{
+  "chapters": ["hunter", "dreamer", "winged"],
+  "nodes": [
+    {
+      "id": "h_flash1",
+      "chapter": "hunter",
+      "col": 0,
+      "row": 1,
+      "cost": 10,
+      "requires": [],
+      "add": {
+        "attackRangeMult": 0.1
+      }
+    },
+    {
+      "id": "h_essence1",
+      "chapter": "hunter",
+      "col": 1,
+      "row": 0,
+      "cost": 18,
+      "requires": ["h_flash1"],
+      "mul": {
+        "essenceMult": 1.15
+      }
+    },
+    {
+      "id": "h_awake1",
+      "chapter": "hunter",
+      "col": 1,
+      "row": 2,
+      "cost": 30,
+      "requires": ["h_flash1"],
+      "mul": {
+        "awakeningKillsMult": 0.9
+      }
+    },
+    {
+      "id": "h_coin1",
+      "chapter": "hunter",
+      "col": 2,
+      "row": 0,
+      "cost": 50,
+      "requires": ["h_essence1"],
+      "mul": {
+        "coinValueMult": 1.1
+      }
+    },
+    {
+      "id": "h_chest1",
+      "chapter": "hunter",
+      "col": 2,
+      "row": 1,
+      "cost": 80,
+      "requires": ["h_essence1", "h_awake1"],
+      "add": {
+        "chestChanceBonus": 0.01
+      }
+    },
+    {
+      "id": "h_awake2",
+      "chapter": "hunter",
+      "col": 2,
+      "row": 2,
+      "cost": 130,
+      "requires": ["h_awake1"],
+      "mul": {
+        "awakeningDurationMult": 1.15
+      }
+    },
+    {
+      "id": "h_essence2",
+      "chapter": "hunter",
+      "col": 3,
+      "row": 0,
+      "cost": 200,
+      "requires": ["h_coin1"],
+      "mul": {
+        "essenceMult": 1.2
+      }
+    },
+    {
+      "id": "h_flash2",
+      "chapter": "hunter",
+      "col": 3,
+      "row": 1,
+      "cost": 320,
+      "requires": ["h_chest1"],
+      "add": {
+        "attackRangeMult": 0.1
+      }
+    },
+    {
+      "id": "h_awake3",
+      "chapter": "hunter",
+      "col": 3,
+      "row": 2,
+      "cost": 500,
+      "requires": ["h_awake2"],
+      "add": {
+        "awakeningCoinMult": 0.5
+      }
+    },
+    {
+      "id": "h_coin2",
+      "chapter": "hunter",
+      "col": 4,
+      "row": 0,
+      "cost": 800,
+      "requires": ["h_essence2"],
+      "mul": {
+        "coinValueMult": 1.15
+      }
+    },
+    {
+      "id": "h_chest2",
+      "chapter": "hunter",
+      "col": 4,
+      "row": 1,
+      "cost": 1250,
+      "requires": ["h_flash2"],
+      "add": {
+        "chestChanceBonus": 0.02
+      }
+    },
+    {
+      "id": "h_awake4",
+      "chapter": "hunter",
+      "col": 4,
+      "row": 2,
+      "cost": 2000,
+      "requires": ["h_awake3"],
+      "mul": {
+        "awakeningKillsMult": 0.85
+      },
+      "darkStars": 1,
+      "keep": true
+    },
+    {
+      "id": "h_master",
+      "chapter": "hunter",
+      "col": 5,
+      "row": 1,
+      "cost": 3200,
+      "requires": ["h_coin2", "h_chest2", "h_awake4"],
+      "mul": {
+        "essenceMult": 1.5
+      },
+      "darkStars": 3,
+      "keep": true
+    },
+    {
+      "id": "d_coin1",
+      "chapter": "dreamer",
+      "col": 0,
+      "row": 1,
+      "cost": 10,
+      "requires": [],
+      "mul": {
+        "coinValueMult": 1.1
+      }
+    },
+    {
+      "id": "d_cps1",
+      "chapter": "dreamer",
+      "col": 1,
+      "row": 0,
+      "cost": 18,
+      "requires": ["d_coin1"],
+      "mul": {
+        "cpsMult": 1.2
+      }
+    },
+    {
+      "id": "d_page1",
+      "chapter": "dreamer",
+      "col": 1,
+      "row": 2,
+      "cost": 30,
+      "requires": ["d_coin1"],
+      "mul": {
+        "pageChanceMult": 1.2
+      }
+    },
+    {
+      "id": "d_offline1",
+      "chapter": "dreamer",
+      "col": 2,
+      "row": 0,
+      "cost": 50,
+      "requires": ["d_cps1"],
+      "add": {
+        "offlineCapBonusSec": 3600
+      }
+    },
+    {
+      "id": "d_coin2",
+      "chapter": "dreamer",
+      "col": 2,
+      "row": 1,
+      "cost": 80,
+      "requires": ["d_cps1", "d_page1"],
+      "mul": {
+        "coinValueMult": 1.15
+      }
+    },
+    {
+      "id": "d_dream1",
+      "chapter": "dreamer",
+      "col": 2,
+      "row": 2,
+      "cost": 130,
+      "requires": ["d_page1"],
+      "mul": {
+        "dreamRewardMult": 1.25
+      }
+    },
+    {
+      "id": "d_offline2",
+      "chapter": "dreamer",
+      "col": 3,
+      "row": 0,
+      "cost": 200,
+      "requires": ["d_offline1"],
+      "mul": {
+        "offlineRateMult": 1.2
+      }
+    },
+    {
+      "id": "d_cps2",
+      "chapter": "dreamer",
+      "col": 3,
+      "row": 1,
+      "cost": 320,
+      "requires": ["d_coin2"],
+      "mul": {
+        "cpsMult": 1.25
+      }
+    },
+    {
+      "id": "d_sardine1",
+      "chapter": "dreamer",
+      "col": 3,
+      "row": 2,
+      "cost": 500,
+      "requires": ["d_dream1"],
+      "mul": {
+        "sardineMult": 1.3
+      }
+    },
+    {
+      "id": "d_offline3",
+      "chapter": "dreamer",
+      "col": 4,
+      "row": 0,
+      "cost": 800,
+      "requires": ["d_offline2"],
+      "add": {
+        "offlineCapBonusSec": 7200
+      }
+    },
+    {
+      "id": "d_coin3",
+      "chapter": "dreamer",
+      "col": 4,
+      "row": 1,
+      "cost": 1250,
+      "requires": ["d_cps2"],
+      "mul": {
+        "coinValueMult": 1.2
+      }
+    },
+    {
+      "id": "d_dream2",
+      "chapter": "dreamer",
+      "col": 4,
+      "row": 2,
+      "cost": 2000,
+      "requires": ["d_sardine1"],
+      "mul": {
+        "dreamRewardMult": 1.4
+      }
+    },
+    {
+      "id": "d_offline4",
+      "chapter": "dreamer",
+      "col": 5,
+      "row": 0,
+      "cost": 3200,
+      "requires": ["d_offline3"],
+      "add": {
+        "offlineCapBonusSec": 21600
+      },
+      "darkStars": 1,
+      "keep": true
+    },
+    {
+      "id": "d_master",
+      "chapter": "dreamer",
+      "col": 5,
+      "row": 2,
+      "cost": 5000,
+      "requires": ["d_coin3", "d_dream2"],
+      "mul": {
+        "cpsMult": 1.6
+      },
+      "darkStars": 3,
+      "keep": true
+    },
+    {
+      "id": "w_glide1",
+      "chapter": "winged",
+      "col": 0,
+      "row": 1,
+      "cost": 10,
+      "requires": [],
+      "add": {
+        "staminaBonusSec": 0.25
+      }
+    },
+    {
+      "id": "w_speed1",
+      "chapter": "winged",
+      "col": 1,
+      "row": 0,
+      "cost": 18,
+      "requires": ["w_glide1"],
+      "add": {
+        "speedBonus": 15
+      }
+    },
+    {
+      "id": "w_sanity1",
+      "chapter": "winged",
+      "col": 1,
+      "row": 2,
+      "cost": 30,
+      "requires": ["w_glide1"],
+      "mul": {
+        "sanityDrainMult": 0.9
+      }
+    },
+    {
+      "id": "w_magnet1",
+      "chapter": "winged",
+      "col": 2,
+      "row": 0,
+      "cost": 50,
+      "requires": ["w_speed1"],
+      "add": {
+        "magnetRadius": 40
+      }
+    },
+    {
+      "id": "w_glide2",
+      "chapter": "winged",
+      "col": 2,
+      "row": 1,
+      "cost": 80,
+      "requires": ["w_speed1", "w_sanity1"],
+      "add": {
+        "staminaBonusSec": 0.25
+      }
+    },
+    {
+      "id": "w_pickup1",
+      "chapter": "winged",
+      "col": 2,
+      "row": 2,
+      "cost": 130,
+      "requires": ["w_sanity1"],
+      "mul": {
+        "sanityPickupMult": 1.25
+      }
+    },
+    {
+      "id": "w_speed2",
+      "chapter": "winged",
+      "col": 3,
+      "row": 0,
+      "cost": 200,
+      "requires": ["w_magnet1"],
+      "add": {
+        "speedBonus": 20
+      }
+    },
+    {
+      "id": "w_contact1",
+      "chapter": "winged",
+      "col": 3,
+      "row": 1,
+      "cost": 320,
+      "requires": ["w_glide2"],
+      "mul": {
+        "contactLossMult": 0.8
+      }
+    },
+    {
+      "id": "w_insight1",
+      "chapter": "winged",
+      "col": 3,
+      "row": 2,
+      "cost": 500,
+      "requires": ["w_pickup1"],
+      "mul": {
+        "insightRewardMult": 1.5
+      }
+    },
+    {
+      "id": "w_magnet2",
+      "chapter": "winged",
+      "col": 4,
+      "row": 0,
+      "cost": 800,
+      "requires": ["w_speed2"],
+      "add": {
+        "magnetRadius": 60
+      }
+    },
+    {
+      "id": "w_glide3",
+      "chapter": "winged",
+      "col": 4,
+      "row": 1,
+      "cost": 1250,
+      "requires": ["w_contact1"],
+      "add": {
+        "staminaBonusSec": 0.5
+      }
+    },
+    {
+      "id": "w_sanity2",
+      "chapter": "winged",
+      "col": 4,
+      "row": 2,
+      "cost": 2000,
+      "requires": ["w_insight1"],
+      "mul": {
+        "sanityDrainMult": 0.85
+      },
+      "darkStars": 1,
+      "keep": true
+    },
+    {
+      "id": "w_master",
+      "chapter": "winged",
+      "col": 5,
+      "row": 1,
+      "cost": 3200,
+      "requires": ["w_magnet2", "w_glide3", "w_sanity2"],
+      "add": {
+        "extraJumps": 1
+      },
+      "darkStars": 3,
+      "keep": true
+    }
+  ]
+}

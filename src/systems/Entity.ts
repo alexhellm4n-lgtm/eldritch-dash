@@ -1,6 +1,6 @@
 import { ZERO, type Decimal } from '../core/BigNum';
 
-export type EntityKind = 'coin' | 'obstacle' | 'enemy';
+export type EntityKind = 'coin' | 'obstacle' | 'enemy' | 'pickup';
 
 /**
  * Объект на трассе. Координаты — центр AABB в мировых пикселях.
@@ -29,6 +29,14 @@ export class Entity {
   magnet = false;
   /** Время с последнего удара по врагу, с (для визуального отклика). */
   hurtT = Infinity;
+  /** Иллюзорная тварь (низкий рассудок): безвредна, без награды, исчезает от удара. */
+  illusion = false;
+  /** Препятствие невидимо до последнего момента (рассудок ниже invisibleAt). */
+  hidden = false;
+  /** Кот уже зашипел на эту иллюзию. */
+  hissed = false;
+  /** Эссенция, начисленная за убийство (заполняется перед событием kill). */
+  essence = 0;
 
   reset(id: number, kind: EntityKind, type: string): this {
     this.id = id;
@@ -37,6 +45,8 @@ export class Entity {
     this.x = this.y = this.w = this.h = this.t = this.baseY = this.hp = 0;
     this.reward = ZERO;
     this.spent = this.cleared = this.magnet = false;
+    this.illusion = this.hidden = this.hissed = false;
+    this.essence = 0;
     this.hurtT = Infinity;
     return this;
   }

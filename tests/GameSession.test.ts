@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { economyConfig, enemiesConfig, runConfig, upgradesConfig } from '../src/config';
+import {
+  economyConfig,
+  enemiesConfig,
+  runConfig,
+  sanityConfig,
+  upgradesConfig,
+} from '../src/config';
+import { coinMultFor } from '../src/systems/Sanity';
 import { bn } from '../src/core/BigNum';
 import { createGameState } from '../src/core/GameState';
 import { GameSession } from '../src/systems/GameSession';
@@ -73,7 +80,13 @@ describe('GameSession', () => {
     st.lastSeen = 0;
     const s = new GameSession(st);
     const r = s.checkOffline(3600 * 1000)!;
-    expect(r.amount.toNumber()).toBeCloseTo(20 * 0.5 * 3600 * economyConfig.offline.rate);
+    // Пассивный режим: рассудок idleSanity (×1.3) и средняя фаза звёзд за час.
+    const idle = coinMultFor(sanityConfig.idleSanity, sanityConfig);
+    const phase = s.stars.averageCoinMult(0, 3600 * 1000);
+    expect(r.amount.toNumber()).toBeCloseTo(
+      20 * 0.5 * 3600 * economyConfig.offline.rate * idle * phase,
+      3,
+    );
     expect(s.claimOffline(2).toNumber()).toBeCloseTo(r.amount.toNumber() * 2);
     expect(s.pendingOffline).toBeNull();
     expect(s.claimOffline().toNumber()).toBe(0);

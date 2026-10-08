@@ -1,4 +1,4 @@
-import type { BiomeConfig, EnemyConfig, PatternKind } from '../config/types';
+import { PATTERNS, type BiomeConfig, type EnemyConfig, type PatternKind } from '../config/types';
 import type { Entity, EntityKind } from './Entity';
 import { WeightedTable, type Rng } from './Rng';
 
@@ -12,9 +12,14 @@ export class Track {
   /** Координата, с которой начнётся следующий паттерн. */
   cursor: number;
   private lastHazardX = -Infinity;
-  private readonly patterns: WeightedTable<PatternKind>;
   private readonly enemyTable: WeightedTable<string>;
   private readonly obstacleTable: WeightedTable<string>;
+  private readonly pickupTable: WeightedTable<string>;
+  /** Множители весов паттернов (фаза звёзд): враги, небесные линии монет. */
+  enemyWeightMult = 1;
+  skyCoinsWeightMult = 1;
+  /** Шанс страницы книги после каждого паттерна. */
+  pageChance = 0;
 
   constructor(
     private readonly biome: BiomeConfig,
@@ -26,9 +31,25 @@ export class Track {
     startX: number,
   ) {
     this.cursor = startX;
-    this.patterns = new WeightedTable(biome.patternWeights);
     this.enemyTable = new WeightedTable(biome.enemyWeights);
     this.obstacleTable = new WeightedTable(biome.obstacleWeights);
+    this.pickupTable = new WeightedTable(biome.pickupWeights);
+  }
+
+  /** Взвешенный выбор паттерна с поправками фазы (без аллокаций). */
+  private pickPattern(): PatternKind {
+    const w = this.biome.patternWeights;
+    const weight = (p: PatternKind): number =>
+      w[p] *
+      (p === 'enemy' ? this.enemyWeightMult : p === 'coinsSky' ? this.skyCoinsWeightMult : 1);
+    let total = 0;
+    for (const p of PATTERNS) total += weight(p);
+    let roll = this.rng.next() * total;
+    for (const p of PATTERNS) {
+      roll -= weight(p);
+      if (roll < 0) return p;
+    }
+    return 'coinsGround';
   }
 
   shift(dx: number): void {
@@ -39,16 +60,18 @@ export class Track {
   /** Заполняет трассу до `untilX`. */
   fill(untilX: number, safeUntilX: number): void {
     while (this.cursor < untilX) {
-      let pattern = this.patterns.pick(this.rng);
+      let pattern = this.pickPattern();
       const hazard = pattern === 'obstacle' || pattern === 'enemy';
-      if (
-        hazard &&
-        (this.cursor < safeUntilX || this.cursor - this.lastHazardX < this.biome.minHazardGapPx)
-      ) {
+      if (this.cursor < safeUntilX) {
+        // Стартовый отрезок — только наземные монеты: первая покупка без единого прыжка.
+        pattern = 'coinsGround';
+      } else if (hazard && this.cursor - this.lastHazardX < this.biome.minHazardGapPx) {
         pattern = this.rng.chance(0.5) ? 'coinsGround' : 'coinsSky';
       }
       this.place(pattern);
-      this.cursor += this.rng.range(this.biome.gapPx);
+      const gap = this.rng.range(this.biome.gapPx);
+      if (this.rng.chance(this.pageChance)) this.page(this.cursor + gap / 2);
+      this.cursor += gap;
     }
   }
 
@@ -94,6 +117,17 @@ export class Track {
         this.cursor += size.width;
         break;
       }
+      case 'pickup': {
+        const type = this.pickupTable.pick(this.rng);
+        const p = this.biome.pickups[type]!;
+        const e = this.spawn('pickup', type);
+        e.w = p.width;
+        e.h = p.height;
+        e.x = this.cursor + p.width / 2;
+        e.y = e.baseY = this.groundY - p.lift;
+        this.cursor += p.width;
+        break;
+      }
       case 'enemy': {
         const type = this.enemyTable.pick(this.rng);
         const cfg = this.enemies[type]!;
@@ -111,6 +145,15 @@ export class Track {
         break;
       }
     }
+  }
+
+  /** Вырванная страница запретной книги — парит в воздухе, достаётся прыжком. */
+  private page(x: number): void {
+    const e = this.spawn('pickup', 'page');
+    e.w = this.biome.pageSize.width;
+    e.h = this.biome.pageSize.height;
+    e.x = x;
+    e.y = e.baseY = this.groundY - this.rng.range(this.biome.pageLift);
   }
 
   private coin(x: number, y: number): void {

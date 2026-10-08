@@ -12,6 +12,8 @@ export interface ButtonStyle {
   icon?: string;
   /** Круглый значок вместо таблички (для квадратных кнопок-иконок). */
   badge?: boolean;
+  /** Всегда векторная кнопка-карточка (для крупных карточек с текстом поверх). */
+  plain?: boolean;
 }
 
 const DEFAULT_STYLE: ButtonStyle = {
@@ -57,7 +59,7 @@ export class Button extends Phaser.GameObjects.Container {
     this.style = { ...DEFAULT_STYLE, ...style };
     this.fill = this.style.fill;
     const bgKey = this.style.badge ? skin.badge.key : skin.button.key;
-    this.skinned = isRaster(bgKey);
+    this.skinned = !this.style.plain && isRaster(bgKey);
 
     if (this.skinned && this.style.badge) {
       const img = scene.add.image(0, 0, bgKey);
@@ -87,7 +89,7 @@ export class Button extends Phaser.GameObjects.Container {
     }
 
     const iconKey = this.style.icon;
-    const showIcon = iconKey !== undefined && isRaster(iconKey);
+    const showIcon = iconKey !== undefined && scene.textures.exists(iconKey);
     if (showIcon) {
       const img = scene.add.image(0, 0, iconKey);
       // Иконка вписывается в высоту кнопки с запасом.

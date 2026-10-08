@@ -17,14 +17,14 @@ const PAD = 40;
 const HEADER_Y = 54;
 const TABS_Y = 106;
 const ROW_W = PANEL_W - PAD * 2;
-const ROW_H = 60;
+const ROW_H = 54;
 const ROW_GAP = 4;
 const ROWS_Y = 138;
 const BUY_W = 176;
 const SLIDE_MS = 220;
 const AMOUNTS: readonly BuyAmount[] = [1, 10, 100, 'max'];
 
-type Tab = 'items' | 'hero';
+type Tab = 'items' | 'hero' | 'cat';
 
 interface Row {
   id: string;
@@ -57,6 +57,9 @@ export class ShopOverlay extends Phaser.Scene {
   private amountButtons = new Map<BuyAmount, Button>();
   private itemsLayer!: Phaser.GameObjects.Container;
   private heroLayer!: Phaser.GameObjects.Container;
+  private catLayer!: Phaser.GameObjects.Container;
+  private catRows: Row[] = [];
+  private catLocked!: Phaser.GameObjects.Text;
   private isOpen = false;
 
   constructor() {
@@ -71,6 +74,7 @@ export class ShopOverlay extends Phaser.Scene {
     this.session = app().session;
     this.itemRows = [];
     this.heroRows = [];
+    this.catRows = [];
     this.tabButtons.clear();
     this.amountButtons.clear();
     this.isOpen = false;
@@ -85,7 +89,7 @@ export class ShopOverlay extends Phaser.Scene {
       this.add
         .text(PAD, HEADER_Y, t('shop.title'), {
           fontFamily: 'Georgia, serif',
-          fontSize: '30px',
+          fontSize: '26px',
           fontStyle: 'bold',
           color: toCss(palette.ink),
         })
@@ -102,9 +106,10 @@ export class ShopOverlay extends Phaser.Scene {
     const tabs: [Tab, string][] = [
       ['items', t('shop.tab.items')],
       ['hero', t('shop.tab.hero')],
+      ['cat', t('shop.tab.cat')],
     ];
     tabs.forEach(([id, label], i) => {
-      const b = new Button(this, PAD + 75 + i * 158, TABS_Y, 150, 46, label, {
+      const b = new Button(this, PAD + 85 + i * 180, TABS_Y, 170, 46, label, {
         fontSize: 17,
       }).onClick(() => this.setTab(id));
       this.tabButtons.set(id, b);
@@ -115,8 +120,9 @@ export class ShopOverlay extends Phaser.Scene {
       const label = a === 'max' ? t('shop.max') : `×${a}`;
       const b = new Button(
         this,
-        PANEL_W - PAD - 30 - (AMOUNTS.length - 1 - i) * 62,
-        TABS_Y,
+        // ×1…MAX — в строке заголовка, левее кнопки закрытия.
+        PANEL_W - PAD - 88 - (AMOUNTS.length - 1 - i) * 62,
+        HEADER_Y,
         60,
         46,
         label,
@@ -130,7 +136,8 @@ export class ShopOverlay extends Phaser.Scene {
 
     this.itemsLayer = this.add.container(0, 0);
     this.heroLayer = this.add.container(0, 0);
-    this.panel.add([this.itemsLayer, this.heroLayer]);
+    this.catLayer = this.add.container(0, 0);
+    this.panel.add([this.itemsLayer, this.heroLayer, this.catLayer]);
 
     this.session.economy.upgrades.items.forEach((item, i) => {
       const row = this.createRow(item.id, i);
@@ -145,12 +152,30 @@ export class ShopOverlay extends Phaser.Scene {
       this.heroRows.push(row);
     });
 
+    this.session.catUpgrades.list.forEach((u, i) => {
+      const row = this.createRow(u.id, i, 'icon_sardine');
+      row.buy.onClick(() => this.session.buyCat(u.id));
+      this.catLayer.add(row.root);
+      this.catRows.push(row);
+    });
+    this.catLocked = this.add
+      .text(PANEL_W / 2, ROWS_Y + 40, t('cat.locked'), {
+        fontFamily: 'sans-serif',
+        fontSize: '20px',
+        fontStyle: 'bold',
+        color: toCss(palette.inkSoft),
+        align: 'center',
+        wordWrap: { width: ROW_W - 40 },
+      })
+      .setOrigin(0.5, 0);
+    this.catLayer.add(this.catLocked);
+
     this.setTab('items');
     this.setAmount(1);
     this.input.keyboard?.on('keydown-ESC', () => this.close());
   }
 
-  private createRow(id: string, index: number): Row {
+  private createRow(id: string, index: number, icon?: string): Row {
     const y = ROWS_Y + index * (ROW_H + ROW_GAP);
     const root = this.add.container(PAD, y);
     const g = this.add.graphics();
@@ -158,11 +183,12 @@ export class ShopOverlay extends Phaser.Scene {
     g.fillRoundedRect(0, 0, ROW_W, ROW_H, 10);
     g.lineStyle(2, palette.outline, 0.8);
     g.strokeRoundedRect(0, 0, ROW_W, ROW_H, 10);
-    const title = this.add.text(14, 8, '', textStyle(20, palette.ink, true));
-    const detail = this.add.text(14, 37, '', textStyle(14, palette.inkSoft));
+    const title = this.add.text(14, 5, '', textStyle(18, palette.ink, true));
+    const detail = this.add.text(14, 31, '', textStyle(13, palette.inkSoft));
     detail.setWordWrapWidth(ROW_W - BUY_W - 40);
-    const buy = new Button(this, ROW_W - 12 - BUY_W / 2, ROW_H / 2, BUY_W, 48, '', {
+    const buy = new Button(this, ROW_W - 12 - BUY_W / 2, ROW_H / 2, BUY_W, 44, '', {
       fontSize: 19,
+      ...(icon ? { icon } : {}),
     });
     root.add([g, title, detail, buy]);
     return { id, root, title, detail, buy };
@@ -201,6 +227,7 @@ export class ShopOverlay extends Phaser.Scene {
     }
     this.itemsLayer.setVisible(tab === 'items');
     this.heroLayer.setVisible(tab === 'hero');
+    this.catLayer.setVisible(tab === 'cat');
     for (const b of this.amountButtons.values()) b.setVisible(tab === 'items');
   }
 
@@ -214,7 +241,8 @@ export class ShopOverlay extends Phaser.Scene {
   override update(): void {
     if (!this.panel.visible) return;
     if (this.tab === 'items') this.updateItems();
-    else this.updateHero();
+    else if (this.tab === 'hero') this.updateHero();
+    else this.updateCat();
   }
 
   private updateItems(): void {
@@ -264,6 +292,24 @@ export class ShopOverlay extends Phaser.Scene {
       } else {
         row.buy.setLabel(formatNumber(cost, notation)).setEnabled(s.state.coins.gte(cost));
       }
+    }
+  }
+
+  /** Кот-фамильяр: прокачка за сардинки (SPEC §4.7); до первого Сновидения — заглушка. */
+  private updateCat(): void {
+    const s = this.session;
+    const unlocked = s.state.cat.unlocked;
+    this.catLocked.setVisible(!unlocked);
+    for (const row of this.catRows) {
+      row.root.setVisible(unlocked);
+      if (!unlocked) continue;
+      const tier = s.catTier(row.id);
+      const max = s.catUpgrades.maxTier(row.id);
+      setText(row.title, `${tId(`cat.${row.id}`)} · ${t('shop.tier', { tier, max })}`);
+      setText(row.detail, tId(`cat.${row.id}.desc`));
+      const cost = s.catNextCost(row.id);
+      if (cost === null) row.buy.setLabel(t('shop.bought')).setEnabled(false);
+      else row.buy.setLabel(String(cost)).setEnabled(s.state.sardines >= cost);
     }
   }
 }

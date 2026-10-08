@@ -1,0 +1,23 @@
+{
+  "max": 100,
+  "start": 100,
+  "drainPerSec": 0.45,
+  "contactLoss": 12,
+  "pickups": {
+    "lantern": 14,
+    "tea": 24
+  },
+  "coinMultPerPoint": 0.01,
+  "coinMultCap": 2,
+  "distortAt": 50,
+  "invisibleAt": 20,
+  "illusionChance": 0.45,
+  "hiddenChance": 0.5,
+  "revealPx": 240,
+  "insight": {
+    "stunSec": 3,
+    "restoreTo": 60,
+    "coinUnits": 250
+  },
+  "idleSanity": 70
+}

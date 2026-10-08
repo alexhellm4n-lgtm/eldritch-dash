@@ -45,12 +45,22 @@ export interface AttackConfig {
   cooldownSec: number;
 }
 
+export interface AwakeningConfig {
+  killsToFill: number;
+  durationSec: number;
+  coinMult: number;
+  sanityCost: number;
+  /** Твари ближе этого расстояния перед героем гибнут при появлении. */
+  screenAheadPx: number;
+}
+
 export interface RunConfig {
   maxStepSec: number;
   world: WorldConfig;
   hero: HeroConfig;
   glide: GlideConfig;
   attack: AttackConfig;
+  awakening: AwakeningConfig;
 }
 
 export interface ComboStep {
@@ -69,9 +79,27 @@ export interface EconomyConfig {
   startCoins: number;
   /** coinValue = baseValue × (1 + CpS × cpsFactor) × множители (SPEC §5.2). */
   coin: { baseValue: number; radius: number; cpsFactor: number };
-  offline: { rate: number; capSec: number; minSec: number };
+  offline: { rate: number; capSec: number; minSec: number; useIdleSanity: boolean };
   autosaveSec: number;
   combo: ComboConfig;
+  chest: { coinUnits: number; sardines: Range };
+  prestige: PrestigeConfig;
+}
+
+export interface OmenConfig {
+  id: string;
+  add?: Partial<RunModifiers>;
+  mul?: Partial<RunModifiers>;
+}
+
+export interface PrestigeConfig {
+  /** тёмные_звёзды = floor(sqrt(дублоны_за_погружение / divisor)). */
+  divisor: number;
+  minStars: number;
+  /** Общий множитель дохода: 1 + starBonus × тёмные_звёзды. */
+  starBonus: number;
+  omenChoices: number;
+  omens: readonly OmenConfig[];
 }
 
 export interface ItemConfig {
@@ -80,15 +108,36 @@ export interface ItemConfig {
   cps: number;
 }
 
-/** Модификаторы забега от улучшений героя. */
+/**
+ * Все бонусы: улучшения героя, гримуар, знамение, кот. Источники складываются
+ * (`add`) или перемножаются (`mul`); нейтральные значения — в Upgrades.baseModifiers().
+ */
 export interface RunModifiers {
   attackRangeMult: number;
   staminaBonusSec: number;
   speedBonus: number;
+  speedMult: number;
   magnetRadius: number;
   extraJumps: number;
   coinValueMult: number;
   autoJump: number;
+  cpsMult: number;
+  essenceMult: number;
+  offlineCapBonusSec: number;
+  offlineRateMult: number;
+  sanityDrainMult: number;
+  sanityPickupMult: number;
+  contactLossMult: number;
+  insightRewardMult: number;
+  awakeningKillsMult: number;
+  awakeningDurationMult: number;
+  awakeningCoinMult: number;
+  dreamRewardMult: number;
+  pageChanceMult: number;
+  sardineMult: number;
+  chestChanceBonus: number;
+  catIntervalMult: number;
+  catRangeBonus: number;
 }
 
 export type ModifierKey = keyof RunModifiers;
@@ -129,6 +178,9 @@ export interface EnemyConfig {
   hopPeriodSec?: number;
   /** Отброс после удара, если hp > 1. */
   knockback?: number;
+  /** Эссенция за убийство (валюта гримуара). */
+  essence: number;
+  chestChance: number;
 }
 
 export interface SizeConfig {
@@ -136,7 +188,7 @@ export interface SizeConfig {
   height: number;
 }
 
-export const PATTERNS = ['coinsGround', 'coinsSky', 'obstacle', 'enemy'] as const;
+export const PATTERNS = ['coinsGround', 'coinsSky', 'obstacle', 'enemy', 'pickup'] as const;
 export type PatternKind = (typeof PATTERNS)[number];
 
 export interface BiomeConfig {
@@ -158,6 +210,111 @@ export interface BiomeConfig {
   };
   parallax: readonly number[];
   fogDriftPxPerSec: number;
+  pickupWeights: Record<string, number>;
+  /** Пикапы рассудка: размер и высота центра над землёй. */
+  pickups: Record<string, SizeConfig & { lift: number }>;
+  /** Высота страниц книги над землёй и их размер. */
+  pageLift: Range;
+  pageSize: SizeConfig;
+}
+
+export interface SanityConfig {
+  max: number;
+  start: number;
+  drainPerSec: number;
+  contactLoss: number;
+  pickups: Record<string, number>;
+  /** Множитель монет = 1 + (max − рассудок) × coinMultPerPoint, не выше coinMultCap. */
+  coinMultPerPoint: number;
+  coinMultCap: number;
+  distortAt: number;
+  invisibleAt: number;
+  illusionChance: number;
+  hiddenChance: number;
+  revealPx: number;
+  insight: { stunSec: number; restoreTo: number; coinUnits: number };
+  /** Рассудок пассивного режима (офлайн-доход). */
+  idleSanity: number;
+}
+
+/** Модификаторы небесной фазы; отсутствующие — нейтральные. */
+export interface PhaseConfig {
+  weight: number;
+  glideStaminaMult?: number;
+  skyCoinsWeightMult?: number;
+  enemyWeightMult?: number;
+  essenceMult?: number;
+  speedMult?: number;
+  coinValueMult?: number;
+  starCoinChance?: number;
+  starCoinUnits?: number;
+  sanityDrainMult?: number;
+}
+
+export interface StarsConfig {
+  periodSec: number;
+  phases: Record<string, PhaseConfig>;
+}
+
+export interface DreamConfig {
+  pagesNeeded: number;
+  pageChance: number;
+  durationSec: number;
+  gravity: number;
+  flapVelocity: number;
+  maxFall: number;
+  ceilingY: number;
+  floorY: number;
+  baseSpeed: number;
+  boostSpeed: number;
+  boostDecayPerSec: number;
+  rhythm: { periodSec: number; greenFrom: number; greenTo: number };
+  ringEveryPx: Range;
+  ringGap: number;
+  ringHeightRange: Range;
+  coinLineEveryPx: Range;
+  coinsPerLine: Range;
+  coinSpacing: number;
+  islandEveryPx: Range;
+  reward: {
+    coinWeight: number;
+    ringWeight: number;
+    cpsSecPerPoint: number;
+    sardinesPerRing: number;
+    minSardines: number;
+  };
+}
+
+export interface CatConfig {
+  intervalSec: number;
+  rangePx: number;
+  hissRangePx: number;
+  chestChance: number;
+  upgrades: readonly HeroUpgradeConfig[];
+}
+
+export const GRIMOIRE_CHAPTERS = ['hunter', 'dreamer', 'winged'] as const;
+export type GrimoireChapter = (typeof GRIMOIRE_CHAPTERS)[number];
+
+export interface GrimoireNodeConfig {
+  id: string;
+  chapter: GrimoireChapter;
+  col: number;
+  row: number;
+  /** Цена в Эссенции. */
+  cost: number;
+  requires: readonly string[];
+  /** Сколько тёмных звёзд нужно иметь, чтобы узел открылся. */
+  darkStars?: number;
+  /** Узел переживает Погружение. */
+  keep?: boolean;
+  add?: Partial<RunModifiers>;
+  mul?: Partial<RunModifiers>;
+}
+
+export interface GrimoireConfig {
+  chapters: readonly GrimoireChapter[];
+  nodes: readonly GrimoireNodeConfig[];
 }
 
 export interface ShakeConfig {

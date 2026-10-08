@@ -1,5 +1,5 @@
-import type Phaser from 'phaser';
-import { juiceConfig } from '../config';
+import Phaser from 'phaser';
+import { juiceConfig, sanityConfig } from '../config';
 import type { Entity } from '../systems/Entity';
 import { TentacleChain } from './CutoutRig';
 import fishmanRig from '../../assets-src/rigs/fishman.generated.json';
@@ -399,9 +399,10 @@ class CoinView implements EntityView {
   readonly root: Phaser.GameObjects.Image;
   private readonly unit: number;
 
-  constructor(scene: Phaser.Scene) {
-    this.root = unitImage(scene, 'coin');
-    this.unit = unitScale('coin');
+  /** key: 'coin' — обычный дублон, 'coin_star' — звёздный (фаза «Звёзды сошлись»). */
+  constructor(scene: Phaser.Scene, key: string) {
+    this.root = unitImage(scene, key);
+    this.unit = unitScale(key);
   }
 
   bind(): void {
@@ -427,8 +428,14 @@ class ObstacleView implements EntityView {
     this.root.setVisible(true).setAlpha(1).setRotation(0).clearTint();
   }
 
-  update(e: Entity): void {
+  update(e: Entity, _time: number, heroX: number): void {
     this.root.setPosition(e.x, e.y);
+    if (e.hidden && !e.spent) {
+      // Рассудок ниже invisibleAt: препятствие проступает только в последний момент.
+      const reveal =
+        1 - (e.x - heroX - sanityConfig.revealPx * 0.6) / (sanityConfig.revealPx * 0.4);
+      this.root.setAlpha(Math.max(0, Math.min(1, reveal)));
+    }
     if (e.spent) {
       // Задетое препятствие опрокидывается и бледнеет.
       this.root
@@ -440,8 +447,35 @@ class ObstacleView implements EntityView {
 }
 
 /** Фабрика представлений по ключу типа (тип врага / препятствия / 'coin'). */
+/** Фонарь, чай или страница книги: покачиваются и светятся. */
+class PickupView implements EntityView {
+  readonly root: Phaser.GameObjects.Container;
+  private readonly img: Phaser.GameObjects.Image;
+  private readonly halo: Phaser.GameObjects.Image;
+
+  constructor(scene: Phaser.Scene, type: string) {
+    this.root = scene.add.container(0, 0);
+    const glowTint = type === 'page' ? palette.sicklyViolet : palette.lanternAmber;
+    this.halo = unitImage(scene, 'glow').setTint(glowTint).setBlendMode(Phaser.BlendModes.ADD);
+    this.img = unitImage(scene, `pickup_${type}`);
+    this.root.add([this.halo, this.img]);
+  }
+
+  bind(): void {
+    this.root.setVisible(true).setAlpha(1);
+  }
+
+  update(e: Entity, time: number): void {
+    const bob = Math.sin(time * 2.6 + e.x * 0.01);
+    this.root.setPosition(e.x, e.y + bob * 4);
+    this.img.setRotation(bob * 0.08);
+    this.halo.setScale(unitScale('glow') * (0.55 + 0.06 * Math.sin(time * 5))).setAlpha(0.45);
+  }
+}
+
 export function createEntityView(scene: Phaser.Scene, e: Entity): EntityView {
-  if (e.kind === 'coin') return new CoinView(scene);
+  if (e.kind === 'coin') return new CoinView(scene, e.type === 'star' ? 'coin_star' : 'coin');
+  if (e.kind === 'pickup') return new PickupView(scene, e.type);
   if (e.kind === 'obstacle') return new ObstacleView(scene, e.type);
   const generated = CREATURE_RIGS[e.type];
   if (generated && isRaster(generated.key)) return new RigCreatureView(scene, generated.rig);
@@ -461,5 +495,6 @@ export function createEntityView(scene: Phaser.Scene, e: Entity): EntityView {
 
 /** Ключ пула: представления одного ключа взаимозаменяемы. */
 export function viewKey(e: Entity): string {
-  return e.kind === 'coin' ? 'coin' : e.type;
+  if (e.kind === 'coin') return e.type === 'star' ? 'coin_star' : 'coin';
+  return e.kind === 'pickup' ? `pickup_${e.type}` : e.type;
 }

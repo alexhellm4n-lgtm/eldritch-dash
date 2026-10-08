@@ -5,7 +5,9 @@
     "width": 70,
     "height": 112,
     "speed": 60,
-    "coins": 3
+    "coins": 3,
+    "essence": 1,
+    "chestChance": 0.03
   },
   "gull": {
     "behavior": "flyer",
@@ -16,7 +18,9 @@
     "altitude": 270,
     "bobAmp": 20,
     "bobFreq": 0.9,
-    "coins": 5
+    "coins": 5,
+    "essence": 2,
+    "chestChance": 0.03
   },
   "squidling": {
     "behavior": "hopper",
@@ -26,7 +30,9 @@
     "speed": 0,
     "hopHeight": 200,
     "hopPeriodSec": 1.2,
-    "coins": 4
+    "coins": 4,
+    "essence": 1,
+    "chestChance": 0.03
   },
   "walkingNet": {
     "behavior": "walker",
@@ -35,6 +41,8 @@
     "height": 100,
     "speed": 40,
     "knockback": 160,
-    "coins": 8
+    "coins": 8,
+    "essence": 3,
+    "chestChance": 0.08
   }
 }

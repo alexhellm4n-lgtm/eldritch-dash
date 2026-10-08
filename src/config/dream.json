@@ -1,0 +1,32 @@
+{
+  "pagesNeeded": 3,
+  "pageChance": 0.035,
+  "durationSec": 30,
+  "gravity": 900,
+  "flapVelocity": 420,
+  "maxFall": 520,
+  "ceilingY": 90,
+  "floorY": 640,
+  "baseSpeed": 360,
+  "boostSpeed": 260,
+  "boostDecayPerSec": 1.6,
+  "rhythm": {
+    "periodSec": 0.9,
+    "greenFrom": 0.42,
+    "greenTo": 0.62
+  },
+  "ringEveryPx": [380, 620],
+  "ringGap": 150,
+  "ringHeightRange": [180, 560],
+  "coinLineEveryPx": [260, 420],
+  "coinsPerLine": [4, 7],
+  "coinSpacing": 46,
+  "islandEveryPx": [700, 1100],
+  "reward": {
+    "coinWeight": 1,
+    "ringWeight": 6,
+    "cpsSecPerPoint": 4,
+    "sardinesPerRing": 1,
+    "minSardines": 2
+  }
+}

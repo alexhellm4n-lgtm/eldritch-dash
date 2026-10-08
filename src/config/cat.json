@@ -1,0 +1,29 @@
+{
+  "intervalSec": 9,
+  "rangePx": 700,
+  "hissRangePx": 380,
+  "chestChance": 0.06,
+  "upgrades": [
+    {
+      "id": "catSpeed",
+      "costs": [5, 15, 40, 90],
+      "mul": {
+        "catIntervalMult": 0.85
+      }
+    },
+    {
+      "id": "catReach",
+      "costs": [8, 25, 60],
+      "add": {
+        "catRangeBonus": 120
+      }
+    },
+    {
+      "id": "catLuck",
+      "costs": [10, 30, 75],
+      "add": {
+        "chestChanceBonus": 0.03
+      }
+    }
+  ]
+}

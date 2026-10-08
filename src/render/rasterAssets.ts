@@ -1,6 +1,7 @@
 import backgrounds from './backgrounds.json';
 import enemyParts from './enemyParts.json';
 import heroParts from './heroParts.json';
+import catParts from './catParts.json';
 import fxParts from './fxParts.json';
 import propParts from './propParts.json';
 import uiParts from './uiParts.json';
@@ -47,6 +48,7 @@ export function rasterGroups(): string[][] {
   groups.push(...Object.keys(propPartAssets).map((k) => [k]));
   groups.push(...Object.keys(fxPartAssets).map((k) => [k]));
   groups.push(...Object.keys(uiPartAssets).map((k) => [k]));
+  groups.push(Object.keys(catPartAssets));
   return groups.filter((g) => g.length > 0);
 }
 
@@ -56,6 +58,8 @@ export const propPartAssets: Readonly<Record<string, RasterAsset>> = propParts;
 /** Частицы и световые эффекты; элементы интерфейса (scripts/build-parts.ts). */
 export const fxPartAssets: Readonly<Record<string, RasterAsset>> = fxParts;
 export const uiPartAssets: Readonly<Record<string, RasterAsset>> = uiParts;
+/** Кот-фамильяр: части одного рига, откатываются вместе. */
+export const catPartAssets: Readonly<Record<string, RasterAsset>> = catParts;
 
 /** Все растровые замены плейсхолдеров. */
 export function rasterOverrides(): Record<string, RasterAsset> {
@@ -66,5 +70,6 @@ export function rasterOverrides(): Record<string, RasterAsset> {
   for (const [key, a] of Object.entries(propPartAssets)) out[key] = a;
   for (const [key, a] of Object.entries(fxPartAssets)) out[key] = a;
   for (const [key, a] of Object.entries(uiPartAssets)) out[key] = a;
+  for (const [key, a] of Object.entries(catPartAssets)) out[key] = a;
   return out;
 }

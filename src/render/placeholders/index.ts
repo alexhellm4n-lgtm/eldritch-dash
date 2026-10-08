@@ -2,6 +2,7 @@ import { runConfig } from '../../config';
 import { coastBackgroundArt } from './backgrounds';
 import { enemyArt } from './enemies';
 import { heroArt } from './hero';
+import { metaArt } from './meta';
 import { propArt } from './props';
 import type { PlaceholderArt } from './svg';
 
@@ -14,6 +15,7 @@ export function allPlaceholderArt(): PlaceholderArt[] {
     ...heroArt(),
     ...enemyArt(),
     ...propArt(),
+    ...metaArt(),
     ...coastBackgroundArt(runConfig.world.groundY),
   ];
 }

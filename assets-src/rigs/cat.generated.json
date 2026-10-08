@@ -1,0 +1,28 @@
+{
+  "scale": 0.9,
+  "parts": [
+    {
+      "name": "wingBack",
+      "key": "cat_wing",
+      "x": -4,
+      "y": -15,
+      "ox": 0.92,
+      "oy": 0.88,
+      "flip": true,
+      "shade": true
+    },
+    { "name": "tail", "key": "cat_tail", "x": -20, "y": 0, "ox": 0.97, "oy": 0.35, "flip": true },
+    { "name": "body", "key": "cat_body", "x": 0, "y": 0, "ox": 0.5, "oy": 0.5 },
+    { "name": "head", "key": "cat_head", "x": 15, "y": -6, "ox": 0.5, "oy": 0.78 },
+    {
+      "name": "wingFront",
+      "key": "cat_wing",
+      "x": -10,
+      "y": -13,
+      "ox": 0.92,
+      "oy": 0.88,
+      "flip": true
+    }
+  ],
+  "poses": { "wingBase": 0.1, "wingAmp": 0.5, "tailBase": 0, "tailAmp": 0.18 }
+}
