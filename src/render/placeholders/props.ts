@@ -74,6 +74,17 @@ export function propArt(): PlaceholderArt[] {
       <circle cx="64" cy="64" r="64" fill="url(#g)"/>
       `,
     ),
+    // Мягкая тень под объектами на земле (всегда векторная, растра нет).
+    art(
+      'shadow_blob',
+      128,
+      40,
+      `
+      <defs><radialGradient id="s"><stop offset="0" stop-color="${c.outline}" stop-opacity="1"/>
+      <stop offset="0.55" stop-color="${c.outline}" stop-opacity="0.7"/><stop offset="1" stop-color="${c.outline}" stop-opacity="0"/></radialGradient></defs>
+      <ellipse cx="64" cy="20" rx="64" ry="20" fill="url(#s)"/>
+      `,
+    ),
     art(
       'spark',
       18,

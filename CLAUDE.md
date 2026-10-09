@@ -111,6 +111,10 @@ Idle-раннер на Phaser 4 + TypeScript + Vite. Полные требова
   - `CutoutRig` (части + точки вращения из `assets-src/rigs/*.json`), `TentacleChain`.
   - `HeroView` (анимация героя), `EntityViews` (твари/монеты/препятствия, пулы по типу),
     `Parallax` (4 слоя + настил + туман, сдвиг по дистанции), `Particles`, `Juice` (попапы, тряска, hit-stop).
+  - Читаемость трассы: ближний декор за дальним туманом (`Depth.near` < `Depth.fogBack`), притемнён,
+    слегка размыт и приглушён фильтрами (`juice.json → nearDecor`); `Shadows` — мягкие тени на земле под
+    героем, тварями, препятствиями и монетами, бледнеют с высотой (`juice.json → shadow`, текстура
+    `shadow_blob`). Монеты — псевдо-3D (`juice.json → coin3d`).
   - `ui/Button.ts` — кнопка (зона клика ≥ 44 px) и `drawPanel` (пергаментная панель).
 - M3-отрисовка: `render/CatView.ts`, `render/MetaFx.ts` (`AwakeningFx` — щупальца и свечение,
   `Distortion` — фильтры камеры Phaser 4: смещение по шуму, цветовая матрица, виньетка),

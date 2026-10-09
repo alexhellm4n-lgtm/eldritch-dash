@@ -11,6 +11,7 @@ import { LanternFx } from '../render/LanternFx';
 import { AwakeningFx, Distortion } from '../render/MetaFx';
 import { Depth, Parallax } from '../render/Parallax';
 import { Particles } from '../render/Particles';
+import { Shadows } from '../render/Shadows';
 import { unitImage, unitScale } from '../render/textures';
 import { palette } from '../render/palette';
 import type { Entity } from '../systems/Entity';
@@ -36,6 +37,7 @@ export class RunScene extends Phaser.Scene {
   private heroView!: HeroView;
   private parallax!: Parallax;
   private particles!: Particles;
+  private shadows!: Shadows;
   private juice!: Juice;
   private lanternFx!: LanternFx;
   catView!: CatView;
@@ -76,6 +78,7 @@ export class RunScene extends Phaser.Scene {
     this.heroView = new HeroView(this);
     this.heroView.container.setDepth(Depth.hero);
     this.particles = new Particles(this);
+    this.shadows = new Shadows(this, runConfig.world.groundY);
     this.juice = new Juice(this);
     this.lanternFx = new LanternFx(this);
     this.catView = new CatView(this);
@@ -443,5 +446,21 @@ export class RunScene extends Phaser.Scene {
 
     const heroCy = hero.y - runConfig.hero.height / 2;
     for (const e of sim.entities) this.views.get(e)?.update(e, sim.time, hero.x, heroCy);
+    this.castShadows();
+  }
+
+  /** Тени на земле: герой и всё видимое на трассе, кроме ушедших под землю. */
+  private castShadows(): void {
+    const shadows = this.shadows;
+    const hero = this.sim.hero;
+    shadows.begin();
+    shadows.cast(hero.x, runConfig.hero.width, hero.y);
+    for (const e of this.sim.entities) {
+      const view = this.views.get(e);
+      if (!view?.root.visible || e.burrowed) continue;
+      const k = e.kind === 'coin' ? juiceConfig.shadow.coinK : juiceConfig.shadow.widthK;
+      shadows.cast(e.x, e.w, e.y + e.h / 2, view.root.alpha, k);
+    }
+    shadows.end();
   }
 }

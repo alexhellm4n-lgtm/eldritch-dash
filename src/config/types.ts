@@ -415,6 +415,21 @@ export interface JuiceConfig {
    * сила и острота блика, когда лицевая сторона смотрит на свет.
    */
   coin3d: { thickness: number; edgeLayers: number; glint: number; glintPower: number };
+  /**
+   * Тени на земле: непрозрачность, ширина относительно объекта (у монет — `coinK`), высота
+   * пятна; на высоте `fadeLiftPx` над землёй тень исчезает.
+   */
+  shadow: {
+    alpha: number;
+    widthK: number;
+    coinK: number;
+    heightPx: number;
+    /** Сдвиг пятна ниже уровня земли: на её верхней грани, а не на тёмной обводке края. */
+    offsetY: number;
+    fadeLiftPx: number;
+  };
+  /** Ближний декор фона — «не в фокусе»: размытие (сила, шаги) и снижение насыщенности. */
+  nearDecor: { blur: number; blurSteps: number; desaturate: number };
   flashMs: number;
   /** Длительности выстрела фонаря: вспышка, луч, всплеск попадания. */
   shot: { muzzleSec: number; boltSec: number; impactSec: number };
