@@ -4,7 +4,8 @@ import display from '../config/display.json';
 import { formatNumber } from '../core/BigNum';
 import { t, tId } from '../i18n';
 import { palette, toCss } from '../render/palette';
-import { addPanel, Button } from '../render/ui/Button';
+import { addPanel, addStrip, Button } from '../render/ui/Button';
+import skin from '../render/ui/skin.json';
 import type { BuyAmount } from '../systems/Economy';
 import type { GameSession } from '../systems/GameSession';
 
@@ -178,13 +179,22 @@ export class ShopOverlay extends Phaser.Scene {
   private createRow(id: string, index: number, icon?: string): Row {
     const y = ROWS_Y + index * (ROW_H + ROW_GAP);
     const root = this.add.container(PAD, y);
-    const g = this.add.graphics();
-    g.fillStyle(palette.parchmentLight, 1);
-    g.fillRoundedRect(0, 0, ROW_W, ROW_H, 10);
-    g.lineStyle(2, palette.outline, 0.8);
-    g.strokeRoundedRect(0, 0, ROW_W, ROW_H, 10);
-    const title = this.add.text(14, 5, '', textStyle(18, palette.ink, true));
-    const detail = this.add.text(14, 31, '', textStyle(13, palette.inkSoft));
+    // Пергаментная полоска с булавкой (растр) или векторная плашка.
+    const strip = addStrip(this, skin.row, ROW_W / 2, ROW_H / 2, ROW_W + 14, ROW_H + 10);
+    let g: Phaser.GameObjects.GameObject;
+    if (strip) {
+      g = strip;
+    } else {
+      const v = this.add.graphics();
+      v.fillStyle(palette.parchmentLight, 1);
+      v.fillRoundedRect(0, 0, ROW_W, ROW_H, 10);
+      v.lineStyle(2, palette.outline, 0.8);
+      v.strokeRoundedRect(0, 0, ROW_W, ROW_H, 10);
+      g = v;
+    }
+    const textX = strip ? 46 : 14;
+    const title = this.add.text(textX, 5, '', textStyle(18, palette.ink, true));
+    const detail = this.add.text(textX, 31, '', textStyle(13, palette.inkSoft));
     detail.setWordWrapWidth(ROW_W - BUY_W - 40);
     const buy = new Button(this, ROW_W - 12 - BUY_W / 2, ROW_H / 2, BUY_W, 44, '', {
       fontSize: 19,

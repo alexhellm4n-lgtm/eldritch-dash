@@ -1,4 +1,10 @@
-import { PATTERNS, type BiomeConfig, type EnemyConfig, type PatternKind } from '../config/types';
+import {
+  PATTERNS,
+  type BiomeConfig,
+  type EnemyConfig,
+  type MiniBossConfig,
+  type PatternKind,
+} from '../config/types';
 import type { Entity, EntityKind } from './Entity';
 import { WeightedTable, type Rng } from './Rng';
 
@@ -20,6 +26,8 @@ export class Track {
   skyCoinsWeightMult = 1;
   /** Шанс страницы книги после каждого паттерна. */
   pageChance = 0;
+  /** Бой с боссом: вместо опасностей — только монеты и пикапы. */
+  calm = false;
 
   constructor(
     private readonly biome: BiomeConfig,
@@ -65,6 +73,8 @@ export class Track {
       if (this.cursor < safeUntilX) {
         // Стартовый отрезок — только наземные монеты: первая покупка без единого прыжка.
         pattern = 'coinsGround';
+      } else if (hazard && this.calm) {
+        pattern = this.rng.chance(0.5) ? 'coinsGround' : 'coinsSky';
       } else if (hazard && this.cursor - this.lastHazardX < this.biome.minHazardGapPx) {
         pattern = this.rng.chance(0.5) ? 'coinsGround' : 'coinsSky';
       }
@@ -130,21 +140,30 @@ export class Track {
       }
       case 'enemy': {
         const type = this.enemyTable.pick(this.rng);
-        const cfg = this.enemies[type]!;
-        const e = this.spawn('enemy', type);
-        e.w = cfg.width;
-        e.h = cfg.height;
-        e.hp = cfg.hp;
-        e.x = this.cursor + cfg.width / 2;
-        e.y = e.baseY =
-          cfg.behavior === 'flyer'
-            ? this.groundY - (cfg.altitude ?? 0)
-            : this.groundY - cfg.height / 2;
+        const e = placeEnemy(
+          this.spawn('enemy', type),
+          this.enemies[type]!,
+          this.cursor,
+          this.groundY,
+        );
         this.lastHazardX = e.x;
-        this.cursor += cfg.width;
+        this.cursor += e.w;
         break;
       }
     }
+  }
+
+  /** Мини-босс: тварь биома крупнее и крепче обычной; ставится сразу за курсором. */
+  spawnElite(mb: MiniBossConfig): Entity {
+    const type = this.enemyTable.pick(this.rng);
+    const e = this.spawn('enemy', type);
+    e.elite = true;
+    e.scale = mb.scale;
+    placeEnemy(e, this.enemies[type]!, this.cursor, this.groundY);
+    e.hp = Math.ceil(e.hp * mb.hpMult);
+    this.lastHazardX = e.x;
+    this.cursor += e.w + this.rng.range(this.biome.gapPx);
+    return e;
   }
 
   /** Вырванная страница запретной книги — парит в воздухе, достаётся прыжком. */
@@ -162,4 +181,18 @@ export class Track {
     e.y = e.baseY = y;
     e.w = e.h = this.coinRadius * 2;
   }
+}
+
+/**
+ * Ставит тварь левым краем на `x`: размер с учётом масштаба, высота по поведению.
+ * Летуны парят на своей высоте, остальные стоят на земле; «кроты» стартуют под землёй.
+ */
+export function placeEnemy(e: Entity, cfg: EnemyConfig, x: number, groundY: number): Entity {
+  e.w = cfg.width * e.scale;
+  e.h = cfg.height * e.scale;
+  e.hp = cfg.hp;
+  e.x = x + e.w / 2;
+  e.y = e.baseY = cfg.behavior === 'flyer' ? groundY - (cfg.altitude ?? 0) : groundY - e.h / 2;
+  e.burrowed = cfg.behavior === 'burrower';
+  return e;
 }

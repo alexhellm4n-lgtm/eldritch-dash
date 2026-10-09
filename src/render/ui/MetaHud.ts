@@ -7,6 +7,7 @@ import type { GameSession } from '../../systems/GameSession';
 import type { RunSim } from '../../systems/RunSim';
 import { palette, toCss } from '../palette';
 import { unitImage } from '../textures';
+import { Bar } from './Bar';
 import { Button } from './Button';
 
 const MARGIN = 24;
@@ -14,6 +15,10 @@ const SANITY_W = 220;
 const SANITY_H = 14;
 const ICON_H = 24;
 const AWAKEN_W = 220;
+const WORLD_W = 320;
+const WORLD_Y = 104;
+const BOTTOM_BTN_W = 176;
+const BOTTOM_STEP = 188;
 
 function fit(img: Phaser.GameObjects.Image, height: number): Phaser.GameObjects.Image {
   return img.setScale(height / (img.height || 1));
@@ -32,9 +37,16 @@ function setText(obj: Phaser.GameObjects.Text, text: string): void {
   if (obj.text !== text) obj.setText(text);
 }
 
+export interface MetaHudActions {
+  grimoire: () => void;
+  town: () => void;
+  journal: () => void;
+}
+
 /**
- * HUD мета-систем M3 (SPEC §10): фаза звёзд с прогнозом, Эссенция/сардинки/тёмные звёзды,
- * шкала рассудка, глубина, страницы книги, шкала и кнопка Пробуждения, кнопка гримуара.
+ * HUD мета-систем (SPEC §10): фаза звёзд с прогнозом, Эссенция/сардинки/тёмные звёзды,
+ * шкала рассудка, глубина, страницы книги, шкала и кнопка Пробуждения, путь по биому
+ * и здоровье босса, кнопки гримуара, городка и дневника.
  */
 export class MetaHud {
   private readonly phaseIcon: Phaser.GameObjects.Image;
@@ -48,19 +60,23 @@ export class MetaHud {
   private readonly starIcon: Phaser.GameObjects.Image;
   private readonly starText: Phaser.GameObjects.Text;
   private readonly sanityLabel: Phaser.GameObjects.Text;
-  private readonly sanityFill: Phaser.GameObjects.Rectangle;
+  private readonly sanityBar: Bar;
   private readonly depthText: Phaser.GameObjects.Text;
   private readonly pageSlots: Phaser.GameObjects.Image[] = [];
-  private readonly awakenFill: Phaser.GameObjects.Rectangle;
+  private readonly awakenBar: Bar;
   readonly awakenButton: Button;
   readonly grimoireButton: Button;
+  readonly townButton: Button;
+  readonly journalButton: Button;
+  private readonly worldText: Phaser.GameObjects.Text;
+  private readonly worldBar: Bar;
   private shownPhase = '';
 
   constructor(
     scene: Phaser.Scene,
     private readonly session: GameSession,
     private readonly getSim: () => RunSim,
-    onGrimoire: () => void,
+    actions: MetaHudActions,
   ) {
     const serif = { fontFamily: 'Georgia, serif', stroke: toCss(palette.outline) };
     const cx = display.width / 2;
@@ -139,12 +155,14 @@ export class MetaHud {
         strokeThickness: 4,
       })
       .setOrigin(0, 0.5);
-    scene.add
-      .rectangle(MARGIN + 92, sy, SANITY_W + 6, SANITY_H + 6, palette.outline)
-      .setOrigin(0, 0.5);
-    this.sanityFill = scene.add
-      .rectangle(MARGIN + 95, sy, SANITY_W, SANITY_H, palette.seaGreen)
-      .setOrigin(0, 0.5);
+    this.sanityBar = new Bar(
+      scene,
+      MARGIN + 90,
+      sy,
+      SANITY_W + 10,
+      SANITY_H + 10,
+      palette.seaGreen,
+    );
 
     // Глубина и страницы — справа под дистанцией.
     this.depthText = scene.add
@@ -165,10 +183,7 @@ export class MetaHud {
 
     // Пробуждение — снизу слева: шкала и кнопка.
     const ay = display.height - MARGIN - 32;
-    scene.add.rectangle(MARGIN, ay - 44, AWAKEN_W + 6, 14, palette.outline).setOrigin(0, 0.5);
-    this.awakenFill = scene.add
-      .rectangle(MARGIN + 3, ay - 44, AWAKEN_W, 8, palette.bioCyan)
-      .setOrigin(0, 0.5);
+    this.awakenBar = new Bar(scene, MARGIN, ay - 46, AWAKEN_W + 6, 22, palette.bioCyan);
     this.awakenButton = new Button(
       scene,
       MARGIN + AWAKEN_W / 2 + 3,
@@ -176,20 +191,69 @@ export class MetaHud {
       AWAKEN_W,
       54,
       t('hud.awaken'),
-      {
-        fontSize: 20,
-      },
+      { fontSize: 20, icon: 'icon_awaken' },
     ).onClick(() => this.getSim().activateAwakening());
 
-    this.grimoireButton = new Button(
+    // Нижний ряд справа налево: (лавка — в UIScene) гримуар, дневник, городок.
+    const by = display.height - MARGIN - 32;
+    const bx = (i: number): number => display.width - MARGIN - 80 - BOTTOM_STEP * i;
+    const bottom = (i: number, label: string, icon: string, onClick: () => void): Button =>
+      new Button(scene, bx(i), by, BOTTOM_BTN_W, 60, label, {
+        fontSize: 20,
+        fill: palette.parchmentShade,
+        icon,
+      }).onClick(onClick);
+    this.grimoireButton = bottom(1, t('hud.grimoire'), 'icon_grimoire', actions.grimoire);
+    this.journalButton = bottom(2, t('hud.journal'), 'icon_journal', actions.journal);
+    this.townButton = bottom(3, t('hud.town'), 'icon_town', actions.town);
+
+    // Путь по биому / здоровье босса — под фазой звёзд.
+    this.worldText = scene.add
+      .text(cx, WORLD_Y - 14, '', {
+        ...serif,
+        fontSize: '16px',
+        color: toCss(palette.parchment),
+        strokeThickness: 4,
+      })
+      .setOrigin(0.5);
+    this.worldBar = new Bar(
       scene,
-      display.width - MARGIN - 80 - 188,
-      display.height - MARGIN - 32,
-      176,
-      60,
-      t('hud.grimoire'),
-      { fontSize: 22, fill: palette.parchmentShade },
-    ).onClick(onGrimoire);
+      cx - WORLD_W / 2,
+      WORLD_Y + 8,
+      WORLD_W,
+      20,
+      palette.lanternAmber,
+    );
+  }
+
+  /** Путь до босса, а во время боя — здоровье босса и оставшееся время. */
+  private updateWorld(sim: RunSim, time: number): void {
+    const boss = sim.boss;
+    const cfg = sim.bossCfg;
+    if (boss && cfg) {
+      const left = Math.max(0, Math.ceil(cfg.fightSec - sim.bossTime));
+      setText(
+        this.worldText,
+        `${tId(`creature.${boss.type}`)} · ${t('hud.bossTime', { time: left })}`,
+      );
+      const hp = Math.max(0, boss.hp) / Math.max(1, sim.bossMaxHp);
+      const flash = boss.hurtT < 0.12 ? palette.parchmentLight : palette.coral;
+      this.worldBar.setProgress(hp).setColor(flash).setAlpha(1);
+      return;
+    }
+    const biome = tId(`biome.${sim.biomeId}`);
+    const lap = sim.lap > 0 ? ` · ${t('hud.lap', { n: sim.lap + 1 })}` : '';
+    const toBoss = Math.max(0, Math.ceil(sim.biome.lengthM - sim.biomeProgressM));
+    setText(
+      this.worldText,
+      sim.transitionLeft > 0
+        ? biome
+        : `${biome}${lap} · ${t('hud.toBoss', { m: formatNumber(toBoss) })}`,
+    );
+    const k = Math.min(1, sim.biomeProgressM / sim.biome.lengthM);
+    // Перед самым боссом полоса тревожно мигает.
+    const warn = k > 0.95 ? 0.6 + 0.4 * Math.sin(time / 90) : 1;
+    this.worldBar.setProgress(k).setColor(palette.lanternAmber).setAlpha(warn);
   }
 
   update(time: number): void {
@@ -228,9 +292,9 @@ export class MetaHud {
 
     const sanity = sim.sanity.value;
     setText(this.sanityLabel, `${t('hud.sanity')} ${Math.round(sanity)}`);
-    this.sanityFill
-      .setScale(Math.max(0.001, sanity / sanityConfig.max), 1)
-      .setFillStyle(
+    this.sanityBar
+      .setProgress(sanity / sanityConfig.max)
+      .setColor(
         sanity < sanityConfig.invisibleAt
           ? palette.coral
           : sanity < sanityConfig.distortAt
@@ -238,16 +302,14 @@ export class MetaHud {
             : palette.seaGreen,
       );
     // Мерцание при «Прозрении».
-    this.sanityFill.setAlpha(sim.insightLeft > 0 ? 0.5 + 0.5 * Math.sin(time / 60) : 1);
+    this.sanityBar.setAlpha(sim.insightLeft > 0 ? 0.5 + 0.5 * Math.sin(time / 60) : 1);
 
     setText(this.depthText, t('hud.depth', { depth: state.depth }));
     this.pageSlots.forEach((slot, i) => slot.setAlpha(i < sim.pages ? 1 : 0.25));
 
     const awakening = sim.awakening;
     const meter = awakening ? sim.awakenLeft / Math.max(sim.awakenTotal, 0.001) : sim.awakenMeter;
-    this.awakenFill
-      .setScale(Math.max(0.001, Math.min(1, meter)), 1)
-      .setFillStyle(awakening ? palette.sicklyViolet : palette.bioCyan);
+    this.awakenBar.setProgress(meter).setColor(awakening ? palette.sicklyViolet : palette.bioCyan);
     const ready = sim.awakenMeter >= 1 && !awakening;
     this.awakenButton
       .setEnabled(ready)
@@ -259,6 +321,7 @@ export class MetaHud {
             : `${Math.floor(sim.awakenMeter * 100)}%`,
       );
     this.awakenButton.setScale(ready ? 1 + 0.05 * Math.sin(time / 120) : 1);
+    this.updateWorld(sim, time);
   }
 }
 

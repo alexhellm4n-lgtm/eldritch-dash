@@ -1,0 +1,32 @@
+{
+  "creatures": [
+    "fishman",
+    "gull",
+    "squidling",
+    "walkingNet",
+    "cultist",
+    "eyeBush",
+    "firefly",
+    "rootCrawler",
+    "polyp",
+    "starJelly",
+    "wrongCube",
+    "deepPriest",
+    "reefKeeper",
+    "rootMother",
+    "greatSleeper"
+  ],
+  "bosses": ["reefKeeper", "rootMother", "greatSleeper"],
+  "fullAt": 30,
+  "bossFullAt": 3,
+  "bonusPerFull": {
+    "mul": {
+      "coinValueMult": 1.03
+    }
+  },
+  "share": {
+    "url": "https://alexhellm4n-lgtm.github.io/eldritch-dash/",
+    "width": 600,
+    "height": 820
+  }
+}

@@ -7,7 +7,7 @@ const HOURS_ADD: ReadonlySet<ModifierKey> = new Set(['offlineCapBonusSec']);
 
 function formatAdd(key: ModifierKey, v: number): string {
   if (PERCENT_ADD.has(key)) return String(Math.round(v * 100));
-  if (HOURS_ADD.has(key)) return String(Math.round(v / 3600));
+  if (HOURS_ADD.has(key)) return String(Math.round(v / 360) / 10);
   return String(Math.round(v * 100) / 100);
 }
 
@@ -26,4 +26,18 @@ export function describeEffect(effect: {
     if (hasKey(k)) parts.push(tId(k, { v: String(Math.round(v * 100) / 100) }));
   }
   return parts.join(', ');
+}
+
+/** Эффект, применённый `times` раз (уровни постройки): прибавки × times, множители ^ times. */
+export function scaleEffect(
+  effect: { add?: Partial<RunModifiers>; mul?: Partial<RunModifiers> },
+  times: number,
+): { add: Partial<RunModifiers>; mul: Partial<RunModifiers> } {
+  const add: Partial<RunModifiers> = {};
+  const mul: Partial<RunModifiers> = {};
+  for (const [key, v] of Object.entries(effect.add ?? {}) as [ModifierKey, number][])
+    add[key] = v * times;
+  for (const [key, v] of Object.entries(effect.mul ?? {}) as [ModifierKey, number][])
+    mul[key] = v ** times;
+  return { add, mul };
 }

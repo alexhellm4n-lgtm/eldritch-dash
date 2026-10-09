@@ -1,0 +1,71 @@
+{
+  "anchor": "center",
+  "parts": [
+    {
+      "name": "t1",
+      "key": "jelly_tentacle",
+      "x": -18,
+      "y": 8,
+      "ox": 0.5,
+      "oy": 0
+    },
+    {
+      "name": "t2",
+      "key": "jelly_tentacle",
+      "x": -6,
+      "y": 10,
+      "ox": 0.5,
+      "oy": 0
+    },
+    {
+      "name": "t3",
+      "key": "jelly_tentacle",
+      "x": 6,
+      "y": 10,
+      "ox": 0.5,
+      "oy": 0
+    },
+    {
+      "name": "t4",
+      "key": "jelly_tentacle",
+      "x": 18,
+      "y": 8,
+      "ox": 0.5,
+      "oy": 0
+    },
+    {
+      "name": "bell",
+      "key": "jelly_bell",
+      "x": 0,
+      "y": -6,
+      "ox": 0.5,
+      "oy": 0.6,
+      "pulse": {
+        "amp": 0.05,
+        "freq": 3
+      }
+    }
+  ],
+  "eyes": [
+    {
+      "parent": "bell",
+      "x": -9,
+      "y": -1,
+      "pupilScale": 0.5,
+      "range": 1.2
+    },
+    {
+      "parent": "bell",
+      "x": 9,
+      "y": -1,
+      "pupilScale": 0.5,
+      "range": 1.2
+    }
+  ],
+  "tentacles": {
+    "names": ["t1", "t2", "t3", "t4"],
+    "amp": 0.3,
+    "freq": 3,
+    "stretchPart": "bell"
+  }
+}

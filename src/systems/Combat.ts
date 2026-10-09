@@ -16,6 +16,8 @@ export class Combat {
   firstHit: Entity | null = null;
   /** Множитель радиуса вспышки (улучшение «радиус фонаря»). */
   rangeMult = 1;
+  /** Отброс мини-босса от удара (из биома). */
+  eliteKnockback = 0;
 
   constructor(
     private readonly attack: AttackConfig,
@@ -67,7 +69,8 @@ export class Combat {
 
     for (let i = 0; i < enemies.length; i++) {
       const e = enemies[i]!;
-      if (e.kind !== 'enemy' || e.spent || e.hp <= 0 || !this.inZone(hero, e)) continue;
+      if (e.kind !== 'enemy' || e.spent || e.burrowed || e.hp <= 0 || !this.inZone(hero, e))
+        continue;
       this.flashed = true;
       this.firstHit ??= e;
       e.hp--;
@@ -75,7 +78,7 @@ export class Combat {
       if (e.hp <= 0) {
         onHit(e, 'killed');
       } else {
-        e.x += this.enemies[e.type]?.knockback ?? 0;
+        e.x += (this.enemies[e.type]?.knockback ?? 0) + (e.elite ? this.eliteKnockback : 0);
         onHit(e, 'hurt');
       }
     }

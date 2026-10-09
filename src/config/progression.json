@@ -1,0 +1,89 @@
+{
+  "order": ["coast", "forest", "sunken"],
+  "lap": {
+    "hpMult": 0.6,
+    "rewardMult": 1,
+    "coinMult": 0.5
+  },
+  "transitionSec": 2.5,
+  "bossEntrySec": 1.5,
+  "bossBobPx": 12,
+  "bossLeaveSpeed": 700,
+  "bosses": {
+    "reefKeeper": {
+      "hp": 36,
+      "width": 230,
+      "height": 220,
+      "altitude": 0,
+      "holdPx": 640,
+      "exposePx": 260,
+      "cycleSec": 6,
+      "approachSec": 0.6,
+      "exposeSec": 2.2,
+      "attackEverySec": 2.4,
+      "attacks": ["wave", "wave", "summon"],
+      "summon": ["fishman", "squidling"],
+      "wave": {
+        "key": "wave_reef",
+        "width": 56,
+        "height": 46,
+        "speed": 560
+      },
+      "fightSec": 75,
+      "retreatTo": 0.85,
+      "coins": 400,
+      "essence": 60,
+      "sardines": 15
+    },
+    "rootMother": {
+      "hp": 52,
+      "width": 250,
+      "height": 250,
+      "altitude": 0,
+      "holdPx": 660,
+      "exposePx": 270,
+      "cycleSec": 6,
+      "approachSec": 0.6,
+      "exposeSec": 2.1,
+      "attackEverySec": 2.1,
+      "attacks": ["wave", "summon", "wave"],
+      "summon": ["rootCrawler", "cultist"],
+      "wave": {
+        "key": "wave_root",
+        "width": 44,
+        "height": 56,
+        "speed": 600
+      },
+      "fightSec": 80,
+      "retreatTo": 0.85,
+      "coins": 900,
+      "essence": 120,
+      "sardines": 25
+    },
+    "greatSleeper": {
+      "hp": 72,
+      "width": 280,
+      "height": 260,
+      "altitude": 200,
+      "holdPx": 680,
+      "exposePx": 280,
+      "cycleSec": 6.5,
+      "approachSec": 0.7,
+      "exposeSec": 2.0,
+      "attackEverySec": 1.9,
+      "attacks": ["wave", "summon", "wave"],
+      "summon": ["starJelly", "wrongCube"],
+      "wave": {
+        "key": "wave_deep",
+        "width": 90,
+        "height": 42,
+        "speed": 640
+      },
+      "fightSec": 90,
+      "retreatTo": 0.85,
+      "coins": 2000,
+      "essence": 250,
+      "sardines": 40
+    }
+  }
+}

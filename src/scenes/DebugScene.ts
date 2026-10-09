@@ -1,19 +1,20 @@
 import Phaser from 'phaser';
 import { app } from '../app';
 import display from '../config/display.json';
-import { economyConfig, starsConfig } from '../config';
+import { economyConfig, journalConfig, progressionConfig, starsConfig } from '../config';
 import { bn } from '../core/BigNum';
 import { t, tId } from '../i18n';
 import { palette, toCss } from '../render/palette';
 import { addPanel, Button } from '../render/ui/Button';
 import type { RunScene } from './RunScene';
+import type { UIScene } from './UIScene';
 
-const W = 480;
-const H = 650;
+const W = 600;
+const H = 690;
 const X0 = display.width - W - 20;
-const Y0 = 50;
+const Y0 = 16;
 const PAD = 48;
-const COLS = 3;
+const COLS = 4;
 const BTN_W = (W - PAD * 2 - (COLS - 1) * 8) / COLS;
 const BTN_H = 34;
 const ROW = BTN_H + 5;
@@ -138,6 +139,44 @@ export class DebugScene extends Phaser.Scene {
         ],
       ],
       [
+        'debug.sec.world',
+        [
+          {
+            label: () => t('debug.boss'),
+            run: () => {
+              const s = sim();
+              if (!s.boss) s.biomeProgressM = s.biome.lengthM;
+            },
+          },
+          {
+            label: () => t('debug.nextBiome'),
+            run: () => {
+              const order = progressionConfig.order;
+              const i = order.indexOf(sim().biomeId);
+              sim().setBiome(order[(i + 1) % order.length]!);
+            },
+          },
+          { label: () => t('debug.elite'), run: () => sim().spawnEliteNow() },
+          {
+            label: () => t('debug.newspaper'),
+            run: () => {
+              session.state.newspaper.lastDay = 0;
+              session.pendingIssue = null;
+              (this.scene.get('UIScene') as UIScene).checkNewspaper();
+            },
+          },
+          {
+            label: () => t('debug.journal'),
+            run: () => {
+              for (const id of journalConfig.creatures)
+                session.state.journal[id] = (session.state.journal[id] ?? 0) + 10;
+              session.refreshBonuses();
+            },
+          },
+          { label: () => t('debug.hints'), run: () => (session.state.hints = []) },
+        ],
+      ],
+      [
         'debug.sec.misc',
         [
           {
@@ -207,7 +246,8 @@ export class DebugScene extends Phaser.Scene {
       fill: palette.parchmentShade,
       fontSize: 24,
       radius: 22,
-      plain: true,
+      badge: true,
+      icon: 'icon_gear',
     })
       .setDepth(201)
       .onClick(() => this.toggle());

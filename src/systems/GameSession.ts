@@ -1,35 +1,49 @@
 import {
+  achievementsConfig,
   catConfig,
   dreamConfig,
   economyConfig,
+  enemiesConfig,
   grimoireConfig,
+  journalConfig,
+  newspaperConfig,
   sanityConfig,
   starsConfig,
+  townConfig,
   upgradesConfig,
+  type AchievementsConfig,
   type CatConfig,
   type DreamConfig,
   type EconomyConfig,
   type GrimoireConfig,
+  type JournalConfig,
+  type NewspaperConfig,
   type OmenConfig,
   type RunModifiers,
   type SanityConfig,
   type StarsConfig,
+  type TownConfig,
   type UpgradesConfig,
 } from '../config';
 import { bn, type Decimal } from '../core/BigNum';
 import { EventBus } from '../core/EventBus';
-import type { GameState, TutorialState } from '../core/GameState';
+import { createWorldState, type GameState, type TutorialState } from '../core/GameState';
+import { Achievements, type AchievementDef } from './Achievements';
 import { Economy, type BuyAmount } from './Economy';
 import { Grimoire } from './Grimoire';
+import { HintWatcher, type HintId } from './Hints';
+import { Journal } from './Journal';
+import { Newspaper, type Issue } from './Newspaper';
 import { computeOffline, type OfflineReport } from './Offline';
 import { canDive, darkStarsFor, omenChoices, starMultiplier } from './Prestige';
 import type { RunSim } from './RunSim';
 import { coinMultFor } from './Sanity';
 import { Stars, type PhaseInfo } from './Stars';
+import { Town } from './Town';
 import { applyEffect, baseModifiers, Upgrades } from './Upgrades';
 
 export interface SessionEvents {
-  purchase: { kind: 'item' | 'hero' | 'grimoire' | 'cat'; id: string };
+  purchase: { kind: 'item' | 'hero' | 'grimoire' | 'cat' | 'town'; id: string };
   offline: OfflineReport;
   tutorial: keyof TutorialState;
   /** Сменилась небесная фаза. */
@@ -37,6 +51,11 @@ export interface SessionEvents {
   catUnlocked: undefined;
   /** Совершено Погружение: новая глубина. */
   dive: number;
+  achievement: AchievementDef;
+  /** Первая встреча с тварью — новая карточка в дневнике. */
+  journalNew: string;
+  /** Запись в дневнике стала полной. */
+  journalFull: string;
 }
 
 export interface ItemQuote {
@@ -58,7 +77,15 @@ export interface SessionConfigs {
   cat?: CatConfig;
   sanity?: SanityConfig;
   dream?: DreamConfig;
+  town?: TownConfig;
+  journal?: JournalConfig;
+  achievements?: AchievementsConfig;
+  newspaper?: NewspaperConfig;
 }
+
+/** Как часто опрашивать подсказки и проверять достижения, с. */
+const HINT_POLL_SEC = 0.5;
+const ACHIEVEMENT_CHECK_SEC = 1;
 
 /**
  * Игровая сессия: владеет GameState, считает бонусы, CpS и номинал монеты, проводит покупки
@@ -72,7 +99,13 @@ export class GameSession {
   readonly catUpgrades: Upgrades;
   readonly grimoire: Grimoire;
   readonly stars: Stars;
+  readonly town: Town;
+  readonly journal: Journal;
+  readonly achievements: Achievements;
+  readonly newspaper: Newspaper;
   readonly economyCfg: EconomyConfig;
+  /** Выпуск газеты, ожидающий показа (SPEC §6). */
+  pendingIssue: Issue | null = null;
   pendingOffline: OfflineReport | null = null;
   phase: PhaseInfo | null = null;
   /** Отладка: зафиксированная фаза звёзд (null — по времени). */
@@ -85,6 +118,11 @@ export class GameSession {
   private readonly unsubRun: (() => void)[] = [];
   private readonly sanityCfg: SanityConfig;
   private readonly dreamCfg: DreamConfig;
+  private readonly hintWatcher: HintWatcher;
+  private readonly hintQueue: HintId[] = [];
+  private hintPollLeft = 0;
+  private achievementLeft = 0;
+  private lastMeters = 0;
 
   constructor(
     readonly state: GameState,
@@ -99,6 +137,11 @@ export class GameSession {
     this.stars = new Stars(cfg.stars ?? starsConfig);
     this.sanityCfg = cfg.sanity ?? sanityConfig;
     this.dreamCfg = cfg.dream ?? dreamConfig;
+    this.town = new Town(cfg.town ?? townConfig);
+    this.journal = new Journal(cfg.journal ?? journalConfig);
+    this.achievements = new Achievements(cfg.achievements ?? achievementsConfig);
+    this.newspaper = new Newspaper(cfg.newspaper ?? newspaperConfig);
+    this.hintWatcher = new HintWatcher(this, enemiesConfig, this.sanityCfg);
     this.recalc();
   }
 
@@ -130,11 +173,29 @@ export class GameSession {
   /** Пассивный доход и учёт времени игры; вызывать каждый кадр. */
   tick(dt: number): void {
     if (dt <= 0) return;
-    this.state.stats.playtimeSec += dt;
+    const stats = this.state.stats;
+    stats.playtimeSec += dt;
     if (this.cpsCache.gt(0)) this.earn(this.cpsCache.mul(dt));
-    if (this.run) {
-      const m = this.run.meters;
-      if (m > this.state.stats.bestDistanceM) this.state.stats.bestDistanceM = m;
+    const run = this.run;
+    if (run) {
+      const m = run.meters;
+      if (m > stats.bestDistanceM) stats.bestDistanceM = m;
+      if (m > this.lastMeters) stats.distanceM += m - this.lastMeters;
+      this.lastMeters = m;
+      const w = this.state.world;
+      w.biome = run.biomeId;
+      w.progressM = run.biomeProgressM;
+      w.lap = run.lap;
+    }
+    this.hintPollLeft -= dt;
+    if (this.hintPollLeft <= 0) {
+      this.hintPollLeft = HINT_POLL_SEC;
+      this.pollHints();
+    }
+    this.achievementLeft -= dt;
+    if (this.achievementLeft <= 0) {
+      this.achievementLeft = ACHIEVEMENT_CHECK_SEC;
+      this.checkAchievements();
     }
   }
 
@@ -247,7 +308,10 @@ export class GameSession {
     this.run = sim;
     this.applyToRun();
     if (this.phase) sim.setPhase(this.phase.cfg);
+    this.lastMeters = sim.meters;
+    this.hintWatcher.attach(sim);
     const stats = this.state.stats;
+    const world = this.state.world;
     this.unsubRun.push(
       sim.bus.on('coin', (e) => this.earn(e.reward)),
       sim.bus.on('catFetch', (e) => this.earn(e.reward)),
@@ -255,10 +319,30 @@ export class GameSession {
         this.earn(e.reward);
         this.state.essence += e.essence;
         stats.kills++;
+        if (e.elite) stats.miniBossKills++;
+        this.meet(e.type);
       }),
       sim.bus.on('chest', (c) => {
         this.earn(c.coins);
         this.state.sardines += c.sardines;
+        stats.chests++;
+      }),
+      sim.bus.on('page', () => stats.pages++),
+      sim.bus.on('vanish', () => stats.illusions++),
+      sim.bus.on('bossDefeated', (b) => {
+        this.earn(b.coins);
+        this.state.essence += b.essence;
+        this.state.sardines += b.sardines;
+        stats.bossKills++;
+        world.bosses[b.id] = (world.bosses[b.id] ?? 0) + 1;
+        this.meet(b.id);
+      }),
+      sim.bus.on('biomeChange', (id) => {
+        world.biome = id;
+        world.progressM = 0;
+        world.lap = sim.lap;
+        if (!world.visited.includes(id)) world.visited.push(id);
+        this.queueHint('biome');
       }),
       sim.bus.on('insight', (amount) => {
         this.earn(amount);
@@ -271,7 +355,118 @@ export class GameSession {
   detachRun(): void {
     for (const off of this.unsubRun) off();
     this.unsubRun.length = 0;
+    this.hintWatcher.detach();
     this.run = null;
+  }
+
+  /** Встреча с тварью для дневника: первая — новая карточка, N-я — полная запись. */
+  private meet(id: string): void {
+    if (!this.journal.has(id)) return;
+    const counts = this.state.journal;
+    const before = this.journal.state(id, counts);
+    counts[id] = (counts[id] ?? 0) + 1;
+    const after = this.journal.state(id, counts);
+    if (before === 'unknown') {
+      this.bus.emit('journalNew', id);
+      // Подсказка про дневник — со второй встреченной твари, когда есть что сравнить.
+      if (this.journal.discovered(counts) >= 2) this.queueHint('journal');
+    }
+    if (after === 'full' && before !== 'full') {
+      this.recalc();
+      this.bus.emit('journalFull', id);
+    }
+  }
+
+  // --- Городок ---
+
+  buildingLevel(id: string): number {
+    return this.state.town[id] ?? 0;
+  }
+
+  buildingCost(id: string): Decimal | null {
+    return this.town.nextCost(id, this.buildingLevel(id));
+  }
+
+  buyBuilding(id: string): boolean {
+    const cost = this.buildingCost(id);
+    if (!cost || this.state.coins.lt(cost)) return false;
+    this.state.coins = this.state.coins.sub(cost);
+    this.state.town[id] = this.buildingLevel(id) + 1;
+    this.recalc();
+    this.bus.emit('purchase', { kind: 'town', id });
+    return true;
+  }
+
+  // --- Подсказки ---
+
+  /** Поставить подсказку в очередь (если её ещё не показывали). */
+  queueHint(id: HintId): void {
+    if (this.state.hints.includes(id) || this.hintQueue.includes(id)) return;
+    this.hintQueue.push(id);
+  }
+
+  /** Следующая подсказка для показа; сразу считается показанной. */
+  takeHint(): HintId | null {
+    const id = this.hintQueue.shift() ?? null;
+    if (id) this.state.hints.push(id);
+    return id;
+  }
+
+  private pollHints(): void {
+    const s = this.state;
+    const owned = this.ownedNodes();
+    const grimoireAffordable =
+      s.grimoire.length === 0 &&
+      this.grimoire.nodes.some((n) => this.grimoire.canBuy(n.id, owned, s.darkStars, s.essence));
+    const cheapest = this.town.cheapest(s.town);
+    this.hintWatcher.poll({
+      grimoireAffordable,
+      canDive: this.canDive,
+      townAffordable:
+        this.town.totalLevels(s.town) === 0 && cheapest !== null && s.coins.gte(cheapest),
+    });
+  }
+
+  // --- Достижения ---
+
+  checkAchievements(): void {
+    const fresh = this.achievements.check(this.state, {
+      journalFull: this.journal.fullCount(this.state.journal),
+      townLevels: this.town.totalLevels(this.state.town),
+    });
+    if (fresh.length === 0) return;
+    for (const a of fresh) this.state.achievements.push(a.id);
+    this.recalc();
+    for (const a of fresh) this.bus.emit('achievement', a);
+    this.queueHint('achievement');
+  }
+
+  get achievementMult(): number {
+    return this.achievements.multiplier(this.state.achievements.length);
+  }
+
+  // --- Утренняя газета ---
+
+  /** Проверить, не вышла ли сегодня газета (время — от платформы). */
+  checkNewspaper(timeMs: number): Issue | null {
+    if (this.pendingIssue) return this.pendingIssue;
+    this.pendingIssue = this.newspaper.issue(
+      this.state.newspaper,
+      timeMs,
+      this.cpsCache,
+      this.coinValueCache,
+    );
+    return this.pendingIssue;
+  }
+
+  claimNewspaper(): void {
+    const issue = this.pendingIssue;
+    if (!issue) return;
+    this.pendingIssue = null;
+    this.state.newspaper = { lastDay: issue.day, streak: issue.streak };
+    this.earn(issue.coins);
+    this.state.sardines += issue.sardines;
+    this.state.essence += issue.essence;
   }
 
   // --- Сновидение ---
@@ -329,6 +524,8 @@ export class GameSession {
     s.grimoire = this.grimoire.keptAfterDive(s.grimoire);
     s.depth += 1;
     s.omen = this.economyCfg.prestige.omens.some((o) => o.id === omenId) ? omenId : null;
+    // Путь по биомам начинается заново; побеждённые боссы и открытые биомы остаются в статистике.
+    s.world = { ...createWorldState(), bosses: s.world.bosses, visited: s.world.visited };
     s.stats.dives++;
     this.recalc();
     this.bus.emit('dive', s.depth);
@@ -399,8 +596,10 @@ export class GameSession {
     const omen = this.economyCfg.prestige.omens.find((o) => o.id === s.omen);
     if (omen) applyEffect(m, omen);
     if (s.cat.unlocked) this.catUpgrades.modifiers(s.cat.levels, m);
+    this.town.modifiers(s.town, m);
+    this.journal.modifiers(s.journal, m);
     this.mods = m;
-    const stars = this.starMult;
+    const stars = this.starMult * this.achievementMult;
     this.cpsCache = this.economy.cps(s, m.cpsMult * stars);
     this.coinValueCache = this.economy.coinValue(this.cpsCache, m.coinValueMult * stars);
     this.applyToRun();

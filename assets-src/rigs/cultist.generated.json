@@ -1,0 +1,55 @@
+{
+  "anchor": "feet",
+  "parts": [
+    {
+      "name": "legBack",
+      "key": "cultist_leg",
+      "x": -9,
+      "y": -32,
+      "ox": 0.5,
+      "oy": 0.1,
+      "shade": true
+    },
+    {
+      "name": "legFront",
+      "key": "cultist_leg",
+      "x": 9,
+      "y": -32,
+      "ox": 0.5,
+      "oy": 0.1
+    },
+    {
+      "name": "body",
+      "key": "cultist_body",
+      "x": 0,
+      "y": -14,
+      "ox": 0.5,
+      "oy": 1
+    }
+  ],
+  "eyes": [
+    {
+      "parent": "body",
+      "x": 8.1,
+      "y": -57.8,
+      "pupilScale": 0.51,
+      "range": 2.1
+    },
+    {
+      "parent": "body",
+      "x": 20.7,
+      "y": -57.8,
+      "pupilScale": 0.39,
+      "range": 1.6
+    }
+  ],
+  "walk": {
+    "legs": ["legFront", "legBack"],
+    "amp": 0.45,
+    "freq": 8,
+    "legBase": 0,
+    "bob": 3,
+    "bobParts": ["body"],
+    "wobble": "body"
+  }
+}

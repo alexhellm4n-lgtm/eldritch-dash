@@ -9,6 +9,11 @@ import starsJson from './stars.json';
 import dreamJson from './dream.json';
 import catJson from './cat.json';
 import grimoireJson from './grimoire.json';
+import progressionJson from './progression.json';
+import townJson from './town.json';
+import journalJson from './journal.json';
+import achievementsJson from './achievements.json';
+import newspaperJson from './newspaper.json';
 import type {
   BiomeConfig,
   EconomyConfig,
@@ -21,6 +26,11 @@ import type {
   DreamConfig,
   CatConfig,
   GrimoireConfig,
+  ProgressionConfig,
+  TownConfig,
+  JournalConfig,
+  AchievementsConfig,
+  NewspaperConfig,
 } from './types';
 
 // JSON выводится с широкими типами (string вместо union, number[] вместо кортежей),
@@ -36,5 +46,10 @@ export const starsConfig: StarsConfig = starsJson;
 export const dreamConfig = dreamJson as unknown as DreamConfig;
 export const catConfig: CatConfig = catJson;
 export const grimoireConfig = grimoireJson as unknown as GrimoireConfig;
+export const progressionConfig = progressionJson as unknown as ProgressionConfig;
+export const townConfig: TownConfig = townJson;
+export const journalConfig: JournalConfig = journalJson;
+export const achievementsConfig: AchievementsConfig = achievementsJson;
+export const newspaperConfig: NewspaperConfig = newspaperJson;
 
 export * from './types';

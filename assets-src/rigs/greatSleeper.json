@@ -1,0 +1,136 @@
+{
+  "anchor": "center",
+  "parts": [
+    {
+      "name": "wingBack",
+      "key": "sleeper_wing",
+      "x": -100,
+      "y": -40,
+      "ox": 0.95,
+      "oy": 0.9,
+      "flip": true,
+      "shade": true,
+      "swing": {
+        "amp": 0.3,
+        "freq": 5
+      }
+    },
+    {
+      "name": "wingFront",
+      "key": "sleeper_wing",
+      "x": 100,
+      "y": -40,
+      "ox": 0.05,
+      "oy": 0.9,
+      "swing": {
+        "amp": -0.3,
+        "freq": 5
+      }
+    },
+    {
+      "name": "t1",
+      "key": "sleeper_tentacle",
+      "x": -90,
+      "y": 60,
+      "ox": 0.5,
+      "oy": 0,
+      "swing": {
+        "amp": 0.25,
+        "freq": 1.8
+      }
+    },
+    {
+      "name": "t2",
+      "key": "sleeper_tentacle",
+      "x": -54,
+      "y": 70,
+      "ox": 0.5,
+      "oy": 0,
+      "swing": {
+        "amp": 0.25,
+        "freq": 1.8,
+        "phase": 1
+      }
+    },
+    {
+      "name": "t3",
+      "key": "sleeper_tentacle",
+      "x": -18,
+      "y": 74,
+      "ox": 0.5,
+      "oy": 0,
+      "swing": {
+        "amp": 0.25,
+        "freq": 1.8,
+        "phase": 2
+      }
+    },
+    {
+      "name": "t4",
+      "key": "sleeper_tentacle",
+      "x": 18,
+      "y": 74,
+      "ox": 0.5,
+      "oy": 0,
+      "swing": {
+        "amp": 0.25,
+        "freq": 1.8,
+        "phase": 3
+      }
+    },
+    {
+      "name": "t5",
+      "key": "sleeper_tentacle",
+      "x": 54,
+      "y": 70,
+      "ox": 0.5,
+      "oy": 0,
+      "swing": {
+        "amp": 0.25,
+        "freq": 1.8,
+        "phase": 4
+      }
+    },
+    {
+      "name": "t6",
+      "key": "sleeper_tentacle",
+      "x": 90,
+      "y": 60,
+      "ox": 0.5,
+      "oy": 0,
+      "swing": {
+        "amp": 0.25,
+        "freq": 1.8,
+        "phase": 5
+      }
+    },
+    {
+      "name": "head",
+      "key": "sleeper_head",
+      "x": 0,
+      "y": -10,
+      "ox": 0.5,
+      "oy": 0.5,
+      "pulse": {
+        "amp": 0.02,
+        "freq": 1.5
+      }
+    }
+  ],
+  "eyes": [
+    {
+      "parent": "head",
+      "x": -40,
+      "y": 12,
+      "pupilScale": 1.6,
+      "range": 4
+    },
+    {
+      "parent": "head",
+      "x": 40,
+      "y": 12,
+      "pupilScale": 1.6,
+      "range": 4
+    }
+  ]
+}

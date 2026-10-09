@@ -4,14 +4,17 @@ import {
   dreamConfig,
   economyConfig,
   enemiesConfig,
+  progressionConfig,
   runConfig,
   sanityConfig,
   type BiomeConfig,
+  type BossConfig,
   type CatConfig,
   type DreamConfig,
   type EconomyConfig,
   type EnemyConfig,
   type PhaseConfig,
+  type ProgressionConfig,
   type RunConfig,
   type RunModifiers,
   type SanityConfig,
@@ -24,7 +27,7 @@ import { EntityPool, overlaps, type Entity, type EntityKind } from './Entity';
 import { HeroMotor } from './HeroMotor';
 import { Rng } from './Rng';
 import { Sanity } from './Sanity';
-import { Track } from './Track';
+import { placeEnemy, Track } from './Track';
 import { baseModifiers } from './Upgrades';
 
 /** Сундук с твари или от кота: дублоны и сардинки (SPEC §4.2, §4.7). */
@@ -32,6 +35,16 @@ export interface ChestDrop {
   x: number;
   y: number;
   coins: Decimal;
+  sardines: number;
+}
+
+/** Победа над боссом биома: награда уже посчитана и зачисляется сессией. */
+export interface BossDefeat {
+  id: string;
+  x: number;
+  y: number;
+  coins: Decimal;
+  essence: number;
   sardines: number;
 }
 
@@ -74,11 +87,26 @@ export interface RunEvents {
   catCatch: Entity;
   catFetch: Entity;
   catHiss: Entity;
+  /** Появился мини-босс. */
+  eliteSpawn: Entity;
+  /** «Крот» вылез из-под земли. */
+  emerge: Entity;
+  bossSpawn: Entity;
+  /** Босс атакует: волна или призыв (для анимации). */
+  bossAttack: Entity;
+  /** Босса не успели победить — он уходит, путь откатывается. */
+  bossEscaped: Entity;
+  bossDefeated: BossDefeat;
+  /** Начался новый биом (id). */
+  biomeChange: string;
 }
 
 export interface RunSimOptions {
   seed: number;
   biome?: string;
+  /** Пройдено в биоме, м, и номер круга — из сохранения. */
+  progressM?: number;
+  lap?: number;
   run?: RunConfig;
   economy?: EconomyConfig;
   enemies?: Readonly<Record<string, EnemyConfig>>;
@@ -86,6 +114,7 @@ export interface RunSimOptions {
   sanity?: SanityConfig;
   dream?: DreamConfig;
   cat?: CatConfig;
+  progression?: ProgressionConfig;
 }
 
 export interface RunStats {
@@ -99,6 +128,8 @@ export interface RunStats {
   insights: number;
   pages: number;
   illusions: number;
+  miniBossKills: number;
+  bossKills: number;
 }
 
 const QUIET_PHASE: PhaseConfig = { weight: 1 };
@@ -124,6 +155,8 @@ export class RunSim {
     insights: 0,
     pages: 0,
     illusions: 0,
+    miniBossKills: 0,
+    bossKills: 0,
   };
 
   /** Номинал одной монеты; выставляет GameSession по CpS и улучшениям. */
@@ -152,13 +185,34 @@ export class RunSim {
   catTimer = 0;
   phase: PhaseConfig = QUIET_PHASE;
 
+  biomeId: string;
+  biome: BiomeConfig;
+  /** Пройдено в текущем биоме, м; на длине биома появляется босс. */
+  biomeProgressM: number;
+  /** Круг по биомам (после финального босса — заново, сложнее и щедрее). */
+  lap: number;
+  /** Текущий босс (null — боя нет). */
+  boss: Entity | null = null;
+  bossCfg: BossConfig | null = null;
+  bossMaxHp = 0;
+  /** Время боя с боссом, с. */
+  bossTime = 0;
+  /** Босс побеждён — до смены биома, с. */
+  transitionLeft = 0;
+
   private mods: RunModifiers = baseModifiers();
   private readonly economy: EconomyConfig;
   private readonly enemyCfg: Readonly<Record<string, EnemyConfig>>;
   private readonly sanityCfg: SanityConfig;
   private readonly dreamCfg: DreamConfig;
   private readonly catCfg: CatConfig;
-  private readonly track: Track;
+  private readonly biomes: Readonly<Record<string, BiomeConfig>>;
+  private readonly progression: ProgressionConfig;
+  private track: Track;
+  private readonly trackRng: Rng;
+  private nextEliteM: number;
+  private bossAttackTimer = 0;
+  private bossAttackIdx = 0;
   /** Отдельный генератор для игровых бросков, чтобы раскладка трассы не зависела от них. */
   private readonly luck: Rng;
   private safeUntilX: number;
@@ -172,8 +226,16 @@ export class RunSim {
     this.sanityCfg = opts.sanity ?? sanityConfig;
     this.dreamCfg = opts.dream ?? dreamConfig;
     this.catCfg = opts.cat ?? catConfig;
-    const biome = (opts.biomes ?? biomesConfig)[opts.biome ?? 'coast'];
+    this.progression = opts.progression ?? progressionConfig;
+    this.biomes = opts.biomes ?? biomesConfig;
+    this.biomeId = opts.biome ?? 'coast';
+    const biome = this.biomes[this.biomeId];
     if (!biome) throw new Error(`Неизвестный биом: ${opts.biome}`);
+    this.biome = biome;
+    this.biomeProgressM = opts.progressM ?? 0;
+    this.lap = opts.lap ?? 0;
+    const every = biome.miniBoss.everyM;
+    this.nextEliteM = (Math.floor(this.biomeProgressM / every) + 1) * every;
 
     const { world, hero, glide, attack } = this.cfg;
     this.hero = new HeroMotor(hero, glide, world.groundY);
@@ -184,20 +246,25 @@ export class RunSim {
     this.coinValue = bn(this.economy.coin.baseValue);
     this.magnetRadius = hero.magnetRadius;
     this.luck = new Rng(opts.seed ^ 0x5eed);
-    this.track = new Track(
-      biome,
-      this.enemyCfg,
-      world.groundY,
-      this.economy.coin.radius,
-      new Rng(opts.seed),
-      this.spawnFn,
-      hero.screenX,
-    );
+    this.trackRng = new Rng(opts.seed);
+    this.track = this.makeTrack(biome, hero.screenX);
     this.applyAll();
   }
 
   get meters(): number {
     return this.distancePx / this.cfg.world.pxPerMeter;
+  }
+
+  private makeTrack(biome: BiomeConfig, startX: number): Track {
+    return new Track(
+      biome,
+      this.enemyCfg,
+      this.cfg.world.groundY,
+      this.economy.coin.radius,
+      this.trackRng,
+      this.spawnFn,
+      startX,
+    );
   }
 
   get awakening(): boolean {
@@ -207,7 +274,8 @@ export class RunSim {
   /** Итоговый множитель дублонов от рассудка, Пробуждения и фазы. */
   get coinMult(): number {
     const awaken = this.awakening ? this.cfg.awakening.coinMult + this.mods.awakeningCoinMult : 1;
-    return this.sanity.coinMult * awaken * (this.phase.coinValueMult ?? 1);
+    const world = this.biome.coinMult * (1 + this.progression.lap.coinMult * this.lap);
+    return this.sanity.coinMult * awaken * (this.phase.coinValueMult ?? 1) * world;
   }
 
   applyModifiers(m: RunModifiers): void {
@@ -228,11 +296,13 @@ export class RunSim {
     this.hero.targetSpeed *= m.speedMult * (p.speedMult ?? 1);
     this.hero.staminaMax *= p.glideStaminaMult ?? 1;
     this.combat.rangeMult = m.attackRangeMult;
+    this.combat.eliteKnockback = this.biome.miniBoss.knockback;
     this.magnetRadius = this.cfg.hero.magnetRadius + m.magnetRadius;
     this.autoJump = m.autoJump > 0;
     this.track.enemyWeightMult = p.enemyWeightMult ?? 1;
     this.track.skyCoinsWeightMult = p.skyCoinsWeightMult ?? 1;
     this.track.pageChance = this.dreamCfg.pageChance * m.pageChanceMult;
+    this.track.calm = this.boss !== null || this.transitionLeft > 0;
   }
 
   press(): void {
@@ -265,6 +335,9 @@ export class RunSim {
     const prevX = hero.x;
     hero.update(dt);
     this.distancePx += hero.x - prevX;
+    if (!this.boss && this.transitionLeft <= 0) {
+      this.biomeProgressM += (hero.x - prevX) / this.cfg.world.pxPerMeter;
+    }
     if (hero.justJumped) {
       this.stats.jumps++;
       this.bus.emit('jump', hero.justJumped);
@@ -277,9 +350,11 @@ export class RunSim {
     this.updateSanity(dt);
 
     this.track.fill(hero.x + this.cfg.world.spawnAheadPx, this.safeUntilX);
+    this.updateProgress(dt);
 
     for (let i = 0; i < this.entities.length; i++) this.move(this.entities[i]!, dt);
 
+    if (this.boss) this.updateBoss(dt);
     if (this.awakening) this.updateAwakening(dt);
 
     if (this.combat.update(dt, hero, this.entities, this.onHit) && this.combat.firstHit) {
@@ -330,7 +405,7 @@ export class RunSim {
   private updateAwakening(dt: number): void {
     const ahead = this.hero.x + this.cfg.awakening.screenAheadPx;
     for (const e of this.entities) {
-      if (e.kind !== 'enemy' || e.hp <= 0 || e.x > ahead) continue;
+      if (e.kind !== 'enemy' || e.boss || e.hp <= 0 || e.x > ahead) continue;
       // Щупальца из-под земли уничтожают всё, что появилось на экране.
       e.hp = 0;
       e.hurtT = 0;
@@ -394,7 +469,13 @@ export class RunSim {
   private move(e: Entity, dt: number): void {
     e.t += dt;
     e.hurtT += dt;
+    e.x += e.vx * dt;
     if (e.kind !== 'enemy') return;
+    if (e.boss) {
+      // Не успели победить: босс обгоняет героя и исчезает за краем.
+      if (e.leaving) e.x += (this.hero.speed + this.progression.bossLeaveSpeed) * dt;
+      return;
+    }
     const cfg = this.enemyCfg[e.type];
     if (!cfg) return;
     switch (cfg.behavior) {
@@ -409,6 +490,25 @@ export class RunSim {
         const period = cfg.hopPeriodSec ?? 1;
         e.x -= cfg.speed * dt;
         e.y = e.baseY - (cfg.hopHeight ?? 0) * Math.abs(Math.sin((Math.PI * e.t) / period));
+        break;
+      }
+      case 'burrower':
+        if (e.burrowed) {
+          e.x -= (cfg.burrowSpeed ?? cfg.speed) * dt;
+          if (e.x - this.hero.x < (cfg.emergePx ?? 0)) {
+            e.burrowed = false;
+            this.bus.emit('emerge', e);
+          }
+        } else {
+          e.x -= cfg.speed * dt;
+        }
+        break;
+      case 'blinker': {
+        // Перескакивает между землёй и высотой: прыгать или ждать.
+        e.x -= cfg.speed * dt;
+        const up = Math.floor(e.t / (cfg.blinkPeriodSec ?? 1)) % 2 === 1;
+        const target = up ? this.cfg.world.groundY - (cfg.altitude ?? 0) : e.baseY;
+        e.y += (target - e.y) * Math.min(1, dt * (cfg.blinkSnapPerSec ?? 1));
         break;
       }
     }
@@ -457,6 +557,11 @@ export class RunSim {
         }
       } else if (e.kind === 'enemy' && e.hp <= 0) {
         remove = true;
+      } else if (e.boss) {
+        // Босс не толкается: опасны его волны и призванные твари.
+        remove = e.leaving && e.x > hx + this.cfg.world.spawnAheadPx;
+      } else if (e.burrowed) {
+        // Под землёй безвреден.
       } else if (!e.spent) {
         if (overlaps(hx, hy, hcfg.width, hcfg.height, e.x, e.y, e.w, e.h)) {
           e.spent = true;
@@ -518,9 +623,19 @@ export class RunSim {
       this.bus.emit('hurt', e);
       return;
     }
+    if (e.boss) {
+      this.defeatBoss(e);
+      return;
+    }
     const cfg = this.enemyCfg[e.type];
-    this.reward(e, cfg?.coins ?? 0);
-    e.essence = (cfg?.essence ?? 0) * this.mods.essenceMult * (this.phase.essenceMult ?? 1);
+    const mb = this.biome.miniBoss;
+    this.reward(e, (cfg?.coins ?? 0) * (e.elite ? mb.rewardMult : 1));
+    e.essence =
+      (cfg?.essence ?? 0) *
+      (e.elite ? mb.essenceMult : 1) *
+      this.mods.essenceMult *
+      (this.phase.essenceMult ?? 1);
+    if (e.elite) this.stats.miniBossKills++;
     this.essenceEarned += e.essence;
     this.stats.kills++;
     this.combo.add(this.economy.combo.streakPerKill);
@@ -530,9 +645,181 @@ export class RunSim {
       if (this.awakenMeter >= 1) this.bus.emit('awakenReady', undefined);
     }
     this.bus.emit('kill', e);
-    if (this.luck.chance((cfg?.chestChance ?? 0) + this.mods.chestChanceBonus)) {
+    // Мини-босс всегда оставляет сундук.
+    if (e.elite || this.luck.chance((cfg?.chestChance ?? 0) + this.mods.chestChanceBonus)) {
       this.dropChest(e.x, e.y);
     }
+  }
+
+  /** Путь по биому: мини-боссы через каждые everyM, босс — в конце биома. */
+  private updateProgress(dt: number): void {
+    if (this.transitionLeft > 0) {
+      this.transitionLeft -= dt;
+      if (this.transitionLeft <= 0) this.enterNextBiome();
+      return;
+    }
+    if (this.boss) return;
+    const biome = this.biome;
+    if (this.biomeProgressM >= biome.lengthM) {
+      // Босс не выходит, пока идёт стартовый безопасный отрезок.
+      if (this.hero.x > this.safeUntilX) this.spawnBoss();
+      return;
+    }
+    const mb = biome.miniBoss;
+    if (this.biomeProgressM < this.nextEliteM) return;
+    this.nextEliteM += mb.everyM;
+    const chance = Math.min(1, mb.chance * (this.phase.miniBossChanceMult ?? 1));
+    // Перед самым боссом мини-боссов нет.
+    if (this.biomeProgressM > biome.lengthM - mb.everyM / 2 || !this.luck.chance(chance)) return;
+    const e = this.track.spawnElite(mb);
+    e.illusion = false;
+    this.bus.emit('eliteSpawn', e);
+  }
+
+  private spawnBoss(): void {
+    const cfg = this.progression.bosses[this.biome.boss];
+    if (!cfg) return;
+    const e = this.pool.acquire('enemy', this.biome.boss);
+    e.boss = true;
+    e.w = cfg.width;
+    e.h = cfg.height;
+    e.hp = this.bossMaxHp = Math.ceil(cfg.hp * (1 + this.progression.lap.hpMult * this.lap));
+    e.x = this.hero.x + this.cfg.world.spawnAheadPx;
+    e.y = e.baseY = this.cfg.world.groundY - (cfg.altitude > 0 ? cfg.altitude : cfg.height / 2);
+    this.entities.push(e);
+    this.bus.emit('spawn', e);
+    this.boss = e;
+    this.bossCfg = cfg;
+    this.bossTime = 0;
+    this.bossAttackTimer = cfg.attackEverySec;
+    this.bossAttackIdx = 0;
+    this.track.calm = true;
+    this.bus.emit('bossSpawn', e);
+  }
+
+  /** Отладка: мини-босс прямо сейчас (впереди на трассе). */
+  spawnEliteNow(): void {
+    const e = this.track.spawnElite(this.biome.miniBoss);
+    e.illusion = false;
+    this.bus.emit('eliteSpawn', e);
+  }
+
+  /** Насколько босс сейчас подлетел к герою: 0 — держится на holdPx, 1 — в зоне вспышки. */
+  bossExposure(): number {
+    const cfg = this.bossCfg;
+    if (!cfg) return 0;
+    const t = this.bossTime - this.progression.bossEntrySec;
+    if (t < 0) return 0;
+    const c = t % cfg.cycleSec;
+    const a = cfg.approachSec;
+    const ease = (k: number): number => k * k * (3 - 2 * k);
+    if (c < a) return ease(c / a);
+    if (c < a + cfg.exposeSec) return 1;
+    if (c < 2 * a + cfg.exposeSec) return 1 - ease((c - a - cfg.exposeSec) / a);
+    return 0;
+  }
+
+  private updateBoss(dt: number): void {
+    const e = this.boss!;
+    const cfg = this.bossCfg!;
+    this.bossTime += dt;
+    const ahead = this.cfg.world.spawnAheadPx;
+    const entry = Math.min(1, this.bossTime / this.progression.bossEntrySec);
+    const exposure = this.bossExposure();
+    const hold = cfg.holdPx - (cfg.holdPx - cfg.exposePx) * exposure;
+    // Выход из-за правого края, затем — на своей дистанции от героя.
+    e.x = this.hero.x + ahead + (hold - ahead) * entry;
+    e.y = e.baseY + Math.sin(this.bossTime * 1.6) * this.progression.bossBobPx;
+
+    if (this.bossTime >= cfg.fightSec) {
+      this.escapeBoss(e, cfg);
+      return;
+    }
+    if (entry < 1 || exposure > 0) return;
+    this.bossAttackTimer -= dt;
+    if (this.bossAttackTimer > 0) return;
+    this.bossAttackTimer = cfg.attackEverySec;
+    const attack = cfg.attacks[this.bossAttackIdx++ % cfg.attacks.length];
+    if (attack === 'wave') this.bossWave(e, cfg);
+    else this.bossSummon(e, cfg);
+    this.bus.emit('bossAttack', e);
+  }
+
+  /** Волна по земле: препятствие, которое летит к герою, — перепрыгнуть. */
+  private bossWave(boss: Entity, cfg: BossConfig): void {
+    const w = cfg.wave;
+    const e = this.spawn('obstacle', w.key);
+    e.hidden = false;
+    e.w = w.width;
+    e.h = w.height;
+    e.x = boss.x - boss.w / 2;
+    e.y = e.baseY = this.cfg.world.groundY - w.height / 2;
+    e.vx = -w.speed;
+  }
+
+  private bossSummon(boss: Entity, cfg: BossConfig): void {
+    const type = cfg.summon[this.luck.int([0, cfg.summon.length - 1])];
+    const ecfg = type ? this.enemyCfg[type] : undefined;
+    if (!type || !ecfg) return;
+    const x = boss.x - boss.w / 2 - ecfg.width;
+    placeEnemy(this.spawn('enemy', type), ecfg, x, this.cfg.world.groundY);
+  }
+
+  private escapeBoss(e: Entity, cfg: BossConfig): void {
+    e.leaving = true;
+    this.boss = null;
+    this.bossCfg = null;
+    this.biomeProgressM = this.biome.lengthM * cfg.retreatTo;
+    const every = this.biome.miniBoss.everyM;
+    this.nextEliteM = (Math.floor(this.biomeProgressM / every) + 1) * every;
+    this.track.calm = false;
+    this.bus.emit('bossEscaped', e);
+  }
+
+  private defeatBoss(e: Entity): void {
+    const cfg = this.bossCfg;
+    this.boss = null;
+    this.bossCfg = null;
+    this.stats.bossKills++;
+    if (!cfg) return;
+    const mult = 1 + this.progression.lap.rewardMult * this.lap;
+    e.reward = this.coinValue.mul(cfg.coins * this.coinMult * mult);
+    this.earned = this.earned.add(e.reward);
+    e.essence = cfg.essence * this.mods.essenceMult * mult;
+    this.essenceEarned += e.essence;
+    const sardines = Math.round(cfg.sardines * this.mods.sardineMult * mult);
+    this.transitionLeft = this.progression.transitionSec;
+    this.bus.emit('bossDefeated', {
+      id: e.type,
+      x: e.x,
+      y: e.y,
+      coins: e.reward,
+      essence: e.essence,
+      sardines,
+    });
+  }
+
+  /** Следующий биом по порядку; после последнего — новый круг. */
+  private enterNextBiome(): void {
+    const order = this.progression.order;
+    const i = order.indexOf(this.biomeId);
+    if (i + 1 >= order.length) this.lap++;
+    this.setBiome(order[(i + 1) % order.length] ?? order[0]!);
+  }
+
+  /** Смена биома прямо в забеге: новая трасса продолжается с текущего курсора. */
+  setBiome(id: string): void {
+    const biome = this.biomes[id];
+    if (!biome) throw new Error(`Неизвестный биом: ${id}`);
+    this.biomeId = id;
+    this.biome = biome;
+    this.biomeProgressM = 0;
+    this.nextEliteM = biome.miniBoss.everyM;
+    this.transitionLeft = 0;
+    this.track = this.makeTrack(biome, this.track.cursor);
+    this.safeUntilX = this.track.cursor + biome.safeStartPx;
+    this.applyAll();
+    this.bus.emit('biomeChange', id);
   }
 
   private dropChest(x: number, y: number): void {

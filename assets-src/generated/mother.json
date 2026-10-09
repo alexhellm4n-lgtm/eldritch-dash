@@ -1,0 +1,18 @@
+{
+  "src": "raw/mother_sheet_b.png",
+  "outDir": "public/assets/enemies",
+  "manifest": "src/render/enemyParts.json",
+  "unitsPerPx": 0.45,
+  "textureScale": 2,
+  "parts": {
+    "mother_body": {
+      "seed": [312, 1213]
+    },
+    "mother_crown": {
+      "seed": [835, 1155]
+    },
+    "mother_root": {
+      "seed": [1324, 1229]
+    }
+  }
+}

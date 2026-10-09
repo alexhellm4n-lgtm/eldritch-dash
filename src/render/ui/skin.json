@@ -1,24 +1,14 @@
 {
-  "button": {
-    "key": "ui_button",
-    "left": 62,
-    "right": 62,
-    "top": 26,
-    "bottom": 26
-  },
-  "plate": {
-    "key": "ui_plate",
-    "left": 64,
-    "right": 64,
-    "top": 30,
-    "bottom": 30
-  },
-  "panel": {
-    "key": "ui_panel",
-    "inset": 88
-  },
-  "badge": {
-    "key": "ui_badge",
-    "fit": 1.18
-  }
+  "button": { "key": "ui_button", "left": 62, "right": 62, "top": 26, "bottom": 26 },
+  "buttonWood": { "key": "ui_button_wood", "left": 58, "right": 58, "top": 50, "bottom": 50 },
+  "plate": { "key": "ui_plate", "left": 64, "right": 64, "top": 30, "bottom": 30 },
+  "panel": { "key": "ui_panel", "inset": 88 },
+  "badge": { "key": "ui_round", "fit": 1.12 },
+  "badgeOld": { "key": "ui_badge", "fit": 1.18 },
+  "bar": { "key": "ui_bar", "left": 44, "right": 44 },
+  "barFill": { "key": "ui_bar_fill", "left": 12, "right": 12 },
+  "row": { "key": "ui_row", "left": 110, "right": 30 },
+  "scroll": { "key": "ui_scroll", "left": 72, "right": 72 },
+  "ribbon": { "key": "ui_ribbon", "left": 92, "right": 92 },
+  "toast": { "key": "ui_toast", "left": 88, "right": 88 }
 }

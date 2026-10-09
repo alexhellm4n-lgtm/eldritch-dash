@@ -1,0 +1,112 @@
+{
+  "anchor": "center",
+  "parts": [
+    {
+      "name": "leg1",
+      "key": "reef_leg",
+      "x": -80,
+      "y": 50,
+      "ox": 0.5,
+      "oy": 0.05,
+      "shade": true,
+      "swing": {
+        "amp": 0.2,
+        "freq": 4
+      }
+    },
+    {
+      "name": "leg2",
+      "key": "reef_leg",
+      "x": -30,
+      "y": 56,
+      "ox": 0.5,
+      "oy": 0.05,
+      "shade": true,
+      "swing": {
+        "amp": 0.2,
+        "freq": 4,
+        "phase": 3.1
+      }
+    },
+    {
+      "name": "clawBack",
+      "key": "reef_claw",
+      "x": -70,
+      "y": 0,
+      "ox": 0.15,
+      "oy": 0.6,
+      "shade": true,
+      "swing": {
+        "amp": 0.2,
+        "freq": 2,
+        "phase": 1
+      }
+    },
+    {
+      "name": "leg3",
+      "key": "reef_leg",
+      "x": 30,
+      "y": 56,
+      "ox": 0.5,
+      "oy": 0.05,
+      "swing": {
+        "amp": 0.2,
+        "freq": 4,
+        "phase": 1.5
+      }
+    },
+    {
+      "name": "leg4",
+      "key": "reef_leg",
+      "x": 80,
+      "y": 50,
+      "ox": 0.5,
+      "oy": 0.05,
+      "swing": {
+        "amp": 0.2,
+        "freq": 4,
+        "phase": 4.6
+      }
+    },
+    {
+      "name": "body",
+      "key": "reef_body",
+      "x": 0,
+      "y": -10,
+      "ox": 0.5,
+      "oy": 0.5,
+      "pulse": {
+        "amp": 0.02,
+        "freq": 2
+      }
+    },
+    {
+      "name": "clawFront",
+      "key": "reef_claw",
+      "x": 90,
+      "y": 20,
+      "ox": 0.15,
+      "oy": 0.6,
+      "swing": {
+        "amp": 0.25,
+        "freq": 2.4
+      }
+    }
+  ],
+  "eyes": [
+    {
+      "parent": "body",
+      "x": 31,
+      "y": -67,
+      "pupilScale": 1.3,
+      "range": 3.5
+    },
+    {
+      "parent": "body",
+      "x": 67,
+      "y": -61,
+      "pupilScale": 1.05,
+      "range": 3
+    }
+  ]
+}

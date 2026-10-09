@@ -1,0 +1,18 @@
+{
+  "src": "raw/root_sheet_b.png",
+  "outDir": "public/assets/enemies",
+  "manifest": "src/render/enemyParts.json",
+  "unitsPerPx": 0.13,
+  "textureScale": 2,
+  "parts": {
+    "root_body": {
+      "seed": [301, 1122]
+    },
+    "root_leg": {
+      "seed": [706, 1187]
+    },
+    "mound": {
+      "seed": [1165, 1205]
+    }
+  }
+}

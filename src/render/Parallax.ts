@@ -32,6 +32,8 @@ export class Parallax {
   private readonly fogBack: Phaser.GameObjects.TileSprite;
   private readonly fogFront: Phaser.GameObjects.TileSprite;
   private drift = 0;
+  /** Собственная прозрачность слоёв (туман полупрозрачный) — для setFade. */
+  private readonly baseAlpha = new Map<Phaser.GameObjects.TileSprite, number>();
 
   constructor(
     scene: Phaser.Scene,
@@ -83,6 +85,7 @@ export class Parallax {
       240,
       Depth.fogFront,
     ).setAlpha(0.35);
+    for (const o of this.objects) this.baseAlpha.set(o, o.alpha);
   }
 
   private tile(
@@ -101,6 +104,19 @@ export class Parallax {
       .setScrollFactor(0)
       .setDepth(depth)
       .setTileScale(s, s);
+  }
+
+  private get objects(): Phaser.GameObjects.TileSprite[] {
+    return [...this.layers, this.ground, this.fogBack, this.fogFront];
+  }
+
+  /** Прозрачность всего набора слоёв (для плавной смены биома). */
+  setFade(alpha: number): void {
+    for (const o of this.objects) o.setAlpha(alpha * (this.baseAlpha.get(o) ?? 1));
+  }
+
+  destroy(): void {
+    for (const o of this.objects) o.destroy();
   }
 
   update(distancePx: number, dtSec: number): void {

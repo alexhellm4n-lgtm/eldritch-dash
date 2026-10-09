@@ -1,0 +1,18 @@
+{
+  "src": "raw/reef_sheet_a.png",
+  "outDir": "public/assets/enemies",
+  "manifest": "src/render/enemyParts.json",
+  "unitsPerPx": 0.32,
+  "textureScale": 2,
+  "parts": {
+    "reef_body": {
+      "seed": [384, 1217]
+    },
+    "reef_claw": {
+      "seed": [957, 1240]
+    },
+    "reef_leg": {
+      "seed": [1338, 1259]
+    }
+  }
+}

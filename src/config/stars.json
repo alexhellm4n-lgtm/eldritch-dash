@@ -23,7 +23,8 @@
       "weight": 0.6,
       "starCoinChance": 0.05,
       "starCoinUnits": 50,
-      "sanityDrainMult": 2.5
+      "sanityDrainMult": 2.5,
+      "miniBossChanceMult": 2
     }
   }
 }

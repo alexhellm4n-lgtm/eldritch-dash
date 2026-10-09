@@ -1,0 +1,12 @@
+{
+  "src": "raw/bushcube_sheet_b.png",
+  "outDir": "public/assets/enemies",
+  "manifest": "src/render/enemyParts.json",
+  "unitsPerPx": 0.15,
+  "textureScale": 2,
+  "parts": {
+    "bush_body": {
+      "seed": [447, 770]
+    }
+  }
+}

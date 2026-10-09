@@ -12,6 +12,8 @@ import { BootScene } from './scenes/BootScene';
 import { DebugScene } from './scenes/DebugScene';
 import { DreamScene } from './scenes/DreamScene';
 import { GrimoireScene } from './scenes/GrimoireScene';
+import { JournalScene } from './scenes/JournalScene';
+import { TownScene } from './scenes/TownScene';
 import { PreloadScene } from './scenes/PreloadScene';
 import { RunScene } from './scenes/RunScene';
 import { ShopOverlay } from './scenes/ShopOverlay';
@@ -51,6 +53,8 @@ async function bootstrap(): Promise<void> {
       UIScene,
       ShopOverlay,
       GrimoireScene,
+      TownScene,
+      JournalScene,
       DreamScene,
       DebugScene,
     ],

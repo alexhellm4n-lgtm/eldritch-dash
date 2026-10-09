@@ -1,0 +1,45 @@
+{
+  "src": "raw/ui2_icons.webp",
+  "outDir": "public/assets/ui",
+  "manifest": "src/render/uiParts.json",
+  "unitsPerPx": 0.15,
+  "textureScale": 2,
+  "parts": {
+    "icon_town": {
+      "seed": [232, 163],
+      "fitHeight": 64
+    },
+    "icon_journal": {
+      "seed": [827, 178],
+      "fitHeight": 64
+    },
+    "icon_grimoire": {
+      "seed": [1128, 179],
+      "fitHeight": 64
+    },
+    "icon_awaken": {
+      "seed": [220, 647],
+      "fitHeight": 64
+    },
+    "icon_gear": {
+      "seed": [751, 658],
+      "fitHeight": 64
+    },
+    "icon_share": {
+      "seed": [1099, 661],
+      "fitHeight": 64
+    },
+    "icon_lock": {
+      "seed": [306, 1102],
+      "fitHeight": 64
+    },
+    "icon_check": {
+      "seed": [862, 1129],
+      "fitHeight": 56
+    },
+    "icon_star": {
+      "seed": [1219, 1114],
+      "fitHeight": 64
+    }
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "src": "raw/cultist_sheet_a.png",
+  "outDir": "public/assets/enemies",
+  "manifest": "src/render/enemyParts.json",
+  "unitsPerPx": 0.14,
+  "textureScale": 2,
+  "parts": {
+    "cultist_body": {
+      "seed": [1107, 590]
+    },
+    "cultist_leg": {
+      "seed": [1097, 1175]
+    }
+  }
+}

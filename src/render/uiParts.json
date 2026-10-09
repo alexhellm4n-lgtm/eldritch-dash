@@ -82,5 +82,137 @@
     "scale": 2,
     "width": 35.5,
     "height": 34
+  },
+  "icon_town": {
+    "file": "assets/ui/icon_town.webp",
+    "scale": 2,
+    "width": 62,
+    "height": 64
+  },
+  "icon_journal": {
+    "file": "assets/ui/icon_journal.webp",
+    "scale": 2,
+    "width": 59,
+    "height": 64
+  },
+  "icon_grimoire": {
+    "file": "assets/ui/icon_grimoire.webp",
+    "scale": 2,
+    "width": 59.5,
+    "height": 64
+  },
+  "icon_awaken": {
+    "file": "assets/ui/icon_awaken.webp",
+    "scale": 2,
+    "width": 66,
+    "height": 64
+  },
+  "icon_gear": {
+    "file": "assets/ui/icon_gear.webp",
+    "scale": 2,
+    "width": 65.5,
+    "height": 64
+  },
+  "icon_share": {
+    "file": "assets/ui/icon_share.webp",
+    "scale": 2,
+    "width": 70,
+    "height": 64
+  },
+  "icon_lock": {
+    "file": "assets/ui/icon_lock.webp",
+    "scale": 2,
+    "width": 54.5,
+    "height": 64
+  },
+  "icon_check": {
+    "file": "assets/ui/icon_check.webp",
+    "scale": 2,
+    "width": 61.5,
+    "height": 56
+  },
+  "icon_star": {
+    "file": "assets/ui/icon_star.webp",
+    "scale": 2,
+    "width": 67,
+    "height": 64
+  },
+  "ui_button_wood": {
+    "file": "assets/ui/ui_button_wood.webp",
+    "scale": 2,
+    "width": 206.5,
+    "height": 70
+  },
+  "ui_round": {
+    "file": "assets/ui/ui_round.webp",
+    "scale": 2,
+    "width": 55.5,
+    "height": 56
+  },
+  "ui_bar": {
+    "file": "assets/ui/ui_bar.webp",
+    "scale": 2,
+    "width": 124,
+    "height": 24
+  },
+  "ui_bar_fill": {
+    "file": "assets/ui/ui_bar_fill.webp",
+    "scale": 2,
+    "width": 62.5,
+    "height": 12
+  },
+  "ui_card": {
+    "file": "assets/ui/ui_card.webp",
+    "scale": 2,
+    "width": 125.5,
+    "height": 100
+  },
+  "ui_seal": {
+    "file": "assets/ui/ui_seal.webp",
+    "scale": 2,
+    "width": 71.5,
+    "height": 70
+  },
+  "ui_row": {
+    "file": "assets/ui/ui_row.webp",
+    "scale": 2,
+    "width": 264.5,
+    "height": 60
+  },
+  "ui_seal_locked": {
+    "file": "assets/ui/ui_seal_locked.webp",
+    "scale": 2,
+    "width": 71.5,
+    "height": 76
+  },
+  "ui_wax": {
+    "file": "assets/ui/ui_wax.webp",
+    "scale": 2,
+    "width": 61.5,
+    "height": 60
+  },
+  "ui_newspaper": {
+    "file": "assets/ui/ui_newspaper.webp",
+    "scale": 2,
+    "width": 519,
+    "height": 600
+  },
+  "ui_scroll": {
+    "file": "assets/ui/ui_scroll.webp",
+    "scale": 2,
+    "width": 259.5,
+    "height": 90
+  },
+  "ui_ribbon": {
+    "file": "assets/ui/ui_ribbon.webp",
+    "scale": 2,
+    "width": 314.5,
+    "height": 70
+  },
+  "ui_toast": {
+    "file": "assets/ui/ui_toast.webp",
+    "scale": 2,
+    "width": 179,
+    "height": 64
   }
 }

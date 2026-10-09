@@ -75,6 +75,198 @@
     "pageSize": {
       "width": 40,
       "height": 44
+    },
+    "lengthM": 10000,
+    "boss": "reefKeeper",
+    "coinMult": 1,
+    "miniBoss": {
+      "everyM": 700,
+      "chance": 0.55,
+      "scale": 1.6,
+      "hpMult": 4,
+      "rewardMult": 12,
+      "essenceMult": 6,
+      "knockback": 150
+    }
+  },
+  "forest": {
+    "safeStartPx": 600,
+    "gapPx": [190, 440],
+    "minHazardGapPx": 400,
+    "patternWeights": {
+      "coinsGround": 3,
+      "coinsSky": 2,
+      "obstacle": 3,
+      "enemy": 4.5,
+      "pickup": 1.2
+    },
+    "enemyWeights": {
+      "cultist": 4,
+      "eyeBush": 2,
+      "firefly": 2,
+      "rootCrawler": 2
+    },
+    "obstacleWeights": {
+      "stump": 3,
+      "mushroomRing": 2,
+      "thornBush": 2
+    },
+    "obstacles": {
+      "stump": {
+        "width": 74,
+        "height": 70
+      },
+      "mushroomRing": {
+        "width": 72,
+        "height": 48
+      },
+      "thornBush": {
+        "width": 88,
+        "height": 62
+      }
+    },
+    "coinsGround": {
+      "count": [4, 9],
+      "spacing": 52,
+      "height": 38
+    },
+    "coinsSky": {
+      "count": [5, 9],
+      "spacing": 52,
+      "baseHeight": 150,
+      "arcHeight": 110
+    },
+    "obstacleArc": {
+      "chance": 0.6,
+      "count": 5,
+      "spacing": 48,
+      "clearance": 70,
+      "arcHeight": 70
+    },
+    "parallax": [0.03, 0.12, 0.3, 0.6],
+    "fogDriftPxPerSec": 12,
+    "pickupWeights": {
+      "lantern": 3,
+      "tea": 1
+    },
+    "pickups": {
+      "lantern": {
+        "width": 36,
+        "height": 44,
+        "lift": 130
+      },
+      "tea": {
+        "width": 36,
+        "height": 30,
+        "lift": 36
+      }
+    },
+    "pageLift": [120, 240],
+    "pageSize": {
+      "width": 40,
+      "height": 44
+    },
+    "lengthM": 14000,
+    "boss": "rootMother",
+    "coinMult": 2.5,
+    "miniBoss": {
+      "everyM": 650,
+      "chance": 0.6,
+      "scale": 1.6,
+      "hpMult": 4,
+      "rewardMult": 12,
+      "essenceMult": 6,
+      "knockback": 150
+    }
+  },
+  "sunken": {
+    "safeStartPx": 600,
+    "gapPx": [180, 420],
+    "minHazardGapPx": 380,
+    "patternWeights": {
+      "coinsGround": 3,
+      "coinsSky": 2.5,
+      "obstacle": 3,
+      "enemy": 5,
+      "pickup": 1.3
+    },
+    "enemyWeights": {
+      "polyp": 3,
+      "starJelly": 3,
+      "wrongCube": 2,
+      "deepPriest": 2
+    },
+    "obstacleWeights": {
+      "brokenColumn": 3,
+      "shellPile": 2,
+      "idolHead": 2
+    },
+    "obstacles": {
+      "brokenColumn": {
+        "width": 60,
+        "height": 90
+      },
+      "shellPile": {
+        "width": 86,
+        "height": 44
+      },
+      "idolHead": {
+        "width": 48,
+        "height": 78
+      }
+    },
+    "coinsGround": {
+      "count": [4, 9],
+      "spacing": 52,
+      "height": 38
+    },
+    "coinsSky": {
+      "count": [5, 9],
+      "spacing": 52,
+      "baseHeight": 150,
+      "arcHeight": 110
+    },
+    "obstacleArc": {
+      "chance": 0.6,
+      "count": 5,
+      "spacing": 48,
+      "clearance": 70,
+      "arcHeight": 70
+    },
+    "parallax": [0.03, 0.12, 0.3, 0.6],
+    "fogDriftPxPerSec": 8,
+    "pickupWeights": {
+      "lantern": 3,
+      "tea": 1
+    },
+    "pickups": {
+      "lantern": {
+        "width": 36,
+        "height": 44,
+        "lift": 130
+      },
+      "tea": {
+        "width": 36,
+        "height": 30,
+        "lift": 36
+      }
+    },
+    "pageLift": [120, 240],
+    "pageSize": {
+      "width": 40,
+      "height": 44
+    },
+    "lengthM": 18000,
+    "boss": "greatSleeper",
+    "coinMult": 6,
+    "miniBoss": {
+      "everyM": 600,
+      "chance": 0.65,
+      "scale": 1.55,
+      "hpMult": 4,
+      "rewardMult": 12,
+      "essenceMult": 6,
+      "knockback": 150
     }
   }
 }

@@ -1,0 +1,38 @@
+{
+  "outDir": "public/assets/bg",
+  "manifest": "src/render/backgrounds.json",
+  "layers": [
+    {
+      "key": "bg_sunken_layer0",
+      "src": "raw/sunken_sky_a.png",
+      "height": 720,
+      "bottom": 720,
+      "chroma": false,
+      "blend": 0.12
+    },
+    {
+      "key": "bg_sunken_layer1",
+      "src": "raw/sunken_far_a.png",
+      "height": 588,
+      "bottom": 640,
+      "chroma": true,
+      "blend": 0.1
+    },
+    {
+      "key": "bg_sunken_layer2",
+      "src": "raw/sunken_mid_b.png",
+      "height": 520,
+      "bottom": 650,
+      "chroma": true,
+      "blend": 0.12
+    },
+    {
+      "key": "bg_sunken_layer3",
+      "src": "raw/sunken_near_a.png",
+      "height": 300,
+      "bottom": 638,
+      "chroma": true,
+      "blend": 0.04
+    }
+  ]
+}

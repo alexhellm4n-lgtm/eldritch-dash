@@ -1,0 +1,34 @@
+{
+  "outDir": "public/assets/bg",
+  "manifest": "src/render/backgrounds.json",
+  "layers": [
+    {
+      "key": "ground_forest",
+      "src": "raw/forest_ground_b.png",
+      "height": 136,
+      "bottom": 736,
+      "fitTrimmed": 136,
+      "top": 588,
+      "chroma": true,
+      "blend": 0.08
+    },
+    {
+      "key": "ground_sunken",
+      "src": "raw/sunken_ground_a.png",
+      "height": 130,
+      "bottom": 736,
+      "fitTrimmed": 130,
+      "top": 604,
+      "chroma": true,
+      "blend": 0.08
+    },
+    {
+      "key": "town_bg",
+      "src": "raw/town_bg_b.png",
+      "height": 720,
+      "bottom": 720,
+      "chroma": false,
+      "blend": 0
+    }
+  ]
+}

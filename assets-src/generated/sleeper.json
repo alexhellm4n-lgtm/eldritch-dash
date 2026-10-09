@@ -1,0 +1,18 @@
+{
+  "src": "raw/sleeper_sheet_b.png",
+  "outDir": "public/assets/enemies",
+  "manifest": "src/render/enemyParts.json",
+  "unitsPerPx": 0.36,
+  "textureScale": 2,
+  "parts": {
+    "sleeper_head": {
+      "seed": [396, 1182]
+    },
+    "sleeper_tentacle": {
+      "seed": [895, 1193]
+    },
+    "sleeper_wing": {
+      "seed": [1255, 1193]
+    }
+  }
+}

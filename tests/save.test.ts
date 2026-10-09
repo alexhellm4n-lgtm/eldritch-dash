@@ -22,7 +22,25 @@ function sample() {
     awakenings: 5,
     insights: 1,
     dives: 1,
+    distanceM: 5000,
+    bossKills: 2,
+    miniBossKills: 4,
+    chests: 6,
+    pages: 9,
+    illusions: 3,
   };
+  s.hints = ['stun', 'page'];
+  s.world = {
+    biome: 'forest',
+    progressM: 1234.5,
+    lap: 1,
+    bosses: { reefKeeper: 2 },
+    visited: ['coast', 'forest'],
+  };
+  s.town = { lighthouse: 3, chapel: 1 };
+  s.journal = { fishman: 12, reefKeeper: 1 };
+  s.achievements = ['kills_1', 'dives_1'];
+  s.newspaper = { lastDay: 20000, streak: 4 };
   s.essence = 12.5;
   s.sardines = 9;
   s.darkStars = 3;
@@ -56,6 +74,12 @@ describe('сохранения', () => {
     expect(back.omen).toBe('greed');
     expect(back.grimoire).toEqual(['h_flash1', 'd_coin1']);
     expect(back.cat).toEqual({ unlocked: true, levels: { catSpeed: 2 } });
+    expect(back.hints).toEqual(s.hints);
+    expect(back.world).toEqual(s.world);
+    expect(back.town).toEqual(s.town);
+    expect(back.journal).toEqual(s.journal);
+    expect(back.achievements).toEqual(s.achievements);
+    expect(back.newspaper).toEqual(s.newspaper);
   });
 
   it('строка экспорта — base64 без пробелов, переживает пробелы по краям', () => {

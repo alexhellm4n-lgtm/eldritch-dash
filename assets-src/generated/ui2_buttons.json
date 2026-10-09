@@ -1,0 +1,17 @@
+{
+  "src": "raw/ui2_buttons.webp",
+  "outDir": "public/assets/ui",
+  "manifest": "src/render/uiParts.json",
+  "unitsPerPx": 0.15,
+  "textureScale": 2,
+  "parts": {
+    "ui_button_wood": {
+      "seed": [224, 131],
+      "fitHeight": 70
+    },
+    "ui_round": {
+      "seed": [292, 1131],
+      "fitHeight": 56
+    }
+  }
+}

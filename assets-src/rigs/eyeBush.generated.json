@@ -1,0 +1,41 @@
+{
+  "anchor": "feet",
+  "parts": [
+    {
+      "name": "body",
+      "key": "bush_body",
+      "x": 0,
+      "y": 0,
+      "ox": 0.5,
+      "oy": 1,
+      "swing": {
+        "amp": 0.04,
+        "freq": 2.2
+      }
+    }
+  ],
+  "eyes": [
+    {
+      "parent": "body",
+      "x": 4.5,
+      "y": -33.0,
+      "pupilScale": 1.78,
+      "range": 7.2
+    },
+    {
+      "parent": "body",
+      "x": -18.4,
+      "y": -59.8,
+      "pupilScale": 0.73,
+      "range": 3.0
+    },
+    {
+      "parent": "body",
+      "x": 19.3,
+      "y": -60.3,
+      "pupilScale": 0.7,
+      "range": 2.8
+    }
+  ],
+  "armor": "body"
+}

@@ -22,6 +22,22 @@ export const migrations: Readonly<Record<number, Migration>> = {
     grimoire: [],
     cat: { unlocked: false, levels: {} },
   }),
+  // 2 → 3: контент M4. Путь начинается с побережья; лучшая дистанция идёт в общий пробег.
+  2: (d) => {
+    const stats = typeof d.stats === 'object' && d.stats !== null ? d.stats : {};
+    const best = (stats as Record<string, unknown>).bestDistanceM;
+    return {
+      ...d,
+      v: 3,
+      hints: [],
+      world: { biome: 'coast', progressM: 0, lap: 0, bosses: {}, visited: ['coast'] },
+      town: {},
+      journal: {},
+      achievements: [],
+      newspaper: { lastDay: 0, streak: 0 },
+      stats: { ...stats, distanceM: typeof best === 'number' ? best : 0 },
+    };
+  },
 };
 
 export class SaveVersionError extends Error {}

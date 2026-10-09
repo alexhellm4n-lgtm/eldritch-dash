@@ -1,0 +1,17 @@
+{
+  "src": "raw/polyp_sheet_a.png",
+  "outDir": "public/assets/enemies",
+  "manifest": "src/render/enemyParts.json",
+  "unitsPerPx": 0.094,
+  "textureScale": 2,
+  "parts": {
+    "polyp_stalk": {
+      "seed": [1107, 535],
+      "fitHeight": 84
+    },
+    "polyp_tentacle": {
+      "seed": [1104, 1150],
+      "fitHeight": 40
+    }
+  }
+}

@@ -37,6 +37,18 @@ export class Entity {
   hissed = false;
   /** Эссенция, начисленная за убийство (заполняется перед событием kill). */
   essence = 0;
+  /** Мини-босс: увеличенная тварь биома. */
+  elite = false;
+  /** Босс биома (тип — ключ в progression.json → bosses). */
+  boss = false;
+  /** Масштаб отрисовки (мини-босс крупнее). */
+  scale = 1;
+  /** Собственная скорость по X, px/с (волны босса). */
+  vx = 0;
+  /** Тварь под землёй: невидима, неуязвима и безвредна, пока не вылезет. */
+  burrowed = false;
+  /** Босс уходит (не успели победить). */
+  leaving = false;
 
   reset(id: number, kind: EntityKind, type: string): this {
     this.id = id;
@@ -47,6 +59,9 @@ export class Entity {
     this.spent = this.cleared = this.magnet = false;
     this.illusion = this.hidden = this.hissed = false;
     this.essence = 0;
+    this.elite = this.boss = this.burrowed = this.leaving = false;
+    this.scale = 1;
+    this.vx = 0;
     this.hurtT = Infinity;
     return this;
   }

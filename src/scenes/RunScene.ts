@@ -16,11 +16,12 @@ import { palette } from '../render/palette';
 import type { Entity } from '../systems/Entity';
 import { RunSim } from '../systems/RunSim';
 
-const BIOME = 'coast';
 /** Как часто сверять небесную фазу с часами, с. */
 const PHASE_CHECK_SEC = 0.5;
 /** Пауза между «страницы сложились» и началом сна, мс. */
 const DREAM_DELAY_MS = 900;
+/** Смена фона при переходе в новый биом, мс. */
+const BIOME_FADE_MS = 1600;
 
 const DEPTH_BY_KIND = {
   coin: Depth.coin,
@@ -43,6 +44,8 @@ export class RunScene extends Phaser.Scene {
   private phaseTimer = 0;
   private elapsed = 0;
   private dreamPending = false;
+  private fadingParallax: Parallax | null = null;
+  private fadeTween: Phaser.Tweens.Tween | null = null;
   /** Отладка: ускорение забега (админ-панель). */
   debugTimeScale = 1;
   private readonly views = new Map<Entity, EntityView>();
@@ -55,10 +58,21 @@ export class RunScene extends Phaser.Scene {
   create(): void {
     this.views.clear();
     this.pools.clear();
-    this.sim = new RunSim({ seed: Math.floor(Math.random() * 2 ** 31), biome: BIOME });
+    // Сцена перезапускается при Погружении: поля экземпляра живут дальше.
+    this.fadingParallax = null;
+    this.fadeTween = null;
     const session = app().session;
+    const world = session.state.world;
+    // Сохранение могло остаться от биома, которого больше нет в конфиге.
+    const biome = biomesConfig[world.biome] ? world.biome : 'coast';
+    this.sim = new RunSim({
+      seed: Math.floor(Math.random() * 2 ** 31),
+      biome,
+      progressM: biome === world.biome ? world.progressM : 0,
+      lap: world.lap,
+    });
     session.attachRun(this.sim);
-    this.parallax = new Parallax(this, BIOME, biomesConfig[BIOME]!, runConfig.world.groundY);
+    this.parallax = this.makeParallax(biome);
     this.heroView = new HeroView(this);
     this.heroView.container.setDepth(Depth.hero);
     this.particles = new Particles(this);
@@ -96,6 +110,39 @@ export class RunScene extends Phaser.Scene {
     });
 
     this.scene.launch('UIScene', { sim: this.sim });
+  }
+
+  private makeParallax(biome: string): Parallax {
+    return new Parallax(this, biome, biomesConfig[biome]!, runConfig.world.groundY);
+  }
+
+  /** Новый биом: фон плавно сменяется, старый удаляется. */
+  private crossfadeBiome(biome: string): void {
+    // Предыдущая смена ещё идёт — завершаем её сразу.
+    this.fadeTween?.stop();
+    this.fadingParallax?.destroy();
+    this.parallax.setFade(1);
+    const old = this.parallax;
+    const next = this.makeParallax(biome);
+    next.setFade(0);
+    next.update(this.sim.distancePx, 0);
+    this.parallax = next;
+    this.fadingParallax = old;
+    const fade = { k: 0 };
+    this.fadeTween = this.tweens.add({
+      targets: fade,
+      k: 1,
+      duration: BIOME_FADE_MS,
+      onUpdate: () => {
+        next.setFade(fade.k);
+        old.setFade(1 - fade.k);
+      },
+      onComplete: () => {
+        old.destroy();
+        this.fadingParallax = null;
+        this.fadeTween = null;
+      },
+    });
   }
 
   private bindInput(): void {
@@ -245,6 +292,46 @@ export class RunScene extends Phaser.Scene {
       this.catView.hiss();
       this.juice.popup(e.x, e.y - e.h / 2 - 16, t('popup.hiss'), palette.coral, 22);
     });
+
+    // --- M4: мини-боссы, боссы, биомы ---
+    bus.on('eliteSpawn', (e) => {
+      this.juice.popup(e.x - 200, 230, t('popup.miniBoss'), palette.coral, 34);
+    });
+    bus.on('emerge', (e) => this.particles.dustPuff(e.x, e.y + e.h / 2));
+    bus.on('bossSpawn', (e) => {
+      this.juice.shake(juiceConfig.shake.stun);
+      this.juice.popup(
+        sim().hero.x + 360,
+        200,
+        t('popup.boss', { name: tId(`creature.${e.type}`) }),
+        palette.coral,
+        40,
+      );
+    });
+    bus.on('bossAttack', (e) => {
+      this.juice.shake(juiceConfig.shake.armorHit);
+      this.particles.dustPuff(e.x - e.w / 2, runConfig.world.groundY);
+    });
+    bus.on('bossEscaped', () => {
+      const h = sim().hero;
+      this.juice.popup(h.x + 300, 230, t('popup.bossEscaped'), palette.fog, 30);
+    });
+    bus.on('bossDefeated', (b) => {
+      this.juice.shake(juiceConfig.shake.stun);
+      this.juice.hitStop();
+      for (let i = 0; i < 4; i++) {
+        this.particles.splat(b.x + (i - 1.5) * 50, b.y);
+        this.particles.coinBurst(b.x, b.y - i * 30);
+      }
+      this.popChest(b.x, b.y);
+      this.juice.popup(b.x, b.y - 140, t('popup.bossDefeated'), palette.lanternAmber, 44);
+      this.juice.popup(b.x, b.y - 90, `+${formatNumber(b.coins)}`, palette.lanternAmber, 34);
+    });
+    bus.on('biomeChange', (id) => {
+      this.crossfadeBiome(id);
+      const h = sim().hero;
+      this.juice.popup(h.x + 320, 220, tId(`biome.${id}`), palette.parchment, 44);
+    });
   }
 
   /** Сундук выпрыгивает из твари, раскачивается и тает. */
@@ -339,6 +426,7 @@ export class RunScene extends Phaser.Scene {
     }
     this.cameras.main.scrollX = hero.x - runConfig.hero.screenX;
     this.parallax.update(sim.distancePx, dt);
+    this.fadingParallax?.update(sim.distancePx, dt);
     this.heroView.update(hero, hero.x, dt);
     const lantern = this.heroView.lanternWorld();
     this.lanternFx.update(dt, lantern.x, lantern.y);

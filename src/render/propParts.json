@@ -64,5 +64,95 @@
     "scale": 2,
     "width": 84,
     "height": 160
+  },
+  "stump": {
+    "file": "assets/props/stump.webp",
+    "scale": 2,
+    "width": 81,
+    "height": 72
+  },
+  "wave_root": {
+    "file": "assets/props/wave_root.webp",
+    "scale": 2,
+    "width": 48.5,
+    "height": 60
+  },
+  "mushroomRing": {
+    "file": "assets/props/mushroomRing.webp",
+    "scale": 2,
+    "width": 77,
+    "height": 52
+  },
+  "thornBush": {
+    "file": "assets/props/thornBush.webp",
+    "scale": 2,
+    "width": 94,
+    "height": 66
+  },
+  "brokenColumn": {
+    "file": "assets/props/brokenColumn.webp",
+    "scale": 2,
+    "width": 68.5,
+    "height": 94
+  },
+  "shellPile": {
+    "file": "assets/props/shellPile.webp",
+    "scale": 2,
+    "width": 91,
+    "height": 48
+  },
+  "idolHead": {
+    "file": "assets/props/idolHead.webp",
+    "scale": 2,
+    "width": 52,
+    "height": 82
+  },
+  "wave_reef": {
+    "file": "assets/props/wave_reef.webp",
+    "scale": 2,
+    "width": 60.5,
+    "height": 50
+  },
+  "wave_deep": {
+    "file": "assets/props/wave_deep.webp",
+    "scale": 2,
+    "width": 96.5,
+    "height": 46
+  },
+  "town_lighthouse": {
+    "file": "assets/props/town_lighthouse.webp",
+    "scale": 2,
+    "width": 106,
+    "height": 180
+  },
+  "town_fishMarket": {
+    "file": "assets/props/town_fishMarket.webp",
+    "scale": 2,
+    "width": 116.5,
+    "height": 112
+  },
+  "town_archive": {
+    "file": "assets/props/town_archive.webp",
+    "scale": 2,
+    "width": 140.5,
+    "height": 130
+  },
+  "town_chapel": {
+    "file": "assets/props/town_chapel.webp",
+    "scale": 2,
+    "width": 111.5,
+    "height": 160
+  },
+  "town_observatory": {
+    "file": "assets/props/town_observatory.webp",
+    "scale": 2,
+    "width": 140,
+    "height": 150
+  },
+  "town_greenhouse": {
+    "file": "assets/props/town_greenhouse.webp",
+    "scale": 2,
+    "width": 149.5,
+    "height": 120
   }
 }

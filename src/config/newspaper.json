@@ -1,0 +1,9 @@
+{
+  "dayMs": 86400000,
+  "rewardCpsSec": [600, 900, 1200, 1800, 2400, 3000, 3600],
+  "minCoinUnits": 150,
+  "sardines": [0, 3, 0, 6, 0, 10, 20],
+  "essence": [0, 0, 10, 0, 20, 0, 50],
+  "headlines": 24,
+  "perIssue": 3
+}

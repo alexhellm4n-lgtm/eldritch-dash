@@ -1,0 +1,85 @@
+{
+  "bonusPerAchievement": 0.01,
+  "groups": [
+    {
+      "stat": "kills",
+      "tiers": [10, 100, 1000, 10000, 100000]
+    },
+    {
+      "stat": "distanceM",
+      "tiers": [1000, 10000, 50000, 200000, 1000000]
+    },
+    {
+      "stat": "coinsLifetime",
+      "tiers": [1000.0, 1000000.0, 1000000000.0, 1000000000000.0, 1000000000000000.0, 1e18]
+    },
+    {
+      "stat": "dreams",
+      "tiers": [1, 5, 25, 100]
+    },
+    {
+      "stat": "awakenings",
+      "tiers": [1, 10, 50, 200]
+    },
+    {
+      "stat": "insights",
+      "tiers": [1, 5, 25]
+    },
+    {
+      "stat": "dives",
+      "tiers": [1, 3, 10, 25]
+    },
+    {
+      "stat": "bossKills",
+      "tiers": [1, 3, 10, 30]
+    },
+    {
+      "stat": "miniBossKills",
+      "tiers": [1, 10, 50, 200]
+    },
+    {
+      "stat": "chests",
+      "tiers": [1, 10, 50, 200]
+    },
+    {
+      "stat": "pages",
+      "tiers": [3, 30, 150]
+    },
+    {
+      "stat": "illusions",
+      "tiers": [1, 25, 250]
+    },
+    {
+      "stat": "journalFull",
+      "tiers": [1, 5, 10, 15]
+    },
+    {
+      "stat": "townLevels",
+      "tiers": [1, 10, 30, 60]
+    },
+    {
+      "stat": "grimoireNodes",
+      "tiers": [1, 10, 25, 40]
+    },
+    {
+      "stat": "itemLevels",
+      "tiers": [10, 100, 500, 1000]
+    },
+    {
+      "stat": "catLevels",
+      "tiers": [1, 5, 9]
+    },
+    {
+      "stat": "newsStreak",
+      "tiers": [3, 7, 30]
+    },
+    {
+      "stat": "biomes",
+      "tiers": [2, 3]
+    },
+    {
+      "stat": "laps",
+      "tiers": [1, 3]
+    }
+  ]
+}

@@ -1,0 +1,29 @@
+{
+  "src": "raw/ui2_cards.webp",
+  "outDir": "public/assets/ui",
+  "manifest": "src/render/uiParts.json",
+  "unitsPerPx": 0.15,
+  "textureScale": 2,
+  "parts": {
+    "ui_card": {
+      "seed": [672, 118],
+      "fitHeight": 100
+    },
+    "ui_seal": {
+      "seed": [1127, 123],
+      "fitHeight": 70
+    },
+    "ui_row": {
+      "seed": [355, 658],
+      "fitHeight": 60
+    },
+    "ui_seal_locked": {
+      "seed": [489, 1000],
+      "fitHeight": 76
+    },
+    "ui_wax": {
+      "seed": [1080, 1068],
+      "fitHeight": 60
+    }
+  }
+}

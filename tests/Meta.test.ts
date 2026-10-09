@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  biomesConfig,
   dreamConfig,
   economyConfig,
   enemiesConfig,
@@ -96,7 +97,14 @@ describe('Рассудок', () => {
         illusionChance: 0,
         hiddenChance: 0,
       };
-      const sim = new RunSim({ seed: 21, sanity: { ...noDrain, contactLoss: 0 } });
+      // Мини-боссы сравнение не меряют: их редкая крупная награда зашумляет разницу.
+      const biomes = Object.fromEntries(
+        Object.entries(biomesConfig).map(([id, b]) => [
+          id,
+          { ...b, miniBoss: { ...b.miniBoss, chance: 0 } },
+        ]),
+      );
+      const sim = new RunSim({ seed: 21, biomes, sanity: { ...noDrain, contactLoss: 0 } });
       sim.sanity.set(sanity);
       run(sim, 120, autopilot);
       return sim.earned.toNumber();

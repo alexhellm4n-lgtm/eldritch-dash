@@ -1,0 +1,15 @@
+{
+  "src": "raw/firefly_sheet_b.png",
+  "outDir": "public/assets/enemies",
+  "manifest": "src/render/enemyParts.json",
+  "unitsPerPx": 0.105,
+  "textureScale": 2,
+  "parts": {
+    "firefly_body": {
+      "seed": [1117, 604]
+    },
+    "firefly_wing": {
+      "seed": [1130, 1083]
+    }
+  }
+}

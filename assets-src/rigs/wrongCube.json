@@ -1,0 +1,26 @@
+{
+  "anchor": "center",
+  "parts": [
+    {
+      "name": "body",
+      "key": "cube_body",
+      "x": 0,
+      "y": 0,
+      "ox": 0.5,
+      "oy": 0.5,
+      "swing": {
+        "amp": 0.15,
+        "freq": 2
+      }
+    }
+  ],
+  "eyes": [
+    {
+      "parent": "body",
+      "x": -17,
+      "y": 7,
+      "pupilScale": 0.8,
+      "range": 2
+    }
+  ]
+}

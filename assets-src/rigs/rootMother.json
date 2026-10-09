@@ -1,0 +1,103 @@
+{
+  "anchor": "center",
+  "parts": [
+    {
+      "name": "r1",
+      "key": "mother_root",
+      "x": -80,
+      "y": 70,
+      "ox": 0.5,
+      "oy": 0,
+      "swing": {
+        "amp": 0.2,
+        "freq": 1.6
+      }
+    },
+    {
+      "name": "r2",
+      "key": "mother_root",
+      "x": -30,
+      "y": 80,
+      "ox": 0.5,
+      "oy": 0,
+      "swing": {
+        "amp": 0.2,
+        "freq": 1.6,
+        "phase": 1.6
+      }
+    },
+    {
+      "name": "r3",
+      "key": "mother_root",
+      "x": 30,
+      "y": 80,
+      "ox": 0.5,
+      "oy": 0,
+      "swing": {
+        "amp": 0.2,
+        "freq": 1.6,
+        "phase": 3.2
+      }
+    },
+    {
+      "name": "r4",
+      "key": "mother_root",
+      "x": 80,
+      "y": 70,
+      "ox": 0.5,
+      "oy": 0,
+      "swing": {
+        "amp": 0.2,
+        "freq": 1.6,
+        "phase": 4.8
+      }
+    },
+    {
+      "name": "body",
+      "key": "mother_body",
+      "x": 0,
+      "y": 0,
+      "ox": 0.5,
+      "oy": 0.5,
+      "pulse": {
+        "amp": 0.015,
+        "freq": 1.4
+      }
+    },
+    {
+      "name": "crown",
+      "key": "mother_crown",
+      "x": 0,
+      "y": -60,
+      "ox": 0.5,
+      "oy": 1,
+      "swing": {
+        "amp": 0.04,
+        "freq": 1
+      }
+    }
+  ],
+  "eyes": [
+    {
+      "parent": "body",
+      "x": -34,
+      "y": -24,
+      "pupilScale": 1.3,
+      "range": 3
+    },
+    {
+      "parent": "body",
+      "x": 20,
+      "y": -38,
+      "pupilScale": 1.7,
+      "range": 4
+    },
+    {
+      "parent": "body",
+      "x": 62,
+      "y": -12,
+      "pupilScale": 1,
+      "range": 2.5
+    }
+  ]
+}

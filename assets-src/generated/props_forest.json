@@ -1,0 +1,25 @@
+{
+  "src": "raw/props_forest_a.png",
+  "outDir": "public/assets/props",
+  "manifest": "src/render/propParts.json",
+  "unitsPerPx": 0.15,
+  "textureScale": 2,
+  "parts": {
+    "stump": {
+      "seed": [434, 499],
+      "fitHeight": 72
+    },
+    "wave_root": {
+      "seed": [1103, 440],
+      "fitHeight": 60
+    },
+    "mushroomRing": {
+      "seed": [402, 1162],
+      "fitHeight": 52
+    },
+    "thornBush": {
+      "seed": [1114, 1135],
+      "fitHeight": 66
+    }
+  }
+}

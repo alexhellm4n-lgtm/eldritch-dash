@@ -1,0 +1,21 @@
+{
+  "src": "raw/ui2_scrolls.webp",
+  "outDir": "public/assets/ui",
+  "manifest": "src/render/uiParts.json",
+  "unitsPerPx": 0.15,
+  "textureScale": 2,
+  "parts": {
+    "ui_scroll": {
+      "seed": [1236, 136],
+      "fitHeight": 90
+    },
+    "ui_ribbon": {
+      "seed": [896, 596],
+      "fitHeight": 70
+    },
+    "ui_toast": {
+      "seed": [572, 1115],
+      "fitHeight": 64
+    }
+  }
+}

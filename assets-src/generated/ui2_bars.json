@@ -1,0 +1,17 @@
+{
+  "src": "raw/ui2_bars.webp",
+  "outDir": "public/assets/ui",
+  "manifest": "src/render/uiParts.json",
+  "unitsPerPx": 0.15,
+  "textureScale": 2,
+  "parts": {
+    "ui_bar": {
+      "seed": [169, 520],
+      "fitHeight": 24
+    },
+    "ui_bar_fill": {
+      "seed": [1040, 557],
+      "fitHeight": 12
+    }
+  }
+}

@@ -1,0 +1,66 @@
+{
+  "buildings": [
+    {
+      "id": "lighthouse",
+      "base": 3000,
+      "growth": 2.4,
+      "maxLevel": 10,
+      "mul": {
+        "coinValueMult": 1.08
+      }
+    },
+    {
+      "id": "fishMarket",
+      "base": 8000,
+      "growth": 2.4,
+      "maxLevel": 10,
+      "mul": {
+        "cpsMult": 1.1,
+        "sardineMult": 1.05
+      }
+    },
+    {
+      "id": "archive",
+      "base": 25000,
+      "growth": 2.5,
+      "maxLevel": 10,
+      "mul": {
+        "pageChanceMult": 1.08,
+        "dreamRewardMult": 1.1
+      }
+    },
+    {
+      "id": "chapel",
+      "base": 60000,
+      "growth": 2.5,
+      "maxLevel": 10,
+      "mul": {
+        "sanityDrainMult": 0.95,
+        "sanityPickupMult": 1.05
+      }
+    },
+    {
+      "id": "observatory",
+      "base": 150000,
+      "growth": 2.6,
+      "maxLevel": 10,
+      "mul": {
+        "essenceMult": 1.1,
+        "awakeningDurationMult": 1.04
+      }
+    },
+    {
+      "id": "greenhouse",
+      "base": 400000,
+      "growth": 2.6,
+      "maxLevel": 10,
+      "mul": {
+        "offlineRateMult": 1.1
+      },
+      "add": {
+        "offlineCapBonusSec": 1800
+      }
+    }
+  ],
+  "fogClearLevel": 10
+}

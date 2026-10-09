@@ -44,5 +44,98 @@
     "coins": 8,
     "essence": 3,
     "chestChance": 0.08
+  },
+  "cultist": {
+    "behavior": "walker",
+    "hp": 1,
+    "width": 64,
+    "height": 108,
+    "speed": 70,
+    "coins": 4,
+    "essence": 1,
+    "chestChance": 0.03
+  },
+  "eyeBush": {
+    "behavior": "walker",
+    "hp": 2,
+    "width": 96,
+    "height": 84,
+    "speed": 0,
+    "knockback": 60,
+    "coins": 9,
+    "essence": 3,
+    "chestChance": 0.06
+  },
+  "firefly": {
+    "behavior": "flyer",
+    "hp": 1,
+    "width": 62,
+    "height": 52,
+    "speed": 120,
+    "altitude": 240,
+    "bobAmp": 50,
+    "bobFreq": 0.55,
+    "coins": 6,
+    "essence": 2,
+    "chestChance": 0.03
+  },
+  "rootCrawler": {
+    "behavior": "burrower",
+    "hp": 1,
+    "width": 84,
+    "height": 70,
+    "speed": 50,
+    "burrowSpeed": 170,
+    "emergePx": 430,
+    "coins": 7,
+    "essence": 2,
+    "chestChance": 0.05
+  },
+  "polyp": {
+    "behavior": "walker",
+    "hp": 1,
+    "width": 58,
+    "height": 118,
+    "speed": 0,
+    "coins": 5,
+    "essence": 2,
+    "chestChance": 0.03
+  },
+  "starJelly": {
+    "behavior": "flyer",
+    "hp": 1,
+    "width": 70,
+    "height": 82,
+    "speed": 70,
+    "altitude": 260,
+    "bobAmp": 60,
+    "bobFreq": 0.35,
+    "coins": 8,
+    "essence": 3,
+    "chestChance": 0.04
+  },
+  "wrongCube": {
+    "behavior": "blinker",
+    "hp": 1,
+    "width": 72,
+    "height": 72,
+    "speed": 30,
+    "altitude": 230,
+    "blinkPeriodSec": 1.1,
+    "coins": 9,
+    "essence": 3,
+    "chestChance": 0.05,
+    "blinkSnapPerSec": 18
+  },
+  "deepPriest": {
+    "behavior": "walker",
+    "hp": 3,
+    "width": 82,
+    "height": 126,
+    "speed": 45,
+    "knockback": 110,
+    "coins": 16,
+    "essence": 5,
+    "chestChance": 0.1
   }
 }

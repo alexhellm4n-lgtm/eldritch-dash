@@ -2,10 +2,15 @@ import { afterEach, describe, expect, it } from 'vitest';
 import ru from '../src/i18n/ru.json';
 import en from '../src/i18n/en.json';
 import {
+  achievementsConfig,
   catConfig,
   economyConfig,
   grimoireConfig,
+  journalConfig,
+  newspaperConfig,
+  progressionConfig,
   starsConfig,
+  townConfig,
   upgradesConfig,
 } from '../src/config';
 import { formatDuration, hasKey, setLanguage, t } from '../src/i18n';
@@ -50,6 +55,27 @@ describe('i18n', () => {
       for (const k of Object.keys(n.mul ?? {}))
         expect(hasKey(`effect.mul.${k}`), `${n.id}: ${k}`).toBe(true);
     }
+  });
+
+  it('у контента M4 есть тексты: твари, записи дневника, биомы, постройки, достижения, газета', () => {
+    for (const id of journalConfig.creatures) {
+      expect(hasKey(`creature.${id}`), id).toBe(true);
+      expect(hasKey(`journal.${id}`), id).toBe(true);
+    }
+    for (const id of progressionConfig.order) expect(hasKey(`biome.${id}`), id).toBe(true);
+    for (const b of townConfig.buildings) {
+      expect(hasKey(`town.${b.id}`), b.id).toBe(true);
+      expect(hasKey(`town.${b.id}.desc`), b.id).toBe(true);
+      for (const k of Object.keys(b.add ?? {})) expect(hasKey(`effect.add.${k}`), k).toBe(true);
+      for (const k of Object.keys(b.mul ?? {})) expect(hasKey(`effect.mul.${k}`), k).toBe(true);
+    }
+    for (const g of achievementsConfig.groups) {
+      expect(hasKey(`ach.${g.stat}`), g.stat).toBe(true);
+      expect(hasKey(`ach.${g.stat}.desc`), g.stat).toBe(true);
+    }
+    for (let i = 1; i <= newspaperConfig.headlines; i++)
+      expect(hasKey(`news.h${i}`), `h${i}`).toBe(true);
+    expect(hasKey(`news.h${newspaperConfig.headlines + 1}`)).toBe(false);
   });
 
   it('длительность', () => {

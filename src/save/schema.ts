@@ -1,9 +1,17 @@
 import { bn } from '../core/BigNum';
-import { createGameState, type GameState } from '../core/GameState';
+import {
+  createGameState,
+  createWorldState,
+  type GameState,
+  type WorldState,
+} from '../core/GameState';
 
-export const SAVE_VERSION = 2;
+export const SAVE_VERSION = 3;
 
-/** Сохранение на диске: Decimal — строками, остальное как есть. v2 добавила мета-системы M3. */
+/**
+ * Сохранение на диске: Decimal — строками, остальное как есть.
+ * v2 добавила мета-системы M3, v3 — контент M4 (биомы, городок, дневник, достижения, газета, подсказки).
+ */
 export interface SaveData {
   v: typeof SAVE_VERSION;
   coins: string;
@@ -19,6 +27,12 @@ export interface SaveData {
   grimoire: string[];
   cat: GameState['cat'];
   tutorial: GameState['tutorial'];
+  hints: string[];
+  world: WorldState;
+  town: Record<string, number>;
+  journal: Record<string, number>;
+  achievements: string[];
+  newspaper: GameState['newspaper'];
   settings: GameState['settings'];
   stats: GameState['stats'];
   lastSeen: number;
@@ -41,6 +55,16 @@ export function toSaveData(s: GameState): SaveData {
     grimoire: [...s.grimoire],
     cat: { unlocked: s.cat.unlocked, levels: { ...s.cat.levels } },
     tutorial: { ...s.tutorial },
+    hints: [...s.hints],
+    world: {
+      ...s.world,
+      bosses: { ...s.world.bosses },
+      visited: [...s.world.visited],
+    },
+    town: { ...s.town },
+    journal: { ...s.journal },
+    achievements: [...s.achievements],
+    newspaper: { ...s.newspaper },
     settings: { ...s.settings },
     stats: { ...s.stats },
     lastSeen: s.lastSeen,
@@ -101,6 +125,9 @@ export function fromSaveData(raw: unknown, now: number): GameState {
   const settings = isObj(d.settings) ? d.settings : {};
   const stats = isObj(d.stats) ? d.stats : {};
   const cat = isObj(d.cat) ? d.cat : {};
+  const world = isObj(d.world) ? d.world : {};
+  const paper = isObj(d.newspaper) ? d.newspaper : {};
+  const startWorld = createWorldState();
   return {
     coins: decimal(d.coins, '0'),
     coinsThisDive: decimal(d.coinsThisDive, '0'),
@@ -119,6 +146,18 @@ export function fromSaveData(raw: unknown, now: number): GameState {
       glide: tutorial.glide === true,
       purchase: tutorial.purchase === true,
     },
+    hints: ids(d.hints),
+    world: {
+      biome: typeof world.biome === 'string' ? world.biome : startWorld.biome,
+      progressM: amount(world.progressM),
+      lap: count(world.lap),
+      bosses: levels(world.bosses),
+      visited: ids(world.visited).length > 0 ? ids(world.visited) : startWorld.visited,
+    },
+    town: levels(d.town),
+    journal: levels(d.journal),
+    achievements: ids(d.achievements),
+    newspaper: { lastDay: count(paper.lastDay), streak: count(paper.streak) },
     settings: {
       notation: settings.notation === 'scientific' ? 'scientific' : base.settings.notation,
       reduceDistortion: settings.reduceDistortion === true,
@@ -131,6 +170,12 @@ export function fromSaveData(raw: unknown, now: number): GameState {
       awakenings: count(stats.awakenings),
       insights: count(stats.insights),
       dives: count(stats.dives),
+      distanceM: amount(stats.distanceM),
+      bossKills: count(stats.bossKills),
+      miniBossKills: count(stats.miniBossKills),
+      chests: count(stats.chests),
+      pages: count(stats.pages),
+      illusions: count(stats.illusions),
     },
     lastSeen: num(d.lastSeen, now),
     createdAt: num(d.createdAt, now),

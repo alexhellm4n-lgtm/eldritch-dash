@@ -1,0 +1,143 @@
+{
+  "anchor": "center",
+  "parts": [
+    {
+      "name": "wingBack",
+      "key": "sleeper_wing",
+      "x": -92,
+      "y": -40,
+      "ox": 0.95,
+      "oy": 0.75,
+      "flip": true,
+      "shade": true,
+      "swing": {
+        "amp": 0.3,
+        "freq": 5
+      }
+    },
+    {
+      "name": "wingFront",
+      "key": "sleeper_wing",
+      "x": 92,
+      "y": -40,
+      "ox": 0.05,
+      "oy": 0.75,
+      "swing": {
+        "amp": -0.3,
+        "freq": 5
+      }
+    },
+    {
+      "name": "t1",
+      "key": "sleeper_tentacle",
+      "x": -80,
+      "y": 40,
+      "ox": 0.5,
+      "oy": 0.03,
+      "scale": 0.8,
+      "swing": {
+        "amp": 0.25,
+        "freq": 1.8,
+        "phase": 0
+      }
+    },
+    {
+      "name": "t2",
+      "key": "sleeper_tentacle",
+      "x": -48,
+      "y": 40,
+      "ox": 0.5,
+      "oy": 0.03,
+      "scale": 0.8,
+      "swing": {
+        "amp": 0.25,
+        "freq": 1.8,
+        "phase": 1
+      }
+    },
+    {
+      "name": "t3",
+      "key": "sleeper_tentacle",
+      "x": -16,
+      "y": 40,
+      "ox": 0.5,
+      "oy": 0.03,
+      "scale": 0.8,
+      "swing": {
+        "amp": 0.25,
+        "freq": 1.8,
+        "phase": 2
+      }
+    },
+    {
+      "name": "t4",
+      "key": "sleeper_tentacle",
+      "x": 16,
+      "y": 40,
+      "ox": 0.5,
+      "oy": 0.03,
+      "scale": 0.8,
+      "swing": {
+        "amp": 0.25,
+        "freq": 1.8,
+        "phase": 3
+      }
+    },
+    {
+      "name": "t5",
+      "key": "sleeper_tentacle",
+      "x": 48,
+      "y": 40,
+      "ox": 0.5,
+      "oy": 0.03,
+      "scale": 0.8,
+      "swing": {
+        "amp": 0.25,
+        "freq": 1.8,
+        "phase": 4
+      }
+    },
+    {
+      "name": "t6",
+      "key": "sleeper_tentacle",
+      "x": 80,
+      "y": 40,
+      "ox": 0.5,
+      "oy": 0.03,
+      "scale": 0.8,
+      "swing": {
+        "amp": 0.25,
+        "freq": 1.8,
+        "phase": 5
+      }
+    },
+    {
+      "name": "head",
+      "key": "sleeper_head",
+      "x": 0,
+      "y": -20,
+      "ox": 0.5,
+      "oy": 0.5,
+      "pulse": {
+        "amp": 0.02,
+        "freq": 1.5
+      }
+    }
+  ],
+  "eyes": [
+    {
+      "parent": "head",
+      "x": 2.9,
+      "y": 34.0,
+      "pupilScale": 2.52,
+      "range": 10.2
+    },
+    {
+      "parent": "head",
+      "x": 92.2,
+      "y": 30.8,
+      "pupilScale": 1.48,
+      "range": 6.0
+    }
+  ]
+}

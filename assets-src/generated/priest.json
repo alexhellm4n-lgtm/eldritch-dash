@@ -1,0 +1,18 @@
+{
+  "src": "raw/priest_sheet_a.png",
+  "outDir": "public/assets/enemies",
+  "manifest": "src/render/enemyParts.json",
+  "unitsPerPx": 0.124,
+  "textureScale": 2,
+  "parts": {
+    "priest_body": {
+      "seed": [1040, 643]
+    },
+    "priest_staff": {
+      "seed": [1358, 1023]
+    },
+    "priest_leg": {
+      "seed": [999, 1270]
+    }
+  }
+}

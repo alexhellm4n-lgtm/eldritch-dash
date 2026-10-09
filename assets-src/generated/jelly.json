@@ -1,0 +1,15 @@
+{
+  "src": "raw/jelly_sheet_a.png",
+  "outDir": "public/assets/enemies",
+  "manifest": "src/render/enemyParts.json",
+  "unitsPerPx": 0.12,
+  "textureScale": 2,
+  "parts": {
+    "jelly_bell": {
+      "seed": [1143, 564]
+    },
+    "jelly_tentacle": {
+      "seed": [1121, 1091]
+    }
+  }
+}

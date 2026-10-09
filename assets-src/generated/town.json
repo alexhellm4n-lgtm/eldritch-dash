@@ -1,0 +1,33 @@
+{
+  "src": "raw/town_buildings_b.png",
+  "outDir": "public/assets/props",
+  "manifest": "src/render/propParts.json",
+  "unitsPerPx": 0.15,
+  "textureScale": 2,
+  "parts": {
+    "town_lighthouse": {
+      "seed": [457, 295],
+      "fitHeight": 180
+    },
+    "town_fishMarket": {
+      "seed": [1048, 313],
+      "fitHeight": 112
+    },
+    "town_archive": {
+      "seed": [493, 803],
+      "fitHeight": 130
+    },
+    "town_chapel": {
+      "seed": [1038, 778],
+      "fitHeight": 160
+    },
+    "town_observatory": {
+      "seed": [468, 1269],
+      "fitHeight": 150
+    },
+    "town_greenhouse": {
+      "seed": [1050, 1272],
+      "fitHeight": 120
+    }
+  }
+}

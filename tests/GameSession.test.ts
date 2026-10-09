@@ -68,9 +68,11 @@ describe('GameSession', () => {
   it('пассивный доход тикает по CpS', () => {
     const st = createGameState(0);
     st.items.fisher = 10;
+    // Достижение за 10 уровней снаряжения уже получено: доход не меняется посреди теста.
+    st.achievements = ['itemLevels_1'];
     const s = new GameSession(st);
     for (let i = 0; i < 60; i++) s.tick(1);
-    expect(s.state.coins.toNumber()).toBeCloseTo(10 * 0.5 * 60, 6);
+    expect(s.state.coins.toNumber()).toBeCloseTo(10 * 0.5 * 1.01 * 60, 6);
     expect(s.state.stats.playtimeSec).toBe(60);
   });
 

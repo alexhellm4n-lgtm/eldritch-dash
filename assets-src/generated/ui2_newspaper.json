@@ -1,0 +1,13 @@
+{
+  "src": "raw/ui2_newspaper.webp",
+  "outDir": "public/assets/ui",
+  "manifest": "src/render/uiParts.json",
+  "unitsPerPx": 0.15,
+  "textureScale": 2,
+  "parts": {
+    "ui_newspaper": {
+      "seed": [310, 167],
+      "fitHeight": 600
+    }
+  }
+}

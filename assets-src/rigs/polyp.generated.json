@@ -1,0 +1,64 @@
+{
+  "anchor": "feet",
+  "parts": [
+    {
+      "name": "t1",
+      "key": "polyp_tentacle",
+      "x": -9,
+      "y": -78,
+      "ox": 0.5,
+      "oy": 1
+    },
+    {
+      "name": "t2",
+      "key": "polyp_tentacle",
+      "x": -3,
+      "y": -82,
+      "ox": 0.5,
+      "oy": 1
+    },
+    {
+      "name": "t3",
+      "key": "polyp_tentacle",
+      "x": 3,
+      "y": -82,
+      "ox": 0.5,
+      "oy": 1
+    },
+    {
+      "name": "t4",
+      "key": "polyp_tentacle",
+      "x": 9,
+      "y": -78,
+      "ox": 0.5,
+      "oy": 1
+    },
+    {
+      "name": "stalk",
+      "key": "polyp_stalk",
+      "x": 0,
+      "y": 0,
+      "ox": 0.5,
+      "oy": 1,
+      "swing": {
+        "amp": 0.05,
+        "freq": 1.8
+      }
+    }
+  ],
+  "eyes": [
+    {
+      "parent": "stalk",
+      "x": 16.8,
+      "y": -63.0,
+      "pupilScale": 0.8,
+      "range": 3.2
+    }
+  ],
+  "tentacles": {
+    "names": ["t1", "t2", "t3", "t4"],
+    "amp": 0.25,
+    "freq": 3,
+    "stretchPart": "stalk"
+  }
+}

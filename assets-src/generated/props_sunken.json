@@ -1,0 +1,29 @@
+{
+  "src": "raw/props_sunken_a.png",
+  "outDir": "public/assets/props",
+  "manifest": "src/render/propParts.json",
+  "unitsPerPx": 0.15,
+  "textureScale": 2,
+  "parts": {
+    "brokenColumn": {
+      "seed": [259, 561],
+      "fitHeight": 94
+    },
+    "shellPile": {
+      "seed": [748, 624],
+      "fitHeight": 48
+    },
+    "idolHead": {
+      "seed": [1260, 484],
+      "fitHeight": 82
+    },
+    "wave_reef": {
+      "seed": [439, 1183],
+      "fitHeight": 50
+    },
+    "wave_deep": {
+      "seed": [1094, 1206],
+      "fitHeight": 46
+    }
+  }
+}

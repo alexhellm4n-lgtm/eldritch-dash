@@ -1,11 +1,33 @@
 import Phaser from 'phaser';
 import { juiceConfig, sanityConfig } from '../config';
-import type { Entity } from '../systems/Entity';
+import { Entity } from '../systems/Entity';
 import { TentacleChain } from './CutoutRig';
 import fishmanRig from '../../assets-src/rigs/fishman.generated.json';
 import gullRig from '../../assets-src/rigs/gull.generated.json';
 import netRig from '../../assets-src/rigs/net.generated.json';
 import squidRig from '../../assets-src/rigs/squid.generated.json';
+import cultistGenRig from '../../assets-src/rigs/cultist.generated.json';
+import eyeBushGenRig from '../../assets-src/rigs/eyeBush.generated.json';
+import fireflyGenRig from '../../assets-src/rigs/firefly.generated.json';
+import rootCrawlerGenRig from '../../assets-src/rigs/rootCrawler.generated.json';
+import polypGenRig from '../../assets-src/rigs/polyp.generated.json';
+import starJellyGenRig from '../../assets-src/rigs/starJelly.generated.json';
+import wrongCubeGenRig from '../../assets-src/rigs/wrongCube.generated.json';
+import deepPriestGenRig from '../../assets-src/rigs/deepPriest.generated.json';
+import reefKeeperGenRig from '../../assets-src/rigs/reefKeeper.generated.json';
+import rootMotherGenRig from '../../assets-src/rigs/rootMother.generated.json';
+import greatSleeperGenRig from '../../assets-src/rigs/greatSleeper.generated.json';
+import cultistRig from '../../assets-src/rigs/cultist.json';
+import eyeBushRig from '../../assets-src/rigs/eyeBush.json';
+import fireflyRig from '../../assets-src/rigs/firefly.json';
+import rootCrawlerRig from '../../assets-src/rigs/rootCrawler.json';
+import polypRig from '../../assets-src/rigs/polyp.json';
+import starJellyRig from '../../assets-src/rigs/starJelly.json';
+import wrongCubeRig from '../../assets-src/rigs/wrongCube.json';
+import deepPriestRig from '../../assets-src/rigs/deepPriest.json';
+import reefKeeperRig from '../../assets-src/rigs/reefKeeper.json';
+import rootMotherRig from '../../assets-src/rigs/rootMother.json';
+import greatSleeperRig from '../../assets-src/rigs/greatSleeper.json';
 import { palette } from './palette';
 import { isRaster, unitImage, unitScale } from './textures';
 
@@ -50,9 +72,31 @@ class TrackingEye {
 abstract class CreatureView implements EntityView {
   readonly root: Phaser.GameObjects.Container;
   protected readonly eyes: TrackingEye[] = [];
+  /** Ореол мини-босса (создаётся, когда вид впервые достаётся мини-боссу). */
+  private halo: Phaser.GameObjects.Image | null = null;
 
   constructor(protected readonly scene: Phaser.Scene) {
     this.root = scene.add.container(0, 0);
+  }
+
+  /** Ореол мини-босса: пульсирующее свечение за тварью. */
+  private updateHalo(e: Entity, time: number): void {
+    if (!e.elite) {
+      this.halo?.setVisible(false);
+      return;
+    }
+    if (!this.halo) {
+      this.halo = unitImage(this.scene, 'glow')
+        .setTint(palette.coral)
+        .setBlendMode(Phaser.BlendModes.ADD);
+      this.root.addAt(this.halo, 0);
+    }
+    const centerY = -this.anchorY(e) / e.scale;
+    this.halo
+      .setVisible(true)
+      .setPosition(0, centerY)
+      .setDisplaySize((e.w / e.scale) * 2.2, (e.h / e.scale) * 1.9)
+      .setAlpha(0.45 + 0.2 * Math.sin(time * 5 + e.id));
   }
 
   bind(): void {
@@ -70,7 +114,8 @@ abstract class CreatureView implements EntityView {
     const hurt = e.hurtT < 0.18 ? 1 - e.hurtT / 0.18 : 0;
     const jolt = hurt > 0 ? hurt * 6 * Math.sin(e.hurtT * 90) : 0;
     this.root.setPosition(x + jolt, y);
-    this.root.setScale(-(1 + hurt * 0.15), 1 - hurt * 0.1);
+    this.root.setScale(-(1 + hurt * 0.15) * e.scale, (1 - hurt * 0.1) * e.scale);
+    this.updateHalo(e, time);
     // Отработавший враг (столкнулся с героем) бледнеет и больше не опасен.
     this.root.setAlpha(e.spent ? 0.45 : 1);
     this.animate(e, time);
@@ -211,7 +256,14 @@ interface CreatureRig {
     oy: number;
     shade?: boolean;
     scale?: number;
+    flip?: boolean;
+    /** Качание: base + amp × sin(время × freq + phase). */
+    swing?: { amp: number; freq: number; phase?: number; base?: number };
+    /** Пульсация масштаба: 1 + amp × sin(время × freq). */
+    pulse?: { amp: number; freq: number };
   }[];
+  /** «Крот»: под землёй вместо твари виден холмик. */
+  burrow?: boolean;
   /** Зрачки поверх пустых глаз: смещение от точки вращения родительской части. */
   eyes: readonly { parent: string; x: number; y: number; pupilScale: number; range: number }[];
   walk?: {
@@ -242,6 +294,7 @@ class RigCreatureView extends CreatureView {
   private readonly parts = new Map<string, Phaser.GameObjects.Image>();
   private readonly base = new Map<string, { x: number; y: number; s: number }>();
   private readonly eyesOfRig: RigEye[] = [];
+  private readonly mound: Phaser.GameObjects.Image | null = null;
 
   constructor(
     scene: Phaser.Scene,
@@ -249,7 +302,9 @@ class RigCreatureView extends CreatureView {
   ) {
     super(scene);
     for (const p of rig.parts) {
-      const img = unitImage(scene, p.key, p.x, p.y).setOrigin(p.ox, p.oy);
+      const img = unitImage(scene, p.key, p.x, p.y)
+        .setOrigin(p.ox, p.oy)
+        .setFlipX(p.flip === true);
       img.setScale(img.scaleX * (p.scale ?? 1));
       if (p.shade) img.setTint(palette.farShade);
       this.root.add(img);
@@ -261,6 +316,10 @@ class RigCreatureView extends CreatureView {
       pupil.setScale(pupil.scaleX * e.pupilScale);
       this.root.add(pupil);
       this.eyesOfRig.push({ parent: this.part(e.parent), pupil, x: e.x, y: e.y, range: e.range });
+    }
+    if (rig.burrow) {
+      this.mound = unitImage(scene, 'mound').setOrigin(0.5, 1).setVisible(false);
+      this.root.add(this.mound);
     }
   }
 
@@ -276,6 +335,18 @@ class RigCreatureView extends CreatureView {
 
   protected animate(e: Entity, time: number): void {
     for (const [name, b] of this.base) this.part(name).setPosition(b.x, b.y).setRotation(0);
+    for (const p of this.rig.parts) {
+      const img = this.part(p.name);
+      if (p.swing) {
+        const w = p.swing;
+        img.setRotation((w.base ?? 0) + w.amp * Math.sin(time * w.freq + (w.phase ?? 0) + e.id));
+      }
+      if (p.pulse) {
+        const k = 1 + p.pulse.amp * Math.sin(time * p.pulse.freq + e.id);
+        const b = this.base.get(p.name)!.s;
+        img.setScale(b * k);
+      }
+    }
     const walk = this.rig.walk;
     if (walk) {
       const s = Math.sin(e.t * walk.freq);
@@ -308,6 +379,15 @@ class RigCreatureView extends CreatureView {
 
   override update(e: Entity, time: number, heroX: number, heroY: number): void {
     super.update(e, time, heroX, heroY);
+    if (this.mound) {
+      // Под землёй: только холмик, который ползёт и подрагивает.
+      const under = e.burrowed;
+      for (const obj of this.root.list) {
+        if (obj !== this.mound) (obj as Phaser.GameObjects.Image).setVisible(!under);
+      }
+      this.mound.setVisible(under).setRotation(under ? 0.06 * Math.sin(time * 14 + e.id) : 0);
+      if (under) return;
+    }
     // Контейнер отражён по X: направление на героя в локальных координатах.
     const dx = -(heroX - e.x);
     const dy = heroY - e.y;
@@ -328,6 +408,32 @@ const CREATURE_RIGS: Readonly<Record<string, { rig: CreatureRig; key: string }>>
   fishman: { rig: fishmanRig, key: 'fish_head' },
   squidling: { rig: squidRig, key: 'squid_mantle' },
   walkingNet: { rig: netRig, key: 'net_body' },
+  cultist: { rig: cultistGenRig, key: 'cultist_body' },
+  eyeBush: { rig: eyeBushGenRig, key: 'bush_body' },
+  firefly: { rig: fireflyGenRig, key: 'firefly_body' },
+  rootCrawler: { rig: rootCrawlerGenRig, key: 'root_body' },
+  polyp: { rig: polypGenRig, key: 'polyp_stalk' },
+  starJelly: { rig: starJellyGenRig, key: 'jelly_bell' },
+  wrongCube: { rig: wrongCubeGenRig, key: 'cube_body' },
+  deepPriest: { rig: deepPriestGenRig, key: 'priest_body' },
+  reefKeeper: { rig: reefKeeperGenRig, key: 'reef_body' },
+  rootMother: { rig: rootMotherGenRig, key: 'mother_body' },
+  greatSleeper: { rig: greatSleeperGenRig, key: 'sleeper_head' },
+};
+
+/** Риги плейсхолдеров M4 (assets-src/rigs/<тварь>.json): твари леса и затонувшего города, боссы. */
+const PLACEHOLDER_RIGS: Readonly<Record<string, CreatureRig>> = {
+  cultist: cultistRig,
+  eyeBush: eyeBushRig,
+  firefly: fireflyRig,
+  rootCrawler: rootCrawlerRig,
+  polyp: polypRig,
+  starJelly: starJellyRig,
+  wrongCube: wrongCubeRig,
+  deepPriest: deepPriestRig,
+  reefKeeper: reefKeeperRig,
+  rootMother: rootMotherRig,
+  greatSleeper: greatSleeperRig,
 };
 
 class SquidView extends CreatureView {
@@ -473,6 +579,28 @@ class PickupView implements EntityView {
   }
 }
 
+/**
+ * Вид твари без привязки к трассе — для дневника (зарисовка) и карточки «Поделиться».
+ * Возвращает контейнер, центр которого — центр твари; w×h — её размер в игровых единицах.
+ */
+export function createCreaturePortrait(
+  scene: Phaser.Scene,
+  type: string,
+  w: number,
+  h: number,
+): Phaser.GameObjects.Container {
+  const e = new Entity();
+  e.reset(0, 'enemy', type);
+  e.w = w;
+  e.h = h;
+  const view = createEntityView(scene, e);
+  view.bind(e);
+  // Взгляд — на зрителя, чуть вниз-влево.
+  view.update(e, 0, -w, h);
+  const holder = scene.add.container(0, 0, [view.root]);
+  return holder;
+}
+
 export function createEntityView(scene: Phaser.Scene, e: Entity): EntityView {
   if (e.kind === 'coin') return new CoinView(scene, e.type === 'star' ? 'coin_star' : 'coin');
   if (e.kind === 'pickup') return new PickupView(scene, e.type);
@@ -488,8 +616,11 @@ export function createEntityView(scene: Phaser.Scene, e: Entity): EntityView {
       return new SquidView(scene);
     case 'walkingNet':
       return new NetView(scene);
-    default:
-      throw new Error(`Нет представления для врага ${e.type}`);
+    default: {
+      const rig = PLACEHOLDER_RIGS[e.type];
+      if (!rig) throw new Error(`Нет представления для врага ${e.type}`);
+      return new RigCreatureView(scene, rig);
+    }
   }
 }
 

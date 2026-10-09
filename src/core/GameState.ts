@@ -21,6 +21,13 @@ export interface GameStats {
   awakenings: number;
   insights: number;
   dives: number;
+  /** Пройдено всего, м (за все забеги). */
+  distanceM: number;
+  bossKills: number;
+  miniBossKills: number;
+  chests: number;
+  pages: number;
+  illusions: number;
 }
 
 export interface CatState {
@@ -28,6 +35,26 @@ export interface CatState {
   unlocked: boolean;
   /** Уровни прокачки за сардинки. */
   levels: Record<string, number>;
+}
+
+/** Продвижение по биомам (SPEC §7): текущий биом, путь до босса, круг. */
+export interface WorldState {
+  biome: string;
+  /** Пройдено в текущем биоме, м (босс — при достижении длины биома). */
+  progressM: number;
+  /** Круг: после финального босса биомы идут заново — твари крепче, награды щедрее. */
+  lap: number;
+  /** Сколько раз побеждён каждый босс. */
+  bosses: Record<string, number>;
+  /** Биомы, в которых уже доводилось бывать. */
+  visited: string[];
+}
+
+/** Утренняя газета (ежедневная награда): последний день выпуска и серия дней подряд. */
+export interface NewspaperState {
+  /** Номер дня (сутки от эпохи по времени платформы); 0 — газет ещё не было. */
+  lastDay: number;
+  streak: number;
 }
 
 /** Единое сериализуемое состояние игры. Деньги — Decimal (break_infinity). */
@@ -54,6 +81,16 @@ export interface GameState {
   grimoire: string[];
   cat: CatState;
   tutorial: TutorialState;
+  /** Показанные подсказки по механикам (больше не повторяются). */
+  hints: string[];
+  world: WorldState;
+  /** Уровни построек городка (переживают Погружение). */
+  town: Record<string, number>;
+  /** Дневник исследователя: сколько раз побеждена каждая тварь. */
+  journal: Record<string, number>;
+  /** Полученные достижения. */
+  achievements: string[];
+  newspaper: NewspaperState;
   settings: Settings;
   stats: GameStats;
   /** Время последнего сохранения/активности, мс (для офлайн-дохода). */
@@ -76,6 +113,12 @@ export function createGameState(now: number, startCoins = 0): GameState {
     grimoire: [],
     cat: { unlocked: false, levels: {} },
     tutorial: { jump: false, glide: false, purchase: false },
+    hints: [],
+    world: createWorldState(),
+    town: {},
+    journal: {},
+    achievements: [],
+    newspaper: { lastDay: 0, streak: 0 },
     settings: { notation: 'suffix', reduceDistortion: false },
     stats: {
       playtimeSec: 0,
@@ -85,8 +128,19 @@ export function createGameState(now: number, startCoins = 0): GameState {
       awakenings: 0,
       insights: 0,
       dives: 0,
+      distanceM: 0,
+      bossKills: 0,
+      miniBossKills: 0,
+      chests: 0,
+      pages: 0,
+      illusions: 0,
     },
     lastSeen: now,
     createdAt: now,
   };
+}
+
+/** Начало пути: побережье, первый круг. */
+export function createWorldState(): WorldState {
+  return { biome: 'coast', progressM: 0, lap: 0, bosses: {}, visited: ['coast'] };
 }

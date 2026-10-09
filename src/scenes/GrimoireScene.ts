@@ -5,6 +5,7 @@ import { GRIMOIRE_CHAPTERS, type GrimoireChapter, type GrimoireNodeConfig } from
 import { t, tId } from '../i18n';
 import { palette, toCss } from '../render/palette';
 import { addPanel, Button } from '../render/ui/Button';
+import { isRaster } from '../render/textures';
 import { describeEffect } from '../render/ui/effects';
 import type { GameSession } from '../systems/GameSession';
 import type { NodeState } from '../systems/Grimoire';
@@ -32,7 +33,17 @@ interface NodeView {
   cfg: GrimoireNodeConfig;
   circle: Phaser.GameObjects.Arc;
   glyph: Phaser.GameObjects.Text;
+  /** Печать под сигилом: пергамент, сургуч (изучен) или в цепях (закрыт). */
+  seal: Phaser.GameObjects.Image | null;
 }
+
+/** Текстуры печатей по состоянию узла и во сколько раз они больше круга узла. */
+const SEAL_KEY: Record<NodeState, string> = {
+  owned: 'ui_wax',
+  available: 'ui_seal',
+  locked: 'ui_seal_locked',
+};
+const SEAL_SIZE: Record<NodeState, number> = { owned: 2.5, available: 2.35, locked: 2.6 };
 
 const textStyle = (
   size: number,
@@ -206,6 +217,7 @@ export class GrimoireScene extends Phaser.Scene {
     for (const v of this.nodeViews) {
       v.circle.destroy();
       v.glyph.destroy();
+      v.seal?.destroy();
     }
     this.nodeViews = [];
     const color = CHAPTER_COLOR[ch];
@@ -222,8 +234,10 @@ export class GrimoireScene extends Phaser.Scene {
       const glyph = this.add
         .text(x, y, cfg.darkStars ? '★' : SIGIL[ch], textStyle(26, color, true))
         .setOrigin(0.5);
+      const seal = isRaster('ui_seal') ? this.add.image(x, y, 'ui_seal') : null;
+      if (seal) this.page.add(seal);
       this.page.add([circle, glyph]);
-      this.nodeViews.push({ cfg, circle, glyph });
+      this.nodeViews.push({ cfg, circle, glyph, seal });
     }
     this.refresh();
   }
@@ -253,6 +267,26 @@ export class GrimoireScene extends Phaser.Scene {
       const state: NodeState = s.grimoire.state(v.cfg.id, owned, stars);
       const color = CHAPTER_COLOR[this.chapter];
       const isSel = this.selected?.id === v.cfg.id;
+      if (v.seal) {
+        // Печать вместо круга; круг остаётся зоной нажатия и кольцом выбора.
+        const size = NODE_R * SEAL_SIZE[state];
+        v.seal.setTexture(SEAL_KEY[state]).setDisplaySize(size, size);
+        v.circle
+          .setFillStyle(palette.lanternAmber, 0)
+          .setStrokeStyle(isSel ? 5 : 0, palette.lanternAmber);
+        v.glyph
+          .setColor(
+            toCss(
+              state === 'owned'
+                ? palette.parchmentLight
+                : state === 'locked'
+                  ? palette.parchmentShade
+                  : color,
+            ),
+          )
+          .setAlpha(state === 'locked' ? 0.35 : 1);
+        continue;
+      }
       v.circle
         .setFillStyle(
           state === 'owned'

@@ -1,0 +1,50 @@
+{
+  "anchor": "center",
+  "parts": [
+    {
+      "name": "wingBack",
+      "key": "firefly_wing",
+      "x": -2,
+      "y": -12,
+      "ox": 0.15,
+      "oy": 0.9,
+      "shade": true,
+      "swing": {
+        "amp": 0.6,
+        "freq": 22,
+        "base": -0.3,
+        "phase": 0.5
+      }
+    },
+    {
+      "name": "body",
+      "key": "firefly_body",
+      "x": 0,
+      "y": 0,
+      "ox": 0.5,
+      "oy": 0.5
+    },
+    {
+      "name": "wingFront",
+      "key": "firefly_wing",
+      "x": 4,
+      "y": -12,
+      "ox": 0.15,
+      "oy": 0.9,
+      "swing": {
+        "amp": 0.6,
+        "freq": 22,
+        "base": -0.3
+      }
+    }
+  ],
+  "eyes": [
+    {
+      "parent": "body",
+      "x": 11,
+      "y": -2,
+      "pupilScale": 0.8,
+      "range": 2
+    }
+  ]
+}

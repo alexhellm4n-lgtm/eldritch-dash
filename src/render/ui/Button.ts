@@ -38,6 +38,8 @@ export class Button extends Phaser.GameObjects.Container {
   readonly label: Phaser.GameObjects.Text;
   private readonly bg:
     Phaser.GameObjects.Graphics | Phaser.GameObjects.NineSlice | Phaser.GameObjects.Image;
+  /** Деревянная доска для второстепенных кнопок и невыбранных вкладок (если есть растр). */
+  private readonly woodBg: Phaser.GameObjects.NineSlice | null = null;
   private readonly icon: Phaser.GameObjects.Image | null = null;
   private readonly skinned: boolean;
   private readonly style: ButtonStyle;
@@ -58,32 +60,17 @@ export class Button extends Phaser.GameObjects.Container {
     super(scene, x, y);
     this.style = { ...DEFAULT_STYLE, ...style };
     this.fill = this.style.fill;
-    const bgKey = this.style.badge ? skin.badge.key : skin.button.key;
+    const badgeKey = isRaster(skin.badge.key) ? skin.badge : skin.badgeOld;
+    const bgKey = this.style.badge ? badgeKey.key : skin.button.key;
     this.skinned = !this.style.plain && isRaster(bgKey);
 
     if (this.skinned && this.style.badge) {
       const img = scene.add.image(0, 0, bgKey);
-      img.setScale((bh * skin.badge.fit) / img.height);
+      img.setScale((bh * badgeKey.fit) / img.height);
       this.bg = img;
     } else if (this.skinned) {
-      const u = unitScale(bgKey);
-      // Узкой кнопке не хватает места на канатные концы: строим табличку крупнее и уменьшаем.
-      const caps = skin.button.left + skin.button.right;
-      const k = Math.max(1, ((caps + 16) * u) / bw);
-      this.bg = scene.add
-        .nineslice(
-          0,
-          0,
-          bgKey,
-          undefined,
-          (bw * k) / u,
-          (bh * k) / u,
-          skin.button.left,
-          skin.button.right,
-          skin.button.top,
-          skin.button.bottom,
-        )
-        .setScale(u / k);
+      this.bg = plaque(scene, skin.button, bw, bh);
+      if (isRaster(skin.buttonWood.key)) this.woodBg = plaque(scene, skin.buttonWood, bw, bh);
     } else {
       this.bg = scene.add.graphics();
     }
@@ -111,7 +98,11 @@ export class Button extends Phaser.GameObjects.Container {
       this.icon.setX(-bw / 2 + bh * 0.55);
       this.label.setX(bh * 0.28);
     }
-    this.add(this.icon ? [this.bg, this.icon, this.label] : [this.bg, this.label]);
+    const parts: Phaser.GameObjects.GameObject[] = [this.bg];
+    if (this.woodBg) parts.push(this.woodBg);
+    if (this.icon) parts.push(this.icon);
+    parts.push(this.label);
+    this.add(parts);
     this.draw();
 
     const hitW = Math.max(bw, MIN_TOUCH);
@@ -171,13 +162,17 @@ export class Button extends Phaser.GameObjects.Container {
     this.icon?.setY(sink).setAlpha(this.enabled ? 1 : 0.6);
 
     if (!(this.bg instanceof Phaser.GameObjects.Graphics)) {
-      // Табличка латунная: основной цвет — без тонировки, «неактивная» — приглушённая.
+      // Основная кнопка — латунь; остальные — деревянная доска (или приглушённая латунь).
+      const primary = this.fill === palette.lanternAmber;
+      const wood = !primary && this.woodBg !== null;
       const tint = !this.enabled
         ? DISABLED_TINT
-        : this.fill === palette.lanternAmber
+        : primary || wood
           ? 0xffffff
           : palette.plaqueInactive;
-      this.bg.setY(sink).setTint(tint);
+      this.bg.setY(sink).setTint(tint).setVisible(!wood);
+      this.woodBg?.setY(sink).setTint(tint).setVisible(wood);
+      this.label.setColor(toCss(wood ? palette.parchmentLight : this.style.textColor));
       return;
     }
 
@@ -193,6 +188,72 @@ export class Button extends Phaser.GameObjects.Container {
     g.lineStyle(3, palette.outline, 1);
     g.strokeRoundedRect(-w / 2, -h / 2 + sink, w, h, r);
   }
+}
+
+interface SliceSkin {
+  key: string;
+  left: number;
+  right: number;
+  top: number;
+  bottom: number;
+}
+
+/** Табличка nine-slice под размер кнопки; узкой не хватает места на концы — строим крупнее и уменьшаем. */
+function plaque(
+  scene: Phaser.Scene,
+  sk: SliceSkin,
+  bw: number,
+  bh: number,
+): Phaser.GameObjects.NineSlice {
+  const u = unitScale(sk.key);
+  const k = Math.max(1, ((sk.left + sk.right + 16) * u) / bw, ((sk.top + sk.bottom + 8) * u) / bh);
+  return scene.add
+    .nineslice(
+      0,
+      0,
+      sk.key,
+      undefined,
+      (bw * k) / u,
+      (bh * k) / u,
+      sk.left,
+      sk.right,
+      sk.top,
+      sk.bottom,
+    )
+    .setScale(u / k);
+}
+
+/**
+ * Горизонтальная полоса nine-slice в 3 частях (свиток, лента, плашка, строка): концы не тянутся,
+ * высота задаётся масштабом. x, y — центр.
+ */
+export function addStrip(
+  scene: Phaser.Scene,
+  sk: { key: string; left: number; right: number },
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+): Phaser.GameObjects.NineSlice | null {
+  if (!isRaster(sk.key)) return null;
+  const tex = scene.textures.getFrame(sk.key);
+  const k = h / tex.height;
+  const width = Math.max(w / k, sk.left + sk.right + 2);
+  return scene.add
+    .nineslice(x, y, sk.key, undefined, width, tex.height, sk.left, sk.right)
+    .setScale(k);
+}
+
+/** Подогнать полосу из addStrip под новый размер (ширина и высота в игровых единицах). */
+export function fitStrip(
+  strip: Phaser.GameObjects.NineSlice,
+  w: number,
+  h: number,
+  sk: { left: number; right: number },
+): void {
+  const k = h / strip.frame.height;
+  strip.setScale(k);
+  strip.setSize(Math.max(w / k, sk.left + sk.right + 2), strip.frame.height);
 }
 
 /** Пергаментная панель с толстой обводкой (векторный вариант). */

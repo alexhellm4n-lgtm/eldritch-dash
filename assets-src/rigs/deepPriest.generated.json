@@ -1,0 +1,57 @@
+{
+  "anchor": "feet",
+  "parts": [
+    {
+      "name": "legBack",
+      "key": "priest_leg",
+      "x": -9,
+      "y": -20,
+      "ox": 0.5,
+      "oy": 0.1,
+      "shade": true
+    },
+    {
+      "name": "legFront",
+      "key": "priest_leg",
+      "x": 9,
+      "y": -20,
+      "ox": 0.5,
+      "oy": 0.1
+    },
+    {
+      "name": "body",
+      "key": "priest_body",
+      "x": 0,
+      "y": -14,
+      "ox": 0.5,
+      "oy": 1
+    },
+    {
+      "name": "staff",
+      "key": "priest_staff",
+      "x": 26,
+      "y": -22,
+      "ox": 0.5,
+      "oy": 0.85
+    }
+  ],
+  "eyes": [
+    {
+      "parent": "body",
+      "x": 10.8,
+      "y": -75.8,
+      "pupilScale": 0.4,
+      "range": 1.6
+    }
+  ],
+  "walk": {
+    "legs": ["legFront", "legBack"],
+    "amp": 0.35,
+    "freq": 6,
+    "legBase": 0,
+    "bob": 2,
+    "bobParts": ["body", "staff"],
+    "sway": "staff"
+  },
+  "armor": "body"
+}

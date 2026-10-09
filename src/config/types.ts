@@ -159,7 +159,7 @@ export interface UpgradesConfig {
   hero: readonly HeroUpgradeConfig[];
 }
 
-export const ENEMY_BEHAVIORS = ['walker', 'flyer', 'hopper'] as const;
+export const ENEMY_BEHAVIORS = ['walker', 'flyer', 'hopper', 'burrower', 'blinker'] as const;
 export type EnemyBehavior = (typeof ENEMY_BEHAVIORS)[number];
 
 export interface EnemyConfig {
@@ -176,6 +176,12 @@ export interface EnemyConfig {
   /** hopper */
   hopHeight?: number;
   hopPeriodSec?: number;
+  /** burrower: скорость под землёй и расстояние до героя, на котором тварь вылезает. */
+  burrowSpeed?: number;
+  emergePx?: number;
+  /** blinker: период перескока между землёй и высотой altitude, с; резкость перескока, 1/с. */
+  blinkPeriodSec?: number;
+  blinkSnapPerSec?: number;
   /** Отброс после удара, если hp > 1. */
   knockback?: number;
   /** Эссенция за убийство (валюта гримуара). */
@@ -216,6 +222,72 @@ export interface BiomeConfig {
   /** Высота страниц книги над землёй и их размер. */
   pageLift: Range;
   pageSize: SizeConfig;
+  /** Сколько пройти в биоме до босса, м. */
+  lengthM: number;
+  /** Босс биома (ключ в progression.json → bosses). */
+  boss: string;
+  /** Множитель дублонов в биоме (дальние биомы щедрее). */
+  coinMult: number;
+  miniBoss: MiniBossConfig;
+}
+
+/** Мини-босс: увеличенная тварь биома с запасом здоровья и крупной наградой. */
+export interface MiniBossConfig {
+  everyM: number;
+  chance: number;
+  scale: number;
+  hpMult: number;
+  rewardMult: number;
+  essenceMult: number;
+  /** Отброс от каждого удара: мини-босс не проскакивает зону вспышки. */
+  knockback: number;
+}
+
+export const BOSS_ATTACKS = ['wave', 'summon'] as const;
+export type BossAttack = (typeof BOSS_ATTACKS)[number];
+
+/**
+ * Босс биома: держится впереди героя, периодически подлетает в зону вспышки фонаря,
+ * между подлётами пускает по земле волны (перепрыгнуть) и призывает тварей.
+ */
+export interface BossConfig {
+  hp: number;
+  width: number;
+  height: number;
+  /** Высота центра над землёй; 0 — стоит на земле. */
+  altitude: number;
+  /** Дистанция от героя в покое и при подлёте, px. */
+  holdPx: number;
+  exposePx: number;
+  /** Цикл: подлёт approachSec → у героя exposeSec → отход approachSec → пауза до cycleSec. */
+  cycleSec: number;
+  approachSec: number;
+  exposeSec: number;
+  attackEverySec: number;
+  attacks: readonly BossAttack[];
+  summon: readonly string[];
+  wave: { key: string; width: number; height: number; speed: number };
+  /** Не побеждён за это время — уходит; путь откатывается до retreatTo × длины биома. */
+  fightSec: number;
+  retreatTo: number;
+  /** Награда: единицы номинала монеты, Эссенция, сардинки. */
+  coins: number;
+  essence: number;
+  sardines: number;
+}
+
+export interface ProgressionConfig {
+  /** Порядок биомов; после последнего — новый круг с начала. */
+  order: readonly string[];
+  /** Новый круг: hp боссов × (1 + hpMult × круг), награды и монеты — аналогично. */
+  lap: { hpMult: number; rewardMult: number; coinMult: number };
+  /** Пауза между победой над боссом и сменой биома, с. */
+  transitionSec: number;
+  /** Выход босса из-за края экрана, с; покачивание, px; скорость ухода сверх героя, px/с. */
+  bossEntrySec: number;
+  bossBobPx: number;
+  bossLeaveSpeed: number;
+  bosses: Record<string, BossConfig>;
 }
 
 export interface SanityConfig {
@@ -249,6 +321,7 @@ export interface PhaseConfig {
   starCoinChance?: number;
   starCoinUnits?: number;
   sanityDrainMult?: number;
+  miniBossChanceMult?: number;
 }
 
 export interface StarsConfig {
@@ -335,4 +408,57 @@ export interface JuiceConfig {
   shot: { muzzleSec: number; boltSec: number; impactSec: number };
   /** Во сколько раз плейсхолдер-текстуры крупнее игровых единиц (PNG@2x). */
   textureScale: number;
+}
+
+/** Постройка городка: цена base × growth^уровень, эффект за уровень (SPEC §6). */
+export interface BuildingConfig {
+  id: string;
+  base: number;
+  growth: number;
+  maxLevel: number;
+  add?: Partial<RunModifiers>;
+  mul?: Partial<RunModifiers>;
+}
+
+export interface TownConfig {
+  buildings: readonly BuildingConfig[];
+  /** Уровень маяка, при котором туман над городком рассеивается полностью. */
+  fogClearLevel: number;
+}
+
+export interface JournalConfig {
+  /** Порядок карточек в дневнике. */
+  creatures: readonly string[];
+  bosses: readonly string[];
+  /** Сколько встреч нужно для полной записи (у боссов — отдельно). */
+  fullAt: number;
+  bossFullAt: number;
+  /** Бонус за каждую полную запись. */
+  bonusPerFull: { add?: Partial<RunModifiers>; mul?: Partial<RunModifiers> };
+  share: { url: string; width: number; height: number };
+}
+
+export interface AchievementGroupConfig {
+  /** Показатель из Achievements.statValue. */
+  stat: string;
+  tiers: readonly number[];
+}
+
+export interface AchievementsConfig {
+  /** Каждое достижение: +bonus к доходу (складываются). */
+  bonusPerAchievement: number;
+  groups: readonly AchievementGroupConfig[];
+}
+
+export interface NewspaperConfig {
+  dayMs: number;
+  /** Награда за N-й день серии: секунд дохода (последнее значение — для всех дней дальше). */
+  rewardCpsSec: readonly number[];
+  /** Минимум в номиналах монеты (если дохода ещё мало). */
+  minCoinUnits: number;
+  sardines: readonly number[];
+  essence: readonly number[];
+  /** Сколько заголовков в i18n (news.h1…) и сколько в одном выпуске. */
+  headlines: number;
+  perIssue: number;
 }
