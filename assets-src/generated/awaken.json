@@ -1,0 +1,12 @@
+{
+  "src": "raw/awaken_tentacles_b.png",
+  "outDir": "public/assets/fx",
+  "manifest": "src/render/fxParts.json",
+  "unitsPerPx": 0.25,
+  "textureScale": 2,
+  "parts": {
+    "awaken_tentacle_a": { "box": [150, 90, 1912, 372], "fitHeight": 72 },
+    "awaken_tentacle_b": { "box": [150, 438, 1912, 716], "fitHeight": 72 },
+    "awaken_tentacle_c": { "box": [150, 782, 1912, 1064], "fitHeight": 72 }
+  }
+}

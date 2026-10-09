@@ -18,6 +18,7 @@ Idle-раннер на Phaser 4 + TypeScript + Vite. Полные требова
 | `npm run hero`    | сборка частей героя из листа персонажа → `public/assets/hero/*.webp`    |
 | `npm run enemies` | сборка частей тварей (сейчас чайка) → `public/assets/enemies/*.webp`    |
 | `npm run fx`      | частицы, свет (выстрел фонаря, свечение) и UI → `public/assets/{fx,ui}` |
+| `npm run meta`    | предметы M3, значки фаз/валют, щупальца и свет Пробуждения              |
 
 После каждого этапа `build`, `test`, `lint` должны быть зелёными.
 
@@ -99,6 +100,11 @@ Idle-раннер на Phaser 4 + TypeScript + Vite. Полные требова
   Пробуждение, страницы и сон, кот, принудительная фаза (`session.forcedPhase`), офлайн 2 ч, скорость ×1/×3/×8
   (подшаги `RunScene.debugTimeScale`), «меньше искажений», сброс прогресса (двойное нажатие).
   Включена в dev и по `?debug=1` (`debug/flags.ts`); TODO(M5): вырезать из сборок для порталов.
+- Предметы и значки M3 — листы `meta_items.json` (+ `meta_ring.json`) → `propParts.json`,
+  `meta_icons.json` → `uiParts.json`; части вырезаются прямоугольником `box` (пар у чая отдельно от чашки).
+- Пробуждение: `awaken.json` (3 прямых щупальца, основание слева) → `fxParts.json`; `AwakeningFx`
+  натягивает их на `Rope` и гнёт по точкам. Свет — `awaken_light_{a,b}.json` (luma): сигил в небе,
+  свечение из щелей настила, искры. Без растра — старые цепочки `TentacleChain`.
 - Кот: `render/CatView.ts` берёт риг `assets-src/rigs/cat.generated.json` (сгенерированные части,
   `assets-src/generated/cat.json`), иначе — векторный плейсхолдер.
 - Сцены M3: `GrimoireScene` (гримуар + окно Погружения со знамениями), `DreamScene` (сон; забег на паузе,

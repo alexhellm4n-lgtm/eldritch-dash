@@ -34,5 +34,53 @@
     "scale": 2,
     "width": 183.5,
     "height": 70
+  },
+  "phase_quiet": {
+    "file": "assets/ui/phase_quiet.webp",
+    "scale": 2,
+    "width": 56.5,
+    "height": 56
+  },
+  "phase_fog": {
+    "file": "assets/ui/phase_fog.webp",
+    "scale": 2,
+    "width": 56,
+    "height": 56
+  },
+  "phase_bloodMoon": {
+    "file": "assets/ui/phase_bloodMoon.webp",
+    "scale": 2,
+    "width": 56,
+    "height": 56
+  },
+  "phase_storm": {
+    "file": "assets/ui/phase_storm.webp",
+    "scale": 2,
+    "width": 56.5,
+    "height": 56
+  },
+  "phase_aligned": {
+    "file": "assets/ui/phase_aligned.webp",
+    "scale": 2,
+    "width": 56,
+    "height": 56
+  },
+  "icon_essence": {
+    "file": "assets/ui/icon_essence.webp",
+    "scale": 2,
+    "width": 25.5,
+    "height": 34
+  },
+  "icon_sardine": {
+    "file": "assets/ui/icon_sardine.webp",
+    "scale": 2,
+    "width": 48.5,
+    "height": 24
+  },
+  "icon_darkstar": {
+    "file": "assets/ui/icon_darkstar.webp",
+    "scale": 2,
+    "width": 35.5,
+    "height": 34
   }
 }

@@ -19,6 +19,15 @@ function fit(img: Phaser.GameObjects.Image, height: number): Phaser.GameObjects.
   return img.setScale(height / (img.height || 1));
 }
 
+/** Вписать картинку в прямоугольник (для вытянутых значков). */
+function fitBox(
+  img: Phaser.GameObjects.Image,
+  width: number,
+  height: number,
+): Phaser.GameObjects.Image {
+  return img.setScale(Math.min(width / (img.width || 1), height / (img.height || 1)));
+}
+
 function setText(obj: Phaser.GameObjects.Text, text: string): void {
   if (obj.text !== text) obj.setText(text);
 }
@@ -95,7 +104,11 @@ export class MetaHud {
         strokeThickness: 5,
       })
       .setOrigin(0, 0.5);
-    this.sardineIcon = fit(unitImage(scene, 'icon_sardine', MARGIN + 110, rowY), ICON_H * 0.8);
+    this.sardineIcon = fitBox(
+      unitImage(scene, 'icon_sardine', MARGIN + 110, rowY),
+      ICON_H * 1.15,
+      ICON_H * 0.8,
+    );
     this.sardineText = scene.add
       .text(MARGIN + 130, rowY, '', {
         ...serif,

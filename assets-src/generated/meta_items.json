@@ -1,0 +1,15 @@
+{
+  "src": "raw/meta_items_a.png",
+  "outDir": "public/assets/props",
+  "manifest": "src/render/propParts.json",
+  "unitsPerPx": 0.15,
+  "textureScale": 2,
+  "parts": {
+    "pickup_lantern": { "box": [95, 195, 390, 680], "fitHeight": 56 },
+    "pickup_tea": { "box": [450, 260, 760, 640], "fitHeight": 42 },
+    "pickup_page": { "box": [820, 265, 1140, 640], "fitHeight": 48 },
+    "coin_star": { "box": [1195, 315, 1460, 580], "fitHeight": 38 },
+    "chest": { "box": [100, 885, 510, 1270], "fitHeight": 44 },
+    "dream_island": { "box": [605, 850, 1060, 1305], "fitHeight": 110 }
+  }
+}

@@ -52,5 +52,41 @@
     "scale": 2,
     "width": 78,
     "height": 36
+  },
+  "awaken_tentacle_a": {
+    "file": "assets/fx/awaken_tentacle_a.webp",
+    "scale": 2,
+    "width": 438,
+    "height": 72
+  },
+  "awaken_tentacle_b": {
+    "file": "assets/fx/awaken_tentacle_b.webp",
+    "scale": 2,
+    "width": 444.5,
+    "height": 72
+  },
+  "awaken_tentacle_c": {
+    "file": "assets/fx/awaken_tentacle_c.webp",
+    "scale": 2,
+    "width": 438,
+    "height": 72
+  },
+  "awaken_sigil": {
+    "file": "assets/fx/awaken_sigil.webp",
+    "scale": 2,
+    "width": 237,
+    "height": 240
+  },
+  "awaken_spark": {
+    "file": "assets/fx/awaken_spark.webp",
+    "scale": 2,
+    "width": 33,
+    "height": 34
+  },
+  "awaken_glow": {
+    "file": "assets/fx/awaken_glow.webp",
+    "scale": 2,
+    "width": 284,
+    "height": 200
   }
 }

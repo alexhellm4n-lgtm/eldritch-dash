@@ -1,0 +1,17 @@
+{
+  "src": "raw/meta_icons_b.png",
+  "outDir": "public/assets/ui",
+  "manifest": "src/render/uiParts.json",
+  "unitsPerPx": 0.15,
+  "textureScale": 2,
+  "parts": {
+    "phase_quiet": { "box": [95, 135, 485, 520], "fitHeight": 56 },
+    "phase_fog": { "box": [575, 135, 960, 520], "fitHeight": 56 },
+    "phase_bloodMoon": { "box": [1055, 135, 1440, 520], "fitHeight": 56 },
+    "phase_storm": { "box": [95, 610, 485, 995], "fitHeight": 56 },
+    "phase_aligned": { "box": [575, 610, 960, 995], "fitHeight": 56 },
+    "icon_essence": { "box": [165, 1090, 405, 1410], "fitHeight": 34 },
+    "icon_sardine": { "box": [550, 1155, 985, 1365], "fitHeight": 24 },
+    "icon_darkstar": { "box": [1105, 1105, 1410, 1395], "fitHeight": 34 }
+  }
+}

@@ -11,6 +11,7 @@ import { LanternFx } from '../render/LanternFx';
 import { AwakeningFx, Distortion } from '../render/MetaFx';
 import { Depth, Parallax } from '../render/Parallax';
 import { Particles } from '../render/Particles';
+import { unitImage, unitScale } from '../render/textures';
 import { palette } from '../render/palette';
 import type { Entity } from '../systems/Entity';
 import { RunSim } from '../systems/RunSim';
@@ -206,6 +207,7 @@ export class RunScene extends Phaser.Scene {
       this.juice.popup(e.x, e.y - e.h / 2 - 10, t('popup.illusion'), palette.sicklyViolet, 22);
     });
     bus.on('chest', (c) => {
+      this.popChest(c.x, c.y);
       this.particles.coinBurst(c.x, c.y);
       this.particles.coinBurst(c.x, c.y - 20);
       this.juice.popup(
@@ -242,6 +244,30 @@ export class RunScene extends Phaser.Scene {
     bus.on('catHiss', (e) => {
       this.catView.hiss();
       this.juice.popup(e.x, e.y - e.h / 2 - 16, t('popup.hiss'), palette.coral, 22);
+    });
+  }
+
+  /** Сундук выпрыгивает из твари, раскачивается и тает. */
+  private popChest(x: number, y: number): void {
+    const u = unitScale('chest');
+    const img = unitImage(this, 'chest', x, y)
+      .setDepth(Depth.fx)
+      .setScale(u * 0.3);
+    this.tweens.add({ targets: img, scale: u * 1.3, y: y - 70, duration: 260, ease: 'Back.Out' });
+    this.tweens.add({
+      targets: img,
+      angle: { from: -12, to: 12 },
+      duration: 120,
+      yoyo: true,
+      repeat: 3,
+    });
+    this.tweens.add({
+      targets: img,
+      alpha: 0,
+      y: y - 110,
+      delay: 650,
+      duration: 300,
+      onComplete: () => img.destroy(),
     });
   }
 

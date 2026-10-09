@@ -1,0 +1,11 @@
+{
+  "src": "raw/awaken_light_b.png",
+  "outDir": "public/assets/fx",
+  "manifest": "src/render/fxParts.json",
+  "unitsPerPx": 0.25,
+  "textureScale": 2,
+  "keyMode": "luma",
+  "parts": {
+    "awaken_glow": { "box": [60, 800, 930, 1410], "fitHeight": 200 }
+  }
+}

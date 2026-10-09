@@ -1,0 +1,10 @@
+{
+  "src": "raw/meta_items_b.png",
+  "outDir": "public/assets/props",
+  "manifest": "src/render/propParts.json",
+  "unitsPerPx": 0.15,
+  "textureScale": 2,
+  "parts": {
+    "dream_ring": { "box": [905, 970, 1150, 1445], "fitHeight": 160 }
+  }
+}

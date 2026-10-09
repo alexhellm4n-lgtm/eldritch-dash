@@ -22,5 +22,47 @@
     "scale": 2,
     "width": 34.5,
     "height": 34
+  },
+  "pickup_lantern": {
+    "file": "assets/props/pickup_lantern.webp",
+    "scale": 2,
+    "width": 34.5,
+    "height": 56
+  },
+  "pickup_tea": {
+    "file": "assets/props/pickup_tea.webp",
+    "scale": 2,
+    "width": 34.5,
+    "height": 42
+  },
+  "pickup_page": {
+    "file": "assets/props/pickup_page.webp",
+    "scale": 2,
+    "width": 41,
+    "height": 48
+  },
+  "coin_star": {
+    "file": "assets/props/coin_star.webp",
+    "scale": 2,
+    "width": 38,
+    "height": 38
+  },
+  "chest": {
+    "file": "assets/props/chest.webp",
+    "scale": 2,
+    "width": 47,
+    "height": 44
+  },
+  "dream_island": {
+    "file": "assets/props/dream_island.webp",
+    "scale": 2,
+    "width": 110,
+    "height": 110
+  },
+  "dream_ring": {
+    "file": "assets/props/dream_ring.webp",
+    "scale": 2,
+    "width": 84,
+    "height": 160
   }
 }
