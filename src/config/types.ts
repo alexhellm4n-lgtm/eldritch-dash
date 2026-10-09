@@ -358,12 +358,19 @@ export interface DreamConfig {
   };
 }
 
+/** Скин кота — только внешний вид; цена в сардинках, первый в списке — бесплатный по умолчанию. */
+export interface CatSkinConfig {
+  id: string;
+  cost: number;
+}
+
 export interface CatConfig {
   intervalSec: number;
   rangePx: number;
   hissRangePx: number;
   chestChance: number;
   upgrades: readonly HeroUpgradeConfig[];
+  skins: readonly CatSkinConfig[];
 }
 
 export const GRIMOIRE_CHAPTERS = ['hunter', 'dreamer', 'winged'] as const;
@@ -403,6 +410,26 @@ export interface JuiceConfig {
   stretch: { perVelocity: number; max: number };
   particles: { coin: number; kill: number; dust: number; drops: number };
   coinSpinPerSec: number;
+  /**
+   * Объём монеты: толщина ребра (ед.), число слоёв ребра (чередуются — насечки),
+   * сила и острота блика, когда лицевая сторона смотрит на свет.
+   */
+  coin3d: { thickness: number; edgeLayers: number; glint: number; glintPower: number };
+  /**
+   * Тени на земле: непрозрачность, ширина относительно объекта (у монет — `coinK`), высота
+   * пятна; на высоте `fadeLiftPx` над землёй тень исчезает.
+   */
+  shadow: {
+    alpha: number;
+    widthK: number;
+    coinK: number;
+    heightPx: number;
+    /** Сдвиг пятна ниже уровня земли: на её верхней грани, а не на тёмной обводке края. */
+    offsetY: number;
+    fadeLiftPx: number;
+  };
+  /** Ближний декор фона — «не в фокусе»: размытие (сила, шаги) и снижение насыщенности. */
+  nearDecor: { blur: number; blurSteps: number; desaturate: number };
   flashMs: number;
   /** Длительности выстрела фонаря: вспышка, луч, всплеск попадания. */
   shot: { muzzleSec: number; boltSec: number; impactSec: number };

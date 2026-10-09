@@ -13,6 +13,7 @@ import {
   upgradesConfig,
   type AchievementsConfig,
   type CatConfig,
+  type CatSkinConfig,
   type DreamConfig,
   type EconomyConfig,
   type GrimoireConfig,
@@ -49,6 +50,8 @@ export interface SessionEvents {
   /** Сменилась небесная фаза. */
   phase: PhaseInfo;
   catUnlocked: undefined;
+  /** Кот сменил шкурку (id скина). */
+  catSkin: string;
   /** Совершено Погружение: новая глубина. */
   dive: number;
   achievement: AchievementDef;
@@ -97,6 +100,8 @@ export class GameSession {
   readonly economy: Economy;
   readonly upgrades: Upgrades;
   readonly catUpgrades: Upgrades;
+  /** Скины кота; первый — бесплатный, по умолчанию. */
+  readonly catSkins: readonly CatSkinConfig[];
   readonly grimoire: Grimoire;
   readonly stars: Stars;
   readonly town: Town;
@@ -132,7 +137,9 @@ export class GameSession {
     this.economyCfg = cfg.economy ?? economyConfig;
     this.economy = new Economy(upgrades, this.economyCfg);
     this.upgrades = new Upgrades(upgrades);
-    this.catUpgrades = new Upgrades({ ...upgrades, hero: (cfg.cat ?? catConfig).upgrades });
+    const cat = cfg.cat ?? catConfig;
+    this.catUpgrades = new Upgrades({ ...upgrades, hero: cat.upgrades });
+    this.catSkins = cat.skins;
     this.grimoire = new Grimoire(cfg.grimoire ?? grimoireConfig);
     this.stars = new Stars(cfg.stars ?? starsConfig);
     this.sanityCfg = cfg.sanity ?? sanityConfig;
@@ -276,6 +283,36 @@ export class GameSession {
     this.state.cat.levels[id] = this.catTier(id) + 1;
     this.recalc();
     this.bus.emit('purchase', { kind: 'cat', id });
+    return true;
+  }
+
+  ownsCatSkin(id: string): boolean {
+    const skin = this.catSkins.find((s) => s.id === id);
+    return skin !== undefined && (skin.cost === 0 || this.state.cat.skins.includes(id));
+  }
+
+  /** Надетый скин; неизвестный или не купленный (битое сохранение) — скин по умолчанию. */
+  get catSkin(): string {
+    const id = this.state.cat.skin;
+    return this.ownsCatSkin(id) ? id : (this.catSkins[0]?.id ?? id);
+  }
+
+  /** Покупка скина за сардинки; купленный сразу надевается. */
+  buyCatSkin(id: string): boolean {
+    const skin = this.catSkins.find((s) => s.id === id);
+    if (!skin || !this.state.cat.unlocked || this.ownsCatSkin(id)) return false;
+    if (this.state.sardines < skin.cost) return false;
+    this.state.sardines -= skin.cost;
+    this.state.cat.skins.push(id);
+    this.bus.emit('purchase', { kind: 'cat', id });
+    this.wearCatSkin(id);
+    return true;
+  }
+
+  wearCatSkin(id: string): boolean {
+    if (!this.state.cat.unlocked || !this.ownsCatSkin(id) || this.catSkin === id) return false;
+    this.state.cat.skin = id;
+    this.bus.emit('catSkin', id);
     return true;
   }
 

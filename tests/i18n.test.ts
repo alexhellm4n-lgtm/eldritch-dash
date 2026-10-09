@@ -49,6 +49,10 @@ describe('i18n', () => {
       expect(hasKey(`cat.${u.id}`), u.id).toBe(true);
       expect(hasKey(`cat.${u.id}.desc`), u.id).toBe(true);
     }
+    for (const s of catConfig.skins) {
+      expect(hasKey(`catSkin.${s.id}`), s.id).toBe(true);
+      expect(hasKey(`catSkin.${s.id}.desc`), s.id).toBe(true);
+    }
     for (const n of grimoireConfig.nodes) {
       for (const k of Object.keys(n.add ?? {}))
         expect(hasKey(`effect.add.${k}`), `${n.id}: ${k}`).toBe(true);

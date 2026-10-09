@@ -47,6 +47,10 @@ interface Spark {
   life: number;
 }
 
+/** Щупальца — перед всем фоном и туманом, но за настилом; сигил — в небе, за ближним декором. */
+const TENTACLE_DEPTH = Depth.fogBack + 0.5;
+const SIGIL_DEPTH = Depth.near - 0.5;
+
 /**
  * «Пробуждение» (SPEC §4.4): из-под настила вырываются гигантские щупальца, из щелей
  * поднимается бирюзово-фиолетовое свечение, в небе разворачивается сигил, летят искры.
@@ -70,10 +74,7 @@ export class AwakeningFx {
     scene: Phaser.Scene,
     private readonly groundY: number,
   ) {
-    this.layer = scene.add
-      .container(0, 0)
-      .setScrollFactor(0)
-      .setDepth(Depth.near + 0.5);
+    this.layer = scene.add.container(0, 0).setScrollFactor(0).setDepth(TENTACLE_DEPTH);
     if (isRaster(TENTACLE_KEYS[0]!)) {
       TENTACLES.forEach((d, i) => {
         const key = TENTACLE_KEYS[i % TENTACLE_KEYS.length]!;
@@ -84,7 +85,7 @@ export class AwakeningFx {
           .rope(d.x, groundY, key, undefined, points, true)
           .setScale(scale)
           .setScrollFactor(0)
-          .setDepth(Depth.near + 0.5)
+          .setDepth(TENTACLE_DEPTH)
           .setVisible(false);
         this.tentacles.push({
           rope,
@@ -106,7 +107,7 @@ export class AwakeningFx {
     if (isRaster('awaken_sigil')) {
       this.sigil = unitImage(scene, 'awaken_sigil', display.width / 2, SIGIL_Y)
         .setScrollFactor(0)
-        .setDepth(Depth.fogBack + 0.5)
+        .setDepth(SIGIL_DEPTH)
         .setBlendMode(Phaser.BlendModes.ADD)
         .setVisible(false);
     }

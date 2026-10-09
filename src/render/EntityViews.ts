@@ -501,14 +501,41 @@ class NetView extends CreatureView {
   }
 }
 
+/** Свет падает спереди-слева: блик и яркость лицевой стороны зависят от угла поворота. */
+const COIN_LIGHT_X = -0.45;
+const COIN_LIGHT_Z = 0.89;
+/** Яркость стороны монеты, повёрнутой от света / к свету. */
+const COIN_SHADE_MIN = 0.62;
+
+/**
+ * Монета-«цилиндр»: лицевая сторона сжимается по X с поворотом, позади неё — стопка копий
+ * с тенью (ребро толщиной `coin3d.thickness`, чередование тонов даёт насечки). Сторона темнеет,
+ * отворачиваясь от света, и вспыхивает аддитивным бликом, когда смотрит на него.
+ */
 class CoinView implements EntityView {
-  readonly root: Phaser.GameObjects.Image;
+  readonly root: Phaser.GameObjects.Container;
   private readonly unit: number;
+  /** Ширина монеты в единицах — чтобы слои ребра не расходились щелями, когда монета ребром. */
+  private readonly width: number;
+  private readonly face: Phaser.GameObjects.Image;
+  private readonly glint: Phaser.GameObjects.Image;
+  private readonly edge: Phaser.GameObjects.Image[] = [];
 
   /** key: 'coin' — обычный дублон, 'coin_star' — звёздный (фаза «Звёзды сошлись»). */
   constructor(scene: Phaser.Scene, key: string) {
-    this.root = unitImage(scene, key);
+    this.root = scene.add.container(0, 0);
     this.unit = unitScale(key);
+    const cfg = juiceConfig.coin3d;
+    for (let i = 0; i < cfg.edgeLayers; i++) {
+      const layer = unitImage(scene, key).setTint(
+        i % 2 === 0 ? palette.coinEdgeDark : palette.coinEdgeLight,
+      );
+      this.edge.push(layer);
+    }
+    this.face = unitImage(scene, key);
+    this.width = this.face.displayWidth;
+    this.glint = unitImage(scene, key).setBlendMode(Phaser.BlendModes.ADD);
+    this.root.add([...this.edge, this.face, this.glint]);
   }
 
   bind(): void {
@@ -516,10 +543,40 @@ class CoinView implements EntityView {
   }
 
   update(e: Entity, time: number): void {
-    // Вращение монеты — сжатие по X.
-    const spin = Math.cos(time * juiceConfig.coinSpinPerSec + e.x * 0.01);
+    const cfg = juiceConfig.coin3d;
+    const a = time * juiceConfig.coinSpinPerSec + e.x * 0.01;
+    const c = Math.cos(a);
+    const s = Math.sin(a);
     this.root.setPosition(e.x, e.y + Math.sin(time * 3 + e.x * 0.02) * 3);
-    this.root.setScale(this.unit * Math.max(Math.abs(spin), 0.15), this.unit);
+
+    // Видна та сторона, что повёрнута к камере; задняя — зеркально.
+    const side = c >= 0 ? 1 : -1;
+    const half = cfg.thickness / 2;
+    const sx = this.unit * Math.abs(c);
+    this.face
+      .setScale(sx, this.unit)
+      .setX(side * s * half)
+      .setFlipX(side < 0);
+    this.glint
+      .setScale(sx, this.unit)
+      .setX(this.face.x)
+      .setFlipX(side < 0);
+
+    // Слои ребра — от дальней стороны к ближней; чуть шире стороны, чтобы ребро было сплошным.
+    const pad = cfg.thickness / cfg.edgeLayers / this.width;
+    const n = this.edge.length;
+    for (let i = 0; i < n; i++) {
+      const k = n > 1 ? i / (n - 1) : 0.5;
+      this.edge[i]!.setScale(this.unit * (Math.abs(c) + pad), this.unit).setX(
+        side * s * half * (2 * k - 1),
+      );
+    }
+
+    // Освещённость видимой стороны: нормаль (side·sin, side·cos) против света.
+    const lit = Math.max(0, side * (s * COIN_LIGHT_X + c * COIN_LIGHT_Z));
+    const v = Math.round(255 * (COIN_SHADE_MIN + (1 - COIN_SHADE_MIN) * lit));
+    this.face.setTint(Phaser.Display.Color.GetColor(v, v, v));
+    this.glint.setAlpha(cfg.glint * Math.pow(lit, cfg.glintPower));
   }
 }
 

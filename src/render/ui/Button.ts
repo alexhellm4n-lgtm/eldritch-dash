@@ -93,8 +93,8 @@ export class Button extends Phaser.GameObjects.Container {
         align: 'center',
       })
       .setOrigin(0.5);
-    if (this.icon && labelText) {
-      // Иконка слева, подпись правее центра.
+    if (this.icon && !this.style.badge) {
+      // Иконка слева, подпись правее центра (и для подписи, заданной позже через setLabel).
       this.icon.setX(-bw / 2 + bh * 0.55);
       this.label.setX(bh * 0.28);
     }

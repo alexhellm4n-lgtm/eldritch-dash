@@ -1,5 +1,6 @@
 import type Phaser from 'phaser';
 import generatedRig from '../../assets-src/rigs/cat.generated.json';
+import { DEFAULT_CAT_SKIN } from '../core/GameState';
 import { Depth } from './Parallax';
 import { palette } from './palette';
 import { isRaster, unitImage } from './textures';
@@ -39,6 +40,16 @@ const PLACEHOLDER_RIG: CatRig = {
   poses: { wingBase: -0.4, wingAmp: 0.6, tailBase: 0, tailAmp: 0.25 },
 };
 
+/** Ключ части в шкурке: `cat_head` → `cat_drowned_head`; скин по умолчанию — базовые ключи. */
+export function catSkinKey(key: string, skin: string): string {
+  return skin === DEFAULT_CAT_SKIN ? key : key.replace(/^cat_/, `cat_${skin}_`);
+}
+
+/** Есть ли у скина растровые части (иначе кот остаётся в базовой шкурке). */
+export function hasCatSkin(skin: string): boolean {
+  return isRaster('cat_body') && isRaster(catSkinKey('cat_body', skin));
+}
+
 /**
  * Кот-фамильяр (SPEC §4.7): чёрный, с крошечными крыльями, летит за Эдгаром.
  * На охоте делает рывок к добыче и возвращается; шипит на иллюзии.
@@ -70,6 +81,13 @@ export class CatView {
       this.root.add(img);
       this.parts.set(p.name, img);
     }
+  }
+
+  /** Сменить шкурку: части рига те же, меняются только текстуры. */
+  setSkin(skin: string): void {
+    const id = hasCatSkin(skin) ? skin : DEFAULT_CAT_SKIN;
+    if (this.rig === PLACEHOLDER_RIG) return;
+    for (const p of this.rig.parts) this.parts.get(p.name)?.setTexture(catSkinKey(p.key, id));
   }
 
   setVisible(visible: boolean): void {

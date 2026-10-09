@@ -3,7 +3,9 @@ import { app } from '../app';
 import display from '../config/display.json';
 import { formatNumber } from '../core/BigNum';
 import { t, tId } from '../i18n';
+import { catSkinKey, hasCatSkin } from '../render/CatView';
 import { palette, toCss } from '../render/palette';
+import { unitImage } from '../render/textures';
 import { addPanel, addStrip, Button } from '../render/ui/Button';
 import skin from '../render/ui/skin.json';
 import type { BuyAmount } from '../systems/Economy';
@@ -22,6 +24,9 @@ const ROW_H = 54;
 const ROW_GAP = 4;
 const ROWS_Y = 138;
 const BUY_W = 176;
+/** Портрет скина в строке лавки (высота головы кота в единицах ≈ 44). */
+const SKIN_THUMB_SCALE = 0.9;
+const SKIN_THUMB_W = 50;
 const SLIDE_MS = 220;
 const AMOUNTS: readonly BuyAmount[] = [1, 10, 100, 'max'];
 
@@ -33,6 +38,11 @@ interface Row {
   title: Phaser.GameObjects.Text;
   detail: Phaser.GameObjects.Text;
   buy: Button;
+}
+
+/** Строка скина: «купить» за сардинки или «надеть». */
+interface SkinRow extends Row {
+  wear: Button;
 }
 
 const textStyle = (
@@ -61,6 +71,8 @@ export class ShopOverlay extends Phaser.Scene {
   private catLayer!: Phaser.GameObjects.Container;
   private catRows: Row[] = [];
   private catLocked!: Phaser.GameObjects.Text;
+  private skinsTitle!: Phaser.GameObjects.Text;
+  private skinRows: SkinRow[] = [];
   private isOpen = false;
 
   constructor() {
@@ -76,6 +88,7 @@ export class ShopOverlay extends Phaser.Scene {
     this.itemRows = [];
     this.heroRows = [];
     this.catRows = [];
+    this.skinRows = [];
     this.tabButtons.clear();
     this.amountButtons.clear();
     this.isOpen = false;
@@ -170,14 +183,44 @@ export class ShopOverlay extends Phaser.Scene {
       })
       .setOrigin(0.5, 0);
     this.catLayer.add(this.catLocked);
+    this.createSkinRows();
 
     this.setTab('items');
     this.setAmount(1);
     this.input.keyboard?.on('keydown-ESC', () => this.close());
   }
 
-  private createRow(id: string, index: number, icon?: string): Row {
-    const y = ROWS_Y + index * (ROW_H + ROW_GAP);
+  /** Скины кота — под прокачкой, отдельным списком. */
+  private createSkinRows(): void {
+    const top = ROWS_Y + this.catRows.length * (ROW_H + ROW_GAP) + 14;
+    this.skinsTitle = this.add
+      .text(PAD + 6, top, t('cat.skins'), {
+        fontFamily: 'Georgia, serif',
+        fontSize: '20px',
+        fontStyle: 'bold',
+        color: toCss(palette.ink),
+      })
+      .setOrigin(0, 0);
+    this.catLayer.add(this.skinsTitle);
+    this.session.catSkins.forEach((s, i) => {
+      const row = this.createRow(s.id, i, undefined, top + 34);
+      row.detail.setWordWrapWidth(ROW_W - BUY_W - 40 - SKIN_THUMB_W);
+      row.buy.onClick(() => this.session.wearCatSkin(s.id));
+      const buy = new Button(this, row.buy.x, row.buy.y, BUY_W, 44, String(s.cost), {
+        fontSize: 19,
+        icon: 'icon_sardine',
+      }).onClick(() => this.session.buyCatSkin(s.id));
+      const head = hasCatSkin(s.id) ? catSkinKey('cat_head', s.id) : 'cat_head';
+      const thumb = unitImage(this, head, ROW_W - 12 - BUY_W - SKIN_THUMB_W / 2 - 6, ROW_H / 2);
+      thumb.setScale(thumb.scaleX * SKIN_THUMB_SCALE);
+      row.root.add([thumb, buy]);
+      this.catLayer.add(row.root);
+      this.skinRows.push({ ...row, wear: row.buy, buy });
+    });
+  }
+
+  private createRow(id: string, index: number, icon?: string, top = ROWS_Y): Row {
+    const y = top + index * (ROW_H + ROW_GAP);
     const root = this.add.container(PAD, y);
     // Пергаментная полоска с булавкой (растр) или векторная плашка.
     const strip = addStrip(this, skin.row, ROW_W / 2, ROW_H / 2, ROW_W + 14, ROW_H + 10);
@@ -320,6 +363,21 @@ export class ShopOverlay extends Phaser.Scene {
       const cost = s.catNextCost(row.id);
       if (cost === null) row.buy.setLabel(t('shop.bought')).setEnabled(false);
       else row.buy.setLabel(String(cost)).setEnabled(s.state.sardines >= cost);
+    }
+    this.skinsTitle.setVisible(unlocked);
+    const worn = s.catSkin;
+    for (const row of this.skinRows) {
+      row.root.setVisible(unlocked);
+      if (!unlocked) continue;
+      setText(row.title, tId(`catSkin.${row.id}`));
+      setText(row.detail, tId(`catSkin.${row.id}.desc`));
+      const owned = s.ownsCatSkin(row.id);
+      const cost = s.catSkins.find((k) => k.id === row.id)?.cost ?? 0;
+      row.buy.setVisible(!owned).setEnabled(s.state.sardines >= cost);
+      row.wear
+        .setVisible(owned)
+        .setLabel(row.id === worn ? t('cat.skin.worn') : t('cat.skin.wear'))
+        .setEnabled(row.id !== worn);
     }
   }
 }

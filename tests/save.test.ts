@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { bn } from '../src/core/BigNum';
-import { createGameState } from '../src/core/GameState';
+import { createGameState, DEFAULT_CAT_SKIN } from '../src/core/GameState';
 import { migrate, SaveVersionError, type Migration } from '../src/save/migrations';
 import { decodeSave, encodeSave } from '../src/save/SaveManager';
 import { SAVE_VERSION } from '../src/save/schema';
@@ -47,7 +47,7 @@ function sample() {
   s.depth = 2;
   s.omen = 'greed';
   s.grimoire = ['h_flash1', 'd_coin1'];
-  s.cat = { unlocked: true, levels: { catSpeed: 2 } };
+  s.cat = { unlocked: true, levels: { catSpeed: 2 }, skin: 'drowned', skins: ['drowned'] };
   s.settings.reduceDistortion = true;
   s.lastSeen = 5_000;
   return s;
@@ -73,7 +73,12 @@ describe('сохранения', () => {
     expect(back.depth).toBe(2);
     expect(back.omen).toBe('greed');
     expect(back.grimoire).toEqual(['h_flash1', 'd_coin1']);
-    expect(back.cat).toEqual({ unlocked: true, levels: { catSpeed: 2 } });
+    expect(back.cat).toEqual({
+      unlocked: true,
+      levels: { catSpeed: 2 },
+      skin: 'drowned',
+      skins: ['drowned'],
+    });
     expect(back.hints).toEqual(s.hints);
     expect(back.world).toEqual(s.world);
     expect(back.town).toEqual(s.town);
@@ -118,6 +123,18 @@ describe('сохранения', () => {
     expect(s.darkStars).toBe(0);
     expect(s.grimoire).toEqual([]);
     expect(s.cat.unlocked).toBe(false);
+  });
+
+  it('сохранение v3 (до скинов) мигрирует: кот в чёрной шкурке, прокачка цела', () => {
+    const v3 = { v: 3, sardines: 30, cat: { unlocked: true, levels: { catLuck: 1 } } };
+    const s = decodeSave(btoa(JSON.stringify(v3)), 0)!;
+    expect(s.cat).toEqual({
+      unlocked: true,
+      levels: { catLuck: 1 },
+      skin: DEFAULT_CAT_SKIN,
+      skins: [],
+    });
+    expect(s.sardines).toBe(30);
   });
 
   it('сохранение без версии (v0) мигрирует до текущей', () => {

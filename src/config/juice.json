@@ -35,6 +35,25 @@
     "drops": 8
   },
   "coinSpinPerSec": 4,
+  "coin3d": {
+    "thickness": 5,
+    "edgeLayers": 7,
+    "glint": 0.6,
+    "glintPower": 14
+  },
+  "shadow": {
+    "alpha": 0.6,
+    "widthK": 1.1,
+    "coinK": 0.75,
+    "heightPx": 16,
+    "offsetY": 7,
+    "fadeLiftPx": 320
+  },
+  "nearDecor": {
+    "blur": 0.5,
+    "blurSteps": 2,
+    "desaturate": 0.25
+  },
   "flashMs": 160,
   "textureScale": 2,
   "shot": {

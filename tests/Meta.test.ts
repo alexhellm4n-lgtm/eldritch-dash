@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   biomesConfig,
+  catConfig,
   dreamConfig,
   economyConfig,
   enemiesConfig,
@@ -10,7 +11,7 @@ import {
   starsConfig,
 } from '../src/config';
 import { bn } from '../src/core/BigNum';
-import { createGameState } from '../src/core/GameState';
+import { createGameState, DEFAULT_CAT_SKIN } from '../src/core/GameState';
 import { DreamSim } from '../src/systems/Dream';
 import { GameSession } from '../src/systems/GameSession';
 import { darkStarsFor, omenChoices } from '../src/systems/Prestige';
@@ -375,5 +376,42 @@ describe('Погружение', () => {
     expect(s.dive(s.omenChoices()[1]!.id)).toBe(true);
     expect(s.state.depth).toBe(3);
     expect(s.state.darkStars).toBeGreaterThan(2);
+  });
+});
+
+describe('скины кота', () => {
+  it('покупка за сардинки надевает скин; бесплатный — всегда свой', () => {
+    const s = new GameSession(createGameState(0));
+    const worn: string[] = [];
+    s.bus.on('catSkin', (id) => worn.push(id));
+    s.state.sardines = 1000;
+    // До первого Сновидения кота нет — и шкурок тоже.
+    expect(s.buyCatSkin('lighthouse')).toBe(false);
+    s.state.cat.unlocked = true;
+    expect(s.ownsCatSkin(DEFAULT_CAT_SKIN)).toBe(true);
+    expect(s.ownsCatSkin('lighthouse')).toBe(false);
+    expect(s.wearCatSkin('lighthouse')).toBe(false);
+
+    const cost = catConfig.skins.find((k) => k.id === 'lighthouse')!.cost;
+    expect(s.buyCatSkin('lighthouse')).toBe(true);
+    expect(s.state.sardines).toBe(1000 - cost);
+    expect(s.catSkin).toBe('lighthouse');
+    expect(s.buyCatSkin('lighthouse')).toBe(false); // уже куплен
+
+    expect(s.wearCatSkin(DEFAULT_CAT_SKIN)).toBe(true);
+    expect(s.wearCatSkin(DEFAULT_CAT_SKIN)).toBe(false); // уже надет
+    expect(worn).toEqual(['lighthouse', DEFAULT_CAT_SKIN]);
+  });
+
+  it('не хватает сардинок или неизвестный скин — покупки нет', () => {
+    const s = new GameSession(createGameState(0));
+    s.state.cat.unlocked = true;
+    s.state.sardines = 1;
+    expect(s.buyCatSkin('drowned')).toBe(false);
+    expect(s.buyCatSkin('nope')).toBe(false);
+    expect(s.state.sardines).toBe(1);
+    // Битое сохранение: надет не купленный скин — показываем скин по умолчанию.
+    s.state.cat.skin = 'drowned';
+    expect(s.catSkin).toBe(DEFAULT_CAT_SKIN);
   });
 });

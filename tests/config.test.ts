@@ -1,14 +1,29 @@
 import { describe, expect, it } from 'vitest';
 import {
   biomesConfig,
+  catConfig,
   economyConfig,
   ENEMY_BEHAVIORS,
   enemiesConfig,
   PATTERNS,
   runConfig,
 } from '../src/config';
+import { DEFAULT_CAT_SKIN } from '../src/core/GameState';
+import { catSkinKey } from '../src/render/CatView';
+import catParts from '../src/render/catParts.json';
 
 describe('конфиги', () => {
+  it('скины кота: первый — бесплатный по умолчанию, остальные платные и с растром', () => {
+    const [first, ...rest] = catConfig.skins;
+    expect(first).toEqual({ id: DEFAULT_CAT_SKIN, cost: 0 });
+    expect(new Set(catConfig.skins.map((s) => s.id)).size).toBe(catConfig.skins.length);
+    for (const s of rest) {
+      expect(s.cost, s.id).toBeGreaterThan(0);
+      for (const part of ['cat_head', 'cat_body', 'cat_wing', 'cat_tail'])
+        expect(catSkinKey(part, s.id) in catParts, `${s.id}: ${part}`).toBe(true);
+    }
+  });
+
   it('враги: допустимое поведение и обязательные поля', () => {
     for (const [id, e] of Object.entries(enemiesConfig)) {
       expect(ENEMY_BEHAVIORS, id).toContain(e.behavior);

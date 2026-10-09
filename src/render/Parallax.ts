@@ -1,6 +1,6 @@
 import type Phaser from 'phaser';
 import display from '../config/display.json';
-import type { BiomeConfig } from '../config';
+import { juiceConfig, type BiomeConfig } from '../config';
 import { backgroundAssets } from './rasterAssets';
 import { palette } from './palette';
 import { isRaster, unitScale } from './textures';
@@ -10,9 +10,11 @@ export const Depth = {
   sky: 0,
   far: 1,
   mid: 2,
-  fogBack: 3,
-  near: 4,
+  near: 3,
+  /** Дальний туман — перед ближним декором: декор тонет в дымке и не спорит с трассой. */
+  fogBack: 4,
   ground: 5,
+  shadow: 5.3,
   obstacle: 6,
   coin: 7,
   enemy: 8,
@@ -52,8 +54,9 @@ export class Parallax {
       const h = asset?.height ?? H;
       this.layers.push(this.tile(scene, key, 0, y, W, h, depths[i] ?? Depth.near));
     }
-    // Ближний декор притемнён, чтобы не спорить по яркости с настоящими препятствиями и тварями.
-    this.layers[this.layers.length - 1]?.setTint(palette.nearDecorShade);
+    // Ближний декор притемнён и «не в фокусе», чтобы не спорить с настоящими препятствиями и тварями.
+    const near = this.layers[this.layers.length - 1];
+    if (near) defocus(near.setTint(palette.nearDecorShade));
     // Растровая земля лежит на своей высоте (верх настила = уровень земли), плейсхолдер — от groundY.
     const groundKey = `ground_${biomeId}`;
     const groundAsset = isRaster(groundKey) ? backgroundAssets[groundKey] : undefined;
@@ -128,4 +131,13 @@ export class Parallax {
     this.fogBack.tilePositionX = distancePx * 0.45 + this.drift;
     this.fogFront.tilePositionX = distancePx * 1.15 + this.drift * 1.7;
   }
+}
+
+/** Размытие и приглушённый цвет ближнего декора (только WebGL; в Canvas остаётся одно затемнение). */
+function defocus(layer: Phaser.GameObjects.TileSprite): void {
+  const cfg = juiceConfig.nearDecor;
+  const filters = layer.enableFilters?.().filters?.internal;
+  if (!filters) return;
+  filters.addBlur(0, 1, 1, cfg.blur, 0xffffff, cfg.blurSteps);
+  filters.addColorMatrix().colorMatrix.saturate(-cfg.desaturate);
 }
