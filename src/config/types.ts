@@ -410,6 +410,11 @@ export interface JuiceConfig {
   stretch: { perVelocity: number; max: number };
   particles: { coin: number; kill: number; dust: number; drops: number };
   coinSpinPerSec: number;
+  /**
+   * Объём монеты: толщина ребра (ед.), число слоёв ребра (чередуются — насечки),
+   * сила и острота блика, когда лицевая сторона смотрит на свет.
+   */
+  coin3d: { thickness: number; edgeLayers: number; glint: number; glintPower: number };
   flashMs: number;
   /** Длительности выстрела фонаря: вспышка, луч, всплеск попадания. */
   shot: { muzzleSec: number; boltSec: number; impactSec: number };

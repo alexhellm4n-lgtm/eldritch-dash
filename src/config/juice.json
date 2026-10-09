@@ -35,6 +35,12 @@
     "drops": 8
   },
   "coinSpinPerSec": 4,
+  "coin3d": {
+    "thickness": 5,
+    "edgeLayers": 7,
+    "glint": 0.6,
+    "glintPower": 14
+  },
   "flashMs": 160,
   "textureScale": 2,
   "shot": {
