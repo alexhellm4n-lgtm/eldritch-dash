@@ -22,5 +22,53 @@
     "scale": 2,
     "width": 49.5,
     "height": 28.5
+  },
+  "cat_lighthouse_head": {
+    "file": "assets/cat/cat_lighthouse_head.webp",
+    "scale": 2,
+    "width": 46,
+    "height": 43.5
+  },
+  "cat_lighthouse_body": {
+    "file": "assets/cat/cat_lighthouse_body.webp",
+    "scale": 2,
+    "width": 50.5,
+    "height": 37
+  },
+  "cat_lighthouse_wing": {
+    "file": "assets/cat/cat_lighthouse_wing.webp",
+    "scale": 2,
+    "width": 36.5,
+    "height": 29
+  },
+  "cat_lighthouse_tail": {
+    "file": "assets/cat/cat_lighthouse_tail.webp",
+    "scale": 2,
+    "width": 49.5,
+    "height": 28.5
+  },
+  "cat_drowned_head": {
+    "file": "assets/cat/cat_drowned_head.webp",
+    "scale": 2,
+    "width": 46,
+    "height": 43.5
+  },
+  "cat_drowned_body": {
+    "file": "assets/cat/cat_drowned_body.webp",
+    "scale": 2,
+    "width": 50.5,
+    "height": 37
+  },
+  "cat_drowned_wing": {
+    "file": "assets/cat/cat_drowned_wing.webp",
+    "scale": 2,
+    "width": 36.5,
+    "height": 29
+  },
+  "cat_drowned_tail": {
+    "file": "assets/cat/cat_drowned_tail.webp",
+    "scale": 2,
+    "width": 49.5,
+    "height": 28.5
   }
 }

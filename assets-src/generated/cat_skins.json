@@ -1,0 +1,46 @@
+{
+  "srcDir": "public/assets/cat",
+  "outDir": "public/assets/cat",
+  "manifest": "src/render/catParts.json",
+  "base": "cat",
+  "parts": ["head", "body", "wing", "tail"],
+  "hues": [215, 330],
+  "skins": {
+    "lighthouse": {
+      "fur": [
+        [0.1, "#1E0D06"],
+        [0.17, "#5A2410"],
+        [0.23, "#A5501A"],
+        [0.31, "#D9822F"],
+        [0.45, "#FFC97A"],
+        [0.65, "#FFE6B8"]
+      ],
+      "wing": [
+        [0.12, "#2A1206"],
+        [0.25, "#7A3014"],
+        [0.4, "#C2572A"],
+        [0.55, "#F09A5A"],
+        [0.62, "#FFD2A0"]
+      ],
+      "eyeHue": 95
+    },
+    "drowned": {
+      "fur": [
+        [0.1, "#061C22"],
+        [0.17, "#0F3B45"],
+        [0.23, "#1F6260"],
+        [0.31, "#2E7D6B"],
+        [0.45, "#7FC4B0"],
+        [0.65, "#C8F4FF"]
+      ],
+      "wing": [
+        [0.12, "#0A2A33"],
+        [0.25, "#1C6E6A"],
+        [0.4, "#3BB8A6"],
+        [0.55, "#5CF2D6"],
+        [0.62, "#C8FFF4"]
+      ],
+      "wingAlpha": 0.82
+    }
+  }
+}

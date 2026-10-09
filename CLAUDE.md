@@ -7,20 +7,21 @@ Idle-раннер на Phaser 4 + TypeScript + Vite. Полные требова
 
 ## Команды
 
-| Команда           | Что делает                                                              |
-| ----------------- | ----------------------------------------------------------------------- |
-| `npm run dev`     | dev-сервер Vite (http://localhost:5173)                                 |
-| `npm run build`   | `tsc --noEmit` + сборка в `dist/` (относительные пути, `base: './'`)    |
-| `npm run preview` | локальный просмотр `dist/`                                              |
-| `npm run test`    | Vitest, тесты в `tests/**/*.test.ts`                                    |
-| `npm run lint`    | ESLint + `prettier --check`                                             |
-| `npm run format`  | Prettier с автоисправлением                                             |
-| `npm run bg`      | сборка фонов и земли → `public/assets/bg/*.webp` + манифест             |
-| `npm run hero`    | сборка частей героя из листа персонажа → `public/assets/hero/*.webp`    |
-| `npm run enemies` | сборка частей тварей (сейчас чайка) → `public/assets/enemies/*.webp`    |
-| `npm run fx`      | частицы, свет (выстрел фонаря, свечение) и UI → `public/assets/{fx,ui}` |
-| `npm run ui`      | интерфейс v2: иконки, доска, шкалы, карточки, печати, свиток, газета    |
-| `npm run meta`    | предметы M3, значки фаз/валют, щупальца и свет Пробуждения              |
+| Команда             | Что делает                                                              |
+| ------------------- | ----------------------------------------------------------------------- |
+| `npm run dev`       | dev-сервер Vite (http://localhost:5173)                                 |
+| `npm run build`     | `tsc --noEmit` + сборка в `dist/` (относительные пути, `base: './'`)    |
+| `npm run preview`   | локальный просмотр `dist/`                                              |
+| `npm run test`      | Vitest, тесты в `tests/**/*.test.ts`                                    |
+| `npm run lint`      | ESLint + `prettier --check`                                             |
+| `npm run format`    | Prettier с автоисправлением                                             |
+| `npm run bg`        | сборка фонов и земли → `public/assets/bg/*.webp` + манифест             |
+| `npm run hero`      | сборка частей героя из листа персонажа → `public/assets/hero/*.webp`    |
+| `npm run enemies`   | сборка частей тварей (сейчас чайка) → `public/assets/enemies/*.webp`    |
+| `npm run fx`        | частицы, свет (выстрел фонаря, свечение) и UI → `public/assets/{fx,ui}` |
+| `npm run ui`        | интерфейс v2: иконки, доска, шкалы, карточки, печати, свиток, газета    |
+| `npm run meta`      | предметы M3, значки фаз/валют, щупальца и свет Пробуждения              |
+| `npm run cat-skins` | скины кота перекраской частей (после `enemies`) → `public/assets/cat`   |
 
 После каждого этапа `build`, `test`, `lint` должны быть зелёными.
 
@@ -127,6 +128,11 @@ Idle-раннер на Phaser 4 + TypeScript + Vite. Полные требова
   свечение из щелей настила, искры. Без растра — старые цепочки `TentacleChain`.
 - Кот: `render/CatView.ts` берёт риг `assets-src/rigs/cat.generated.json` (сгенерированные части,
   `assets-src/generated/cat.json`), иначе — векторный плейсхолдер.
+  Скины (`cat.json → skins`, первый — бесплатный `midnight`): `scripts/build-skins.ts` перекрашивает
+  готовые части по рампам светлоты из `assets-src/generated/cat_skins.json` (глаза/нос не трогает,
+  `eyeHue` — оттенок радужки) → `cat_<скин>_<часть>.webp` в `catParts.json`; `CatView.setSkin` меняет
+  текстуры того же рига, нет растра скина — базовый кот. Покупка/надевание — `GameSession.buyCatSkin`/
+  `wearCatSkin` (событие `catSkin`), в лавке — раздел «Шкурки» во вкладке «Кот».
 - Сцены M3: `GrimoireScene` (гримуар + окно Погружения со знамениями), `DreamScene` (сон; забег на паузе,
   `RunScene.wakeUp()` возвращает его). Лавка получила вкладку «Кот».
 - M4-отрисовка: твари леса/города и боссы — `RigCreatureView` по ригам `assets-src/rigs/<тварь>.json`
@@ -172,6 +178,7 @@ Idle-раннер на Phaser 4 + TypeScript + Vite. Полные требова
 - Сохранения v2 (M3): Эссенция, сардинки, тёмные звёзды, глубина, знамение, гримуар, кот; миграция 1→2.
 - Сохранения v3 (M4): подсказки, мир (биом/путь/круг/боссы/биомы), городок, дневник, достижения, газета,
   новые счётчики статистики; миграция 2→3 (общий пробег = лучшая дистанция).
+- Сохранения v4: скины кота (`cat.skin`, `cat.skins`); миграция 3→4.
 - Новые поля сохранения: поднять `SAVE_VERSION`, добавить миграцию и тест (`tests/save.test.ts`).
 - Сжатие сохранений (lz-string) не подключено: пакета нет в SPEC §2 — нужно согласование.
 - Новые npm-зависимости — только из SPEC §2, остальные — после согласования с пользователем.

@@ -35,7 +35,14 @@ export interface CatState {
   unlocked: boolean;
   /** Уровни прокачки за сардинки. */
   levels: Record<string, number>;
+  /** Надетый скин. */
+  skin: string;
+  /** Купленные скины (бесплатный по умолчанию не хранится). */
+  skins: string[];
 }
+
+/** Скин кота по умолчанию — первый в `cat.json → skins`. */
+export const DEFAULT_CAT_SKIN = 'midnight';
 
 /** Продвижение по биомам (SPEC §7): текущий биом, путь до босса, круг. */
 export interface WorldState {
@@ -111,7 +118,7 @@ export function createGameState(now: number, startCoins = 0): GameState {
     items: {},
     heroUpgrades: {},
     grimoire: [],
-    cat: { unlocked: false, levels: {} },
+    cat: { unlocked: false, levels: {}, skin: DEFAULT_CAT_SKIN, skins: [] },
     tutorial: { jump: false, glide: false, purchase: false },
     hints: [],
     world: createWorldState(),

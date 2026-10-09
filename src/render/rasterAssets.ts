@@ -48,7 +48,13 @@ export function rasterGroups(): string[][] {
   groups.push(...Object.keys(propPartAssets).map((k) => [k]));
   groups.push(...Object.keys(fxPartAssets).map((k) => [k]));
   groups.push(...Object.keys(uiPartAssets).map((k) => [k]));
-  groups.push(Object.keys(catPartAssets));
+  // Кот: каждый скин (`cat_<skin>_<часть>`) — отдельная группа, базовые части — своя.
+  const bySkin = new Map<string, string[]>();
+  for (const key of Object.keys(catPartAssets)) {
+    const skin = key.slice(0, key.lastIndexOf('_'));
+    bySkin.set(skin, [...(bySkin.get(skin) ?? []), key]);
+  }
+  groups.push(...bySkin.values());
   return groups.filter((g) => g.length > 0);
 }
 
@@ -58,7 +64,7 @@ export const propPartAssets: Readonly<Record<string, RasterAsset>> = propParts;
 /** Частицы и световые эффекты; элементы интерфейса (scripts/build-parts.ts). */
 export const fxPartAssets: Readonly<Record<string, RasterAsset>> = fxParts;
 export const uiPartAssets: Readonly<Record<string, RasterAsset>> = uiParts;
-/** Кот-фамильяр: части одного рига, откатываются вместе. */
+/** Кот-фамильяр: части одного рига (и его скинов), откатываются вместе. */
 export const catPartAssets: Readonly<Record<string, RasterAsset>> = catParts;
 
 /** Все растровые замены плейсхолдеров. */

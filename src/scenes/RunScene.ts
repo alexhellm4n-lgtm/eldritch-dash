@@ -80,6 +80,7 @@ export class RunScene extends Phaser.Scene {
     this.lanternFx = new LanternFx(this);
     this.catView = new CatView(this);
     this.catView.setVisible(session.state.cat.unlocked);
+    this.catView.setSkin(session.catSkin);
     this.awakeningFx = new AwakeningFx(this, runConfig.world.groundY);
     this.distortion = new Distortion(this.cameras.main);
     session.updatePhase(Date.now());
@@ -89,6 +90,7 @@ export class RunScene extends Phaser.Scene {
         const h = this.sim.hero;
         this.juice.popup(h.x, h.y - 200, t('popup.catUnlocked'), palette.bioCyan, 28);
       }),
+      session.bus.on('catSkin', (skin) => this.catView.setSkin(skin)),
       session.bus.on('phase', (p) => {
         const h = this.sim.hero;
         this.juice.popup(

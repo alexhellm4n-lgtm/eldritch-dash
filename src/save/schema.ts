@@ -1,16 +1,18 @@
 import { bn } from '../core/BigNum';
 import {
   createGameState,
+  DEFAULT_CAT_SKIN,
   createWorldState,
   type GameState,
   type WorldState,
 } from '../core/GameState';
 
-export const SAVE_VERSION = 3;
+export const SAVE_VERSION = 4;
 
 /**
  * Сохранение на диске: Decimal — строками, остальное как есть.
- * v2 добавила мета-системы M3, v3 — контент M4 (биомы, городок, дневник, достижения, газета, подсказки).
+ * v2 добавила мета-системы M3, v3 — контент M4 (биомы, городок, дневник, достижения, газета, подсказки),
+ * v4 — скины кота.
  */
 export interface SaveData {
   v: typeof SAVE_VERSION;
@@ -53,7 +55,12 @@ export function toSaveData(s: GameState): SaveData {
     items: { ...s.items },
     heroUpgrades: { ...s.heroUpgrades },
     grimoire: [...s.grimoire],
-    cat: { unlocked: s.cat.unlocked, levels: { ...s.cat.levels } },
+    cat: {
+      unlocked: s.cat.unlocked,
+      levels: { ...s.cat.levels },
+      skin: s.cat.skin,
+      skins: [...s.cat.skins],
+    },
     tutorial: { ...s.tutorial },
     hints: [...s.hints],
     world: {
@@ -140,7 +147,12 @@ export function fromSaveData(raw: unknown, now: number): GameState {
     items: levels(d.items),
     heroUpgrades: levels(d.heroUpgrades),
     grimoire: ids(d.grimoire),
-    cat: { unlocked: cat.unlocked === true, levels: levels(cat.levels) },
+    cat: {
+      unlocked: cat.unlocked === true,
+      levels: levels(cat.levels),
+      skin: typeof cat.skin === 'string' ? cat.skin : DEFAULT_CAT_SKIN,
+      skins: ids(cat.skins),
+    },
     tutorial: {
       jump: tutorial.jump === true,
       glide: tutorial.glide === true,

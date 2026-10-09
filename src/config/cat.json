@@ -25,5 +25,10 @@
         "chestChanceBonus": 0.03
       }
     }
+  ],
+  "skins": [
+    { "id": "midnight", "cost": 0 },
+    { "id": "lighthouse", "cost": 40 },
+    { "id": "drowned", "cost": 100 }
   ]
 }

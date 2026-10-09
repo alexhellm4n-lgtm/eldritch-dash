@@ -16,6 +16,7 @@
     "fx": "node scripts/build-parts.ts assets-src/generated/fx.json assets-src/generated/light_a.json assets-src/generated/light_b.json assets-src/generated/ui.json",
     "enemies": "node scripts/build-parts.ts assets-src/generated/gull.json assets-src/generated/fishman.json assets-src/generated/squid.json assets-src/generated/net.json assets-src/generated/props.json assets-src/generated/cat.json assets-src/generated/cultist.json assets-src/generated/eyebush.json assets-src/generated/cube.json assets-src/generated/firefly.json assets-src/generated/rootcrawler.json assets-src/generated/polyp.json assets-src/generated/jelly.json assets-src/generated/priest.json assets-src/generated/reef.json assets-src/generated/mother.json assets-src/generated/sleeper.json assets-src/generated/props_forest.json assets-src/generated/props_sunken.json assets-src/generated/town.json",
     "ui": "node scripts/build-parts.ts assets-src/generated/ui2_icons.json assets-src/generated/ui2_buttons.json assets-src/generated/ui2_bars.json assets-src/generated/ui2_cards.json assets-src/generated/ui2_newspaper.json assets-src/generated/ui2_scrolls.json",
+    "cat-skins": "node scripts/build-skins.ts assets-src/generated/cat_skins.json",
     "meta": "node scripts/build-parts.ts assets-src/generated/meta_items.json assets-src/generated/meta_ring.json assets-src/generated/meta_icons.json assets-src/generated/awaken.json assets-src/generated/awaken_light_a.json assets-src/generated/awaken_light_b.json"
   },
   "dependencies": {

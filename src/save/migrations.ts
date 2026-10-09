@@ -38,6 +38,11 @@ export const migrations: Readonly<Record<number, Migration>> = {
       stats: { ...stats, distanceM: typeof best === 'number' ? best : 0 },
     };
   },
+  // 3 → 4: скины кота. Кот остаётся в привычной чёрной шкурке.
+  3: (d) => {
+    const cat = typeof d.cat === 'object' && d.cat !== null ? d.cat : {};
+    return { ...d, v: 4, cat: { ...cat, skin: 'midnight', skins: [] } };
+  },
 };
 
 export class SaveVersionError extends Error {}

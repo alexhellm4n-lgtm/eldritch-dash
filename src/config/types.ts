@@ -358,12 +358,19 @@ export interface DreamConfig {
   };
 }
 
+/** Скин кота — только внешний вид; цена в сардинках, первый в списке — бесплатный по умолчанию. */
+export interface CatSkinConfig {
+  id: string;
+  cost: number;
+}
+
 export interface CatConfig {
   intervalSec: number;
   rangePx: number;
   hissRangePx: number;
   chestChance: number;
   upgrades: readonly HeroUpgradeConfig[];
+  skins: readonly CatSkinConfig[];
 }
 
 export const GRIMOIRE_CHAPTERS = ['hunter', 'dreamer', 'winged'] as const;
